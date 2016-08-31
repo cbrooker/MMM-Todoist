@@ -92,7 +92,10 @@ The following properties can be configured:
 - [request](https://www.npmjs.com/package/request) (installed via `npm install`)
 
 
+##Attribution
+
 This project is based on work done by Paul-Vincent Roll in the MMM-Wunderlist module. (https://github.com/paviro/MMM-Wunderlist)
+
 
 The MIT License (MIT)
 =====================
