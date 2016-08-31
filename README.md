@@ -14,12 +14,12 @@ modules: [
 		module: 'MMM-Todoist',
 		position: 'top_right',	// This can be any of the regions. Best results in left or right regions.
 		header: 'Todoist', // This is optional
-		config: {
-          accessToken: 'accessToken from Todoist',
-					maximumEntries: 60,
-					interval: 60,
-					lists: [ 166564794 ],
-					fade: false
+		config: { // See 'Configuration options' for more information.
+          	accessToken: 'accessToken from Todoist',
+			maximumEntries: 60,
+			interval: 60,
+			lists: [ 166564794 ],
+			fade: false
       }
 	}
 ]
@@ -41,14 +41,7 @@ The following properties can be configured:
 	<tbody>
 		<tr>
 			<td><code>accessToken</code></td>
-			<td>Your Wunderlist access token, you can get it <a href="https://developer.wunderlist.com/apps/new">here</a>.<br>
-				<br><b>Possible values:</b> <code>string</code>
-				<br><b>Default value:</b> <code>none</code>
-			</td>
-		</tr>
-		<tr>
-			<td><code>clientID</code></td>
-			<td>Your Wunderlist client id, you can get it <a href="https://developer.wunderlist.com/apps/new">here</a>.<br>
+			<td>Your Todoist access token, you can get it <a href="https://developer.todoist.com/appconsole.html">here</a>.<br>
 				<br><b>Possible values:</b> <code>string</code>
 				<br><b>Default value:</b> <code>none</code>
 			</td>
