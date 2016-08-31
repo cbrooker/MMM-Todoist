@@ -1,0 +1,25 @@
+{
+  "name": "Magic-Mirror-Module-Todoist",
+  "version": "1.0.0",
+  "description": "Todoist module for the Magic Mirror.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cbrooker/MMM-Todoist"
+  },
+  "keywords": [
+    "magic mirror",
+    "smart mirror",
+    "wunderlist",
+    "module"
+  ],
+  "author": "Chris Brooker",
+  "contributors": "https://github.com/cbrooker/MMM-Todoist/graphs/contributors",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cbrooker/MMM-Todoist/issues"
+  },
+  "homepage": "https://github.com/cbrooker/MMM-Todoist#readme",
+  "dependencies": {
+    "request": "latest"
+    }
+}
