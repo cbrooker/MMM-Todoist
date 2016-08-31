@@ -15,8 +15,12 @@ modules: [
 		position: 'top_right',	// This can be any of the regions. Best results in left or right regions.
 		header: 'Todoist', // This is optional
 		config: {
-			// See 'Configuration options' for more information.
-		}
+          accessToken: 'accessToken from Todoist',
+					maximumEntries: 60,
+					interval: 60,
+					lists: [ 166564794 ],
+					fade: false
+      }
 	}
 ]
 ````
@@ -50,11 +54,11 @@ The following properties can be configured:
 			</td>
 		</tr>
 		<tr>
-			<td><code>lists</code></td>
-			<td>Array of lists you want to display. <br>
+			<td><code>lists (currently supports 1 ID)</code></td>
+			<td>Array of 1 ProjectId you want to display. <br>
 				<br><b>Possible values:</b> <code>array</code>
-				<br><b>Default value:</b> <code>["inbox"]</code>
-				<br><b>Example:</b> <code>["inbox", "ViRO Entertainment"]</code>
+				<br><b>Default value:</b> <code>[ 166564794 ]</code>
+				<br><b>Example:</b> <code>[166564794]</code>
 			</td>
 		</tr>
 		<tr>
