@@ -55,7 +55,7 @@ function broadcastTodos() {
  console.log(feeds);
 }
 
-var accessToken = "34e064057f21f7a15a466fd1cbd47ae06001b2aa";
+var accessToken = "";
 var clientID = "";
 
 var fetchers = {};
