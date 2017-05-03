@@ -4,7 +4,7 @@
  *
  * By Michael Teeuw http://michaelteeuw.nl edited for Wunderlist by Paul-Vincent Roll
  * Edited again for Todoist by Chris Brooker
- * 
+ *
  * MIT Licensed.
  */
 
@@ -25,7 +25,7 @@ var Fetcher = function(listID, reloadInterval, accessToken, clientID) {
 
  var reloadTimer = null;
  var items = [];
-
+ var dates = [];
  var fetchFailedCallback = function() {};
  var itemsReceivedCallback = function() {};
 
@@ -42,26 +42,49 @@ var Fetcher = function(listID, reloadInterval, accessToken, clientID) {
 	request({
 		url: "https://todoist.com/API/v7/sync/",
 		method: "POST",
-		headers: { 
+		headers: {
 			'content-type': 'application/x-www-form-urlencoded',
-			'cache-control': 'no-cache' 
+			'cache-control': 'no-cache'
 		},
-		form: { 
+		form: {
 				token: accessToken,
 				sync_token: '*',
-				resource_types: '["items"]' 
+				resource_types: '["items"]'
 		}
 	 },
 	 function(error, response, body) {
 		if (!error && response.statusCode == 200) {
          items = [];
+         duedates = [];  // initialize duedates array
 		 for (var i = 0; i < JSON.parse(body).items.length; i++) {
 			 if (JSON.parse(body).items[i].project_id == listID) {
-				 items.push(JSON.parse(body).items[i].content);	
+				 items.push(JSON.parse(body).items[i].content);
+				 duedates.push(JSON.parse(body).items[i].due_date_utc);  //added parsing for due data
 			 }
 		 }
-		 self.broadcastItems();
-		 scheduleTimer();
+// added code to reformat due date to make it sortable
+		var dates = []; 	//var for reformatted duedates
+		var data = [];		//var for data obj to hold todo items and due dates
+		for (var i=0; i<duedates.length; i++) {
+			dates.push(new Date(duedates[i].substring(4, 15).concat(duedates[i].substring(15, 23))).toISOString());
+		}
+// code to populate data obj array
+		for (i = 0; i<items.length; i++) {
+			data.push({date: dates[i], todo: items[i]});
+		}
+// routine to sort data array by due date
+		data.sort(function(a, b){ // sort object by due date
+			var dateA=new Date(a.date), dateB=new Date(b.date);
+			return dateA-dateB; //sort by date ascending;
+		});
+// code to repopoulate item list with sorted todos
+		items=[]
+		for (var key in data){
+			items.push(data[key].todo);
+		}
+
+		self.broadcastItems();
+		scheduleTimer();
 		}
 	 });
 
