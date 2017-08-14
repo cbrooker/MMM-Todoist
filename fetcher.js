@@ -59,9 +59,15 @@ var Fetcher = function(listID, reloadInterval, accessToken, clientID) {
 		 for (var i = 0; i < JSON.parse(body).items.length; i++) {
 			 if (JSON.parse(body).items[i].project_id == listID) {
 				 items.push(JSON.parse(body).items[i].content);
-				 duedates.push(JSON.parse(body).items[i].due_date_utc);  //added parsing for due data
+//				 Check if due date in item is null ... no due date
+				 if (JSON.parse(body).items[i].due_date_utc === null){
+					 duedates.push("Fri 31 Dec 2100 23:59:59 +0000");  // if no due date then set due date to 31 Dec 2100
+				 } else {
+					 duedates.push(JSON.parse(body).items[i].due_date_utc);  //added parsing to get due date
+				 }
 			 }
 		 }
+
 // added code to reformat due date to make it sortable
 		var dates = []; 	//var for reformatted duedates
 		var data = [];		//var for data obj to hold todo items and due dates
