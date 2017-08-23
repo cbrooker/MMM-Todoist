@@ -12,77 +12,145 @@
 
 Module.register("MMM-Todoist", {
 
- defaults: {
-	maximumEntries: 10,
-	lists: ["inbox"],
-	interval: 60,
-	fade: true,
-	fadePoint: 0.25
- },
+    defaults: {
+        maximumEntries: 10,
+        lists: ["inbox"],
+        interval: 60,
+        fade: true,
+        fadePoint: 0.25,
+        sortByDate: false
+    },
 
- // Override socket notification handler.
- socketNotificationReceived: function(notification, payload) {
-	if (notification === "TASKS") {
-	 this.tasks = payload
-	 this.updateDom(3000);
-	} else if (notification === "STARTED") {
-	 console.log(notification);
-	 this.sendSocketNotification("addLists", this.config.lists);
-	}
- },
+    // Define required scripts.
+    getStyles: function() {
+        return ["MMM-Todoist.css"];
+    },
 
- start: function() {
-	this.tasks = [];
-	this.sendSocketNotification("CONFIG", this.config);
-	this.sendSocketNotification("CONNECTED");
-	Log.info("Starting module: " + this.name);
- },
+    // Override socket notification handler.
+    socketNotificationReceived: function(notification, payload) {
+        if (notification === "TASKS") {
+            this.tasks = payload
+            this.updateDom(3000);
+        } else if (notification === "STARTED") {
+            console.log(notification);
+            this.sendSocketNotification("addLists", this.config.lists);
+        }
+    },
 
- getTodos: function() {
-	var tasksShown = [];
+    start: function() {
+        this.tasks = [];
+        this.sendSocketNotification("CONFIG", this.config);
+        this.sendSocketNotification("CONNECTED");
+        Log.info("Starting module: " + this.name);
+    },
 
-	for (var i = 0; i < this.config.lists.length; i++) {
-	 if (typeof this.tasks[this.config.lists[i]] != "undefined") {
-		var list = this.tasks[this.config.lists[i]];
+    getTodos: function() {
+        var tasksShown = [];
 
-		for (var todo in list) {
-		 tasksShown.push(list[todo]);
+        for (var i = 0; i < this.config.lists.length; i++) {
+            if (typeof this.tasks[this.config.lists[i]] != "undefined") {
+                var list = this.tasks[this.config.lists[i]];
 
-		}
-	 }
-	}
-	return tasksShown.slice(0, this.config.maximumEntries);
+                for (var todo in list) {
+                    tasksShown.push(list[todo]);
 
- },
- getDom: function() {
-	var wrapper = document.createElement("table");
-	wrapper.className = "normal small light";
+                }
+            }
+        }
+        return tasksShown.slice(0, this.config.maximumEntries);
 
-	var todos = this.getTodos();
+    },
+    treatAsUTC: function(date) {
+        var result = new Date(date);
+        result.setMinutes(result.getMinutes() - result.getTimezoneOffset());
+        return result;
+    },
+    getDom: function() {
+        var table = document.createElement("table");
+        table.className = "normal small light";
+
+        var todos = this.getTodos();
+
+        for (var i = 0; i < todos.length; i++) {
+            var row = document.createElement("tr");
+            table.appendChild(row);
+
+            var priorityCell = document.createElement("td");
+            switch (todos[i].priority) {
+                case 4:
+                    priorityCell.className = "priority priority1";
+                    break;
+                case 3:
+                    priorityCell.className = "priority priority2";
+                    break;
+                case 2:
+                    priorityCell.className = "priority priority3";
+                    break;
+            }
+            priorityCell.innerHTML = "";
+            row.appendChild(priorityCell);
+
+            var spacerCell = document.createElement("td");
+            spacerCell.className = "spacerCell";
+            spacerCell.innerHTML = "";
+            row.appendChild(spacerCell);
+
+            var todoCell = document.createElement("td");
+            todoCell.className = "title bright alignLeft";
+            todoCell.innerHTML = todos[i].content;
+            row.appendChild(todoCell);
+
+            var dueDateCell = document.createElement("td");
+            dueDateCell.className = "bright";
+
+            var oneDay = 24 * 60 * 60 * 1000;
+            var dueDate = new Date(todos[i].due_date_utc);
+            var diffDays = Math.round((dueDate - new Date()) / (oneDay));
+            var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+            switch (diffDays) {
+                case -1:
+                    dueDateCell.innerHTML = "Yesterday";
+                    break;
+                case 0:
+                    dueDateCell.innerHTML = "Today";
+                    break;
+                case 1:
+                    dueDateCell.innerHTML = "Tomorrow";
+                    break;
+            }
+            if (dueDateCell.innerHTML == "") {
+                if (diffDays > -1) {
+                    dueDateCell.innerHTML = months[dueDate.getMonth()] + ' ' + dueDate.getDay();
+                }
+                if (diffDays > -1000) {
+                    dueDateCell.innerHTML = "";
+                }
+            }
+
+            dueDateCell.innerHTML += " - " + diffDays;
+            // dueDateCell.innerHTML = dueDate + " " + diffDays; //months[dueDate.getMonth()] + ' ' + dueDate.getDay();
 
 
-	for (var i = 0; i < todos.length; i++) {
-	 var titleWrapper = document.createElement("tr");
-	 titleWrapper.innerHTML = todos[i];
-	 titleWrapper.className = "title bright";
-	 wrapper.appendChild(titleWrapper);
+            row.appendChild(dueDateCell);
 
-	 // Create fade effect by MichMich (MIT)
-	 if (this.config.fade && this.config.fadePoint < 1) {
-		if (this.config.fadePoint < 0) {
-		 this.config.fadePoint = 0;
-		}
-		var startingPoint = todos.length * this.config.fadePoint;
-		var steps = todos.length - startingPoint;
-		if (i >= startingPoint) {
-		 var currentStep = i - startingPoint;
-		 titleWrapper.style.opacity = 1 - (1 / steps * currentStep);
-		}
-	 }
-	 // End Create fade effect by MichMich (MIT)
-	}
 
-	return wrapper;
- }
+            // Create fade effect by MichMich (MIT)
+            if (this.config.fade && this.config.fadePoint < 1) {
+                if (this.config.fadePoint < 0) {
+                    this.config.fadePoint = 0;
+                }
+                var startingPoint = todos.length * this.config.fadePoint;
+                var steps = todos.length - startingPoint;
+                if (i >= startingPoint) {
+                    var currentStep = i - startingPoint;
+                    table.style.opacity = 1 - (1 / steps * currentStep);
+                }
+            }
+            // End Create fade effect by MichMich (MIT)
+        }
+
+        return table;
+    }
 
 });

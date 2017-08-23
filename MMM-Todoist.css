@@ -1,0 +1,24 @@
+.priority {
+    width: 3px;
+    border-right: 3px;
+}
+
+.priority1 {
+    background-color: #ac0000;
+}
+
+.priority2 {
+    background-color: #f8801c;
+}
+
+.priority3 {
+    background-color: #fcc12b;
+}
+
+.alignLeft {
+    text-align: left;
+}
+
+.spacerCell {
+    width: 3px;
+}
