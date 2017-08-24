@@ -26,3 +26,11 @@
 .overdue {
     text-decoration: underline #ac0000;
 }
+
+.today {
+    text-decoration: underline #03a05c;
+}
+
+.tomorrow {
+    text-decoration: underline #166cec;
+}
