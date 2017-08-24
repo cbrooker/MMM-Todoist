@@ -2,8 +2,7 @@
  * Fetcher
  *
  *
- * By Michael Teeuw http://michaelteeuw.nl edited for Wunderlist by Paul-Vincent Roll
- * Edited again for Todoist by Chris Brooker
+ * By Michael Teeuw http://michaelteeuw.nl edited for Todoist by Chris Brooker
  *
  * MIT Licensed.
  */
@@ -17,20 +16,19 @@ var request = require("request");
  * attribute reloadInterval number - Reload interval in milliseconds.
  */
 
-var Fetcher = function(listID, reloadInterval, accessToken) {
+var Fetcher = function(projects, reloadInterval, accessToken) {
     var self = this;
     if (reloadInterval < 1000) {
         reloadInterval = 1000;
     }
 
     var reloadTimer = null;
-    var items = [];
-    var dates = [];
+    var todostResp = null;
     var fetchFailedCallback = function() {};
     var itemsReceivedCallback = function() {};
 
-    /* private methods */
 
+    /* private methods */
     /* fetchTodos()
      * Request the new items.
      */
@@ -49,19 +47,26 @@ var Fetcher = function(listID, reloadInterval, accessToken) {
                 form: {
                     token: accessToken,
                     sync_token: '*',
-                    resource_types: '["items"]'
+                    resource_types: '["items", "projects"]'
                 }
             },
             function(error, response, body) {
                 if (!error && response.statusCode == 200) {
-                    items = [];
-                    duedates = [];
 
-                    for (var i = 0; i < JSON.parse(body).items.length; i++) {
-                        if (JSON.parse(body).items[i].project_id == listID) {
-                            items.push(JSON.parse(body).items[i]);
-                        }
-                    }
+                    todostResp = JSON.parse(body);
+
+                    var items = [];
+
+                    //Filter the Todos by the Projects specified in teh Config
+                    todostResp.items.forEach(function(item) {
+                        projects.forEach(function(project) {
+                            if (item.project_id == project) {
+                                items.push(item);
+                            }
+                        });
+                    });
+
+                    //Used for ordering by date
                     items.forEach(function(item) {
                         if (item.due_date_utc === null) {
                             item.due_date_utc = "Fri 31 Dec 2100 23:59:59 +0000";
@@ -70,17 +75,14 @@ var Fetcher = function(listID, reloadInterval, accessToken) {
                         item.ISOString = new Date(item.due_date_utc.substring(4, 15).concat(item.due_date_utc.substring(15, 23))).toISOString();
                     });
 
+                    //Sort Todos by Todoist ordering
                     items.sort(function(a, b) {
                         var dateA = new Date(a.item_order),
                             dateB = new Date(b.item_order);
                         return dateA - dateB;
                     });
 
-                    // items.sort(function(a, b) {
-                    //     a = new Date(a.due_date_utc);
-                    //     b = new Date(b.due_date_utc);
-                    //     return a > b ? -1 : a < b ? 1 : 0;
-                    // });
+                    todostResp.items = items;
 
                     self.broadcastItems();
                     scheduleTimer();
@@ -125,11 +127,12 @@ var Fetcher = function(listID, reloadInterval, accessToken) {
      * Broadcast the exsisting items.
      */
     this.broadcastItems = function() {
-        if (items.length <= 0) {
+        if (todostResp != null) {
             //console.log('No items to broadcast yet.');
             return;
         }
         //console.log('Broadcasting ' + items.length + ' items.');
+        console.log(todostResp);
         itemsReceivedCallback(self);
     };
 
@@ -141,12 +144,12 @@ var Fetcher = function(listID, reloadInterval, accessToken) {
         fetchFailedCallback = callback;
     };
 
-    this.id = function() {
-        return listID;
-    };
+    // this.id = function() {
+    //     return listID;
+    // };
 
-    this.items = function() {
-        return items;
+    this.todostResp = function() {
+        return todostResp;
     };
 };
 

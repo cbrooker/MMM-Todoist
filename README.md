@@ -47,18 +47,18 @@ The following properties can be configured:
 			</td>
 		</tr>
 		<tr>
-			<td><code>lists (currently supports 1 ID)</code></td>
-			<td>Array of 1 ProjectId you want to display. <br>
+			<td><code>projects</code></td>
+			<td>
+				Array of ProjectId you want to display. <br>
 				<br><b>Possible values:</b> <code>array</code>
 				<br><b>Default value:</b> <code>[ 166564794 ]</code>
-				<br><b>Example:</b> <code>[166564794]</code>
+				<br><b>Example:</b> <code>[166564794, 166564794]</code>
 				<br>
 				<br>
 				<b>Getting the Todoist ProjectID:</b><br>
 				1) Go to Todoist (Log in if you aren't)<br>
 				2) Click on a Project in the left menu<br>
-				3) Your browser URL will change to something like<br> "https://todoist.com/app?lang=en&v=818#project%2F166564897"<br><br>
-
+				3) Your browser URL will change to something like<br> <code>"https://todoist.com/app?lang=en&v=818#project%2F166564897"</code><br><br>
 				Everything after %2F is the Project ID. In this case "166564897"
 			</td>
 		</tr>
@@ -88,6 +88,13 @@ The following properties can be configured:
 			<td>Where to start fade?<br>
 				<br><b>Possible values:</b> <code>0</code> (top of the list) - <code>1</code> (bottom of list)
 				<br><b>Default value:</b> <code>0.25</code>
+			</td>
+		</tr>
+		<tr>
+			<td><code>showProject</code></td>
+			<td>If true this will display the Project to the right of the DueDates as it does on Todost.<br>
+				<br><b>Possible values:</b> <code>boolean</code>
+				<br><b>Default value:</b> <code>true</code>
 			</td>
 		</tr>
 	</tbody>
