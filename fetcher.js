@@ -62,12 +62,23 @@ var Fetcher = function(listID, reloadInterval, accessToken) {
                             items.push(JSON.parse(body).items[i]);
                         }
                     }
-
-                    items.sort(function(a, b) {
-                        a = new Date(a.due_date_utc);
-                        b = new Date(b.due_date_utc);
-                        return a > b ? -1 : a < b ? 1 : 0;
+                    items.forEach(function(item) {
+                        if (item.due_date_utc === null) {
+                            item.due_date_utc = "Fri 31 Dec 2100 23:59:59 +0000";
+                        }
+                        item.ISOString = new Date(item.due_date_utc.substring(4, 15).concat(item.due_date_utc.substring(15, 23))).toISOString();
                     });
+                    items.sort(function(a, b) { // sort object by due date
+                        var dateA = new Date(a.ISOString),
+                            dateB = new Date(b.ISOString);
+                        return dateA - dateB; //sort by date ascending;
+                    });
+
+                    // items.sort(function(a, b) {
+                    //     a = new Date(a.due_date_utc);
+                    //     b = new Date(b.due_date_utc);
+                    //     return a > b ? -1 : a < b ? 1 : 0;
+                    // });
 
                     self.broadcastItems();
                     scheduleTimer();

@@ -101,7 +101,7 @@ Module.register("MMM-Todoist", {
             row.appendChild(todoCell);
 
             var dueDateCell = document.createElement("td");
-            dueDateCell.className = "bright";
+            dueDateCell.className = "bright xsmall";
 
             var oneDay = 24 * 60 * 60 * 1000;
             var dueDate = new Date(todos[i].due_date_utc);
@@ -111,25 +111,25 @@ Module.register("MMM-Todoist", {
             switch (diffDays) {
                 case -1:
                     dueDateCell.innerHTML = "Yesterday";
+                    dueDateCell.className += " overdue";
                     break;
                 case 0:
                     dueDateCell.innerHTML = "Today";
+                    dueDateCell.className = "bright";
                     break;
                 case 1:
                     dueDateCell.innerHTML = "Tomorrow";
                     break;
             }
             if (dueDateCell.innerHTML == "") {
-                if (diffDays > -1) {
-                    dueDateCell.innerHTML = months[dueDate.getMonth()] + ' ' + dueDate.getDay();
+                dueDateCell.innerHTML = months[dueDate.getMonth()] + ' ' + dueDate.getDay();
+                if (diffDays < -1) {
+                    dueDateCell.className += " overdue";
                 }
-                if (diffDays > -1000) {
+                if (diffDays > 1000) {
                     dueDateCell.innerHTML = "";
                 }
             }
-
-            dueDateCell.innerHTML += " - " + diffDays;
-            // dueDateCell.innerHTML = dueDate + " " + diffDays; //months[dueDate.getMonth()] + ' ' + dueDate.getDay();
 
 
             row.appendChild(dueDateCell);

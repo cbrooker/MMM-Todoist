@@ -22,3 +22,7 @@
 .spacerCell {
     width: 3px;
 }
+
+.overdue {
+    text-decoration: underline #ac0000;
+}
