@@ -145,7 +145,7 @@ Module.register("MMM-Todoist", {
                 var steps = todos.length - startingPoint;
                 if (i >= startingPoint) {
                     var currentStep = i - startingPoint;
-                    table.style.opacity = 1 - (1 / steps * currentStep);
+                    todoCell.style.opacity = 1 - (1 / steps * currentStep);
                 }
             }
             // End Create fade effect by MichMich (MIT)
