@@ -58,7 +58,6 @@ The following properties can be configured:
 				1) Go to Todoist (Log in if you aren't)<br>
 				2) Click on a Project in the left menu<br>
 				3) Your browser URL will change to something like<br> "https://todoist.com/app?lang=en&v=818#project%2F166564897"<br><br>
-
 				Everything after %2F is the Project ID. In this case "166564897"
 			</td>
 		</tr>
