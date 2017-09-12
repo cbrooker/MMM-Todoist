@@ -17,33 +17,24 @@ module.exports = NodeHelper.create({
     start: function() {
         this.config = [];
         this.fetchers = {};
-        this.started = false;
     },
 
-    // getLists: function(callback) {
-    //     request({
-    //         url: "https://todoist.com/API/v7/sync/",
-    //         method: "POST",
-    //         headers: {
-    //             'content-type': 'application/x-www-form-urlencoded',
-    //             'cache-control': 'no-cache'
-    //         },
-    //         form: {
-    //             token: this.config.accessToken,
-    //             sync_token: '*',
-    //             resource_types: '["items"]'
-    //         }
-    //     }, function(error, response, body) {
-    //         if (!error && response.statusCode == 200) {
-    //             var lists = {};
-    //             for (var i = 0; i < JSON.parse(body).items.length; i++) {
-    //                 lists[JSON.parse(body).items[i].content] = {
-    //                     id: JSON.parse(body).items[i].id
-    //                 };
-    //             }
-    //         }
-    //     });
-    // },
+    // Override socketNotificationReceived method.
+    socketNotificationReceived: function(notification, payload) {
+        if (notification === "ADD_TODOIST_PROJECTS") {
+            console.log("ADD_TODOIST_PROJECTS: " + payload.projects);
+            this.createFetcher(payload.url, payload.fetchInterval, payload.excludedEvents, payload.maximumEntries, payload.maximumNumberOfDays, payload.auth);
+        }
+    },
+
+
+
+
+
+
+
+
+
 
     createFetcher: function(projects, reloadInterval) {
         var self = this;
