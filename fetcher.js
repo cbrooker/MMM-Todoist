@@ -83,8 +83,8 @@ var Fetcher = function(listID, reloadInterval, accessToken) {
                     // });
 
                     self.broadcastItems();
-                    scheduleTimer();
                 }
+                scheduleTimer();
             });
 
     };
