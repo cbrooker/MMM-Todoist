@@ -17,9 +17,10 @@ modules: [
 		config: { // See 'Configuration options' for more information.
           	accessToken: 'accessToken from Todoist',
 			maximumEntries: 60,
-			interval: 60,
-			lists: [ 166564794 ],
-			fade: false
+			updateInterval: 60,
+			projects: [ 166564794 ],
+			fade: false,
+			showProject: true
       }
 	}
 ]
