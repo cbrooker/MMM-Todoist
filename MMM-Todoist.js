@@ -5,8 +5,6 @@
  *
  * By Chris Brooker
  * 
- * 		Adapted from MMM-Wonderlist by Paul-Vincent Roll http://paulvincentroll.com
- * 
  * MIT Licensed.
  */
 
@@ -15,24 +13,62 @@ Module.register("MMM-Todoist", {
     defaults: {
         maximumEntries: 10,
         projects: ["inbox"],
-        interval: 60,
+        updateInterval: 10 * 60 * 1000, // every 10 minutes,
         fade: true,
         fadePoint: 0.25,
         sortByDate: false,
         showProject: true,
-        projectColors: ["#95ef63", "#ff8581", "#ffc471", "#f9ec75", "#a8c8e4", "#d2b8a3", "#e2a8e4", "#cccccc", "#fb886e", "#ffcc00", "#74e8d3", "#3bd5fb", "#dc4fad", "#ac193d", "#d24726", "#82ba00", "#03b3b2", "#008299", "#5db2ff", "#0072c6", "#000000", "#777777"]
+        projectColors: ["#95ef63", "#ff8581", "#ffc471", "#f9ec75", "#a8c8e4", "#d2b8a3", "#e2a8e4", "#cccccc", "#fb886e",
+            "#ffcc00", "#74e8d3", "#3bd5fb", "#dc4fad", "#ac193d", "#d24726", "#82ba00", "#03b3b2", "#008299",
+            "#5db2ff", "#0072c6", "#000000", "#777777"
+        ], //These colors come from Todoist and their order matters if you want the colors to match your Todoist project colors.
+
+        //This has been designed to use the Todoist Sync API.
+        apiVersion: "v7",
+        apiBase: "https://todoist.com/API/",
+        todoistEndpoint: "sync",
+        todoistResourceType: '["items", "projects"]'
+
     },
 
     // Define required scripts.
     getStyles: function() {
         return ["MMM-Todoist.css"];
     },
+    getTranslations: function() {
+        return {
+            en: "translations/en.json",
+            de: "translations/de.json"
+        }
+    },
 
     start: function() {
-        this.tasks = [];
-        this.sendSocketNotification("CONFIG", this.config);
-        this.sendSocketNotification("CONNECTED");
         Log.info("Starting module: " + this.name);
+
+        this.Todoist = [];
+        this.loaded = false;
+
+        if (this.config.accessToken === "") {
+            Log.error(" MMM-Todoist: AccessToken not set!");
+            return;
+        }
+
+        //Support legacy properties
+        if (this.config.lists.length > 0) {
+            this.config.projects = this.config.lists;
+        }
+
+        this.startFetching();
+    },
+
+    /* startFetching()
+     * Kicks off the fetching of Todo's through the Node Backend.
+     * Required to avoid CORS issues as Todoist uses POSTs.
+     */
+    startFetching: function() {
+        this.sendSocketNotification("START_TODOIST", {
+            config: this.config
+        });
     },
 
     // Override socket notification handler.
@@ -40,26 +76,10 @@ Module.register("MMM-Todoist", {
         if (notification === "TASKS") {
             this.tasks = payload;
             this.updateDom(3000);
-        } else if (notification === "STARTED") {
-            console.log(notification);
-            this.sendSocketNotification("addLists", this.config);
         }
     },
 
     getTodoistData: function() {
-        // var tasksShown = [];
-        // for (var i = 0; i < this.config.lists.length; i++) {
-        //     if (typeof this.tasks.items[this.config.lists[i]] != "undefined") {
-        //         var list = this.tasks[this.config.lists[i]];
-
-        //         for (var todo in list) {
-        //             tasksShown.push(list[todo]);
-        //         }
-        //     }
-        // }
-
-        // var todost = {};
-
         if (this.tasks != undefined) {
             if (this.tasks.items != undefined) {
                 this.tasks.items = this.tasks.items.slice(0, this.config.maximumEntries);
@@ -73,7 +93,8 @@ Module.register("MMM-Todoist", {
         table.className = "normal small light";
 
         var todoist = this.getTodoistData();
-        if (todoist.items === undefined) {
+
+        if (todoist === undefined) {
             return table;
         }
 
@@ -112,7 +133,7 @@ Module.register("MMM-Todoist", {
             var oneDay = 24 * 60 * 60 * 1000;
             var dueDate = new Date(todoist.items[i].due_date_utc);
             var diffDays = Math.floor((dueDate - new Date()) / (oneDay));
-            var months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OKT', 'NOV', 'DEZ'];
+            var months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 
             switch (diffDays) {
                 case -1:
@@ -171,12 +192,6 @@ Module.register("MMM-Todoist", {
         }
 
         return table;
-    },
-    getTranslations: function() {
-        return {
-                en: "translations/en.json",
-                de: "translations/de.json"
-        }
     }
 
 });

@@ -1,7 +1,6 @@
 /* Magic Mirror
  * Fetcher
  *
- *
  * By Michael Teeuw http://michaelteeuw.nl edited for Todoist by Chris Brooker
  *
  * MIT Licensed.
@@ -12,21 +11,18 @@ var request = require("request");
 /* Fetcher
  * Responsible for requesting an update on the set interval and broadcasting the data.
  *
- * attribute listID string - ID of the Wunderlist list.
- * attribute reloadInterval number - Reload interval in milliseconds.
  */
 
-var Fetcher = function(projects, reloadInterval, accessToken) {
+var Fetcher = function(config) {
     var self = this;
-    if (reloadInterval < 1000) {
-        reloadInterval = 1000;
-    }
+    self.config = config.config;
 
     var reloadTimer = null;
+    var reloadInterval = self.config.updateInterval;
+
     var todostResp = null;
     var fetchFailedCallback = function() {};
     var itemsReceivedCallback = function() {};
-
 
     /* private methods */
     /* fetchTodos()
@@ -38,28 +34,28 @@ var Fetcher = function(projects, reloadInterval, accessToken) {
         reloadTimer = null;
 
         request({
-                url: "https://todoist.com/API/v7/sync/",
+                url: self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint,
                 method: "POST",
                 headers: {
                     'content-type': 'application/x-www-form-urlencoded',
                     'cache-control': 'no-cache'
                 },
                 form: {
-                    token: accessToken,
+                    token: self.config.accessToken,
                     sync_token: '*',
-                    resource_types: '["items", "projects"]'
+                    resource_types: self.config.todoistResourceType
                 }
             },
             function(error, response, body) {
+                // if (error) { console.error(" ERROR - MMM-Todoist: " + error); }
                 if (!error && response.statusCode == 200) {
 
+                    var items = [];
                     todostResp = JSON.parse(body);
 
-                    var items = [];
-
-                    //Filter the Todos by the Projects specified in teh Config
+                    //Filter the Todos by the Projects specified in the Config
                     todostResp.items.forEach(function(item) {
-                        projects.forEach(function(project) {
+                        self.config.projects.forEach(function(project) {
                             if (item.project_id == project) {
                                 items.push(item);
                             }
@@ -77,13 +73,15 @@ var Fetcher = function(projects, reloadInterval, accessToken) {
 
                     //Sort Todos by Todoist ordering
                     items.sort(function(a, b) {
-                        var dateA = new Date(a.item_order),
-                            dateB = new Date(b.item_order);
-                        return dateA - dateB;
+                        var itemA = a.item_order,
+                            itemB = b.item_order;
+                        return itemA - itemB;
                     });
 
                     todostResp.items = items;
+                    self.todostResp = todostResp;
 
+                    // console.log(todostResp.items);
                     self.broadcastItems();
                 }
                 scheduleTimer();
@@ -94,14 +92,13 @@ var Fetcher = function(projects, reloadInterval, accessToken) {
     /* scheduleTimer()
      * Schedule the timer for the next update.
      */
-
     var scheduleTimer = function() {
-        //console.log('Schedule update timer.');
         clearTimeout(reloadTimer);
         reloadTimer = setTimeout(function() {
             fetchTodos();
         }, reloadInterval);
     };
+
 
     /* public methods */
 
@@ -120,6 +117,7 @@ var Fetcher = function(projects, reloadInterval, accessToken) {
      * Initiate fetchTodos();
      */
     this.startFetch = function() {
+        console.log("Starting Fetcher");
         fetchTodos();
     };
 
@@ -127,12 +125,11 @@ var Fetcher = function(projects, reloadInterval, accessToken) {
      * Broadcast the exsisting items.
      */
     this.broadcastItems = function() {
-        if (todostResp != null) {
-            //console.log('No items to broadcast yet.');
+        if (todostResp == null) {
+            console.log('No items to broadcast yet.');
             return;
         }
-        //console.log('Broadcasting ' + items.length + ' items.');
-        console.log(todostResp);
+        console.log('Broadcasting ' + todostResp.items.length + ' items.');
         itemsReceivedCallback(self);
     };
 
@@ -144,11 +141,7 @@ var Fetcher = function(projects, reloadInterval, accessToken) {
         fetchFailedCallback = callback;
     };
 
-    // this.id = function() {
-    //     return listID;
-    // };
-
-    this.todostResp = function() {
+    this.todostResponse = function() {
         return todostResp;
     };
 };
