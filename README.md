@@ -19,8 +19,7 @@ modules: [
 			maximumEntries: 60,
 			updateInterval: 60,
 			projects: [ 166564794 ],
-			fade: false,
-			showProject: true
+			fade: false
       }
 	}
 ]
