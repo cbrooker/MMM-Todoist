@@ -85,8 +85,8 @@ var Fetcher = function(projects, reloadInterval, accessToken) {
                     todostResp.items = items;
 
                     self.broadcastItems();
-                    scheduleTimer();
                 }
+                scheduleTimer();
             });
 
     };

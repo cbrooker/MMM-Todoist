@@ -112,25 +112,25 @@ Module.register("MMM-Todoist", {
             var oneDay = 24 * 60 * 60 * 1000;
             var dueDate = new Date(todoist.items[i].due_date_utc);
             var diffDays = Math.floor((dueDate - new Date()) / (oneDay));
-            var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            var months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OKT', 'NOV', 'DEZ'];
 
             switch (diffDays) {
                 case -1:
-                    dueDateCell.innerHTML = "Yesterday";
+                    dueDateCell.innerHTML = this.translate("YESTERDAY");
                     dueDateCell.className += "xsmall overdue";
                     break;
                 case 0:
-                    dueDateCell.innerHTML = "Today";
+                    dueDateCell.innerHTML = this.translate("TODAY");
                     dueDateCell.className += "today";
                     break;
                 case 1:
-                    dueDateCell.innerHTML = "Tomorrow";
+                    dueDateCell.innerHTML = this.translate("TOMORROW");
                     dueDateCell.className += "xsmall tomorrow";
                     break;
             }
 
             if (dueDateCell.innerHTML == "") {
-                dueDateCell.innerHTML = months[dueDate.getMonth()] + ' ' + dueDate.getDate();
+                dueDateCell.innerHTML = this.translate(months[dueDate.getMonth()]) + ' ' + dueDate.getDate();
                 if (diffDays < -1) {
                     dueDateCell.className += "xsmall overdue";
                 }
@@ -164,13 +164,19 @@ Module.register("MMM-Todoist", {
                 var steps = todoist.items.length - startingPoint;
                 if (i >= startingPoint) {
                     var currentStep = i - startingPoint;
-                    table.style.opacity = 1 - (1 / steps * currentStep);
+                    todoCell.style.opacity = 1 - (1 / steps * currentStep);
                 }
             }
             // End Create fade effect by MichMich (MIT)
         }
 
         return table;
+    },
+    getTranslations: function() {
+        return {
+                en: "translations/en.json",
+                de: "translations/de.json"
+        }
     }
 
 });
