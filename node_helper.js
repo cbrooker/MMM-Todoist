@@ -31,7 +31,7 @@ module.exports = NodeHelper.create({
 
         var fetcher;
         if (typeof this.fetcher === "undefined") {
-            console.log("Create new Todoist fetcher");
+            // console.log("Create new Todoist fetcher");
             fetcher = new Fetcher(config);
             fetcher.onReceive(function(fetcher) {
                 self.broadcastTodos();
@@ -48,7 +48,7 @@ module.exports = NodeHelper.create({
                 "instance": fetcher
             };
         } else {
-            console.log("Use exsisting Todoist fetcher for list");
+            // console.log("Use exsisting Todoist fetcher for list");
             fetcher = this.fetcher.instance;
             fetcher.setReloadInterval(config.updateInterval);
             fetcher.broadcastItems();

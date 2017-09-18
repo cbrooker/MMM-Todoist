@@ -54,8 +54,10 @@ Module.register("MMM-Todoist", {
         }
 
         //Support legacy properties
-        if (this.config.lists.length > 0) {
-            this.config.projects = this.config.lists;
+        if (this.config.lists !== undefined) {
+            if (this.config.lists.length > 0) {
+                this.config.projects = this.config.lists;
+            }
         }
 
         this.startFetching();

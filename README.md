@@ -49,10 +49,10 @@ The following properties can be configured:
 		<tr>
 			<td><code>projects</code></td>
 			<td>
-				Array of ProjectId you want to display. <br>
+				Array of ProjectIds you want to display. <br>
 				<br><b>Possible values:</b> <code>array</code>
-				<br><b>Default value:</b> <code>[ 166564794 ]</code>
-				<br><b>Example:</b> <code>[166564794, 166564794]</code>
+				<br><b>Default value:</b> <code>[ ]</code>
+				<br><b>Example:</b> <code>[166564794, 166564792]</code>
 				<br>
 				<br>
 				<b>Getting the Todoist ProjectID:</b><br>

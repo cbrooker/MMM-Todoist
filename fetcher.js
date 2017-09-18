@@ -47,7 +47,7 @@ var Fetcher = function(config) {
                 }
             },
             function(error, response, body) {
-                // if (error) { console.error(" ERROR - MMM-Todoist: " + error); }
+                if (error) { console.error(" ERROR - MMM-Todoist: " + error); }
                 if (!error && response.statusCode == 200) {
 
                     var items = [];
@@ -81,7 +81,6 @@ var Fetcher = function(config) {
                     todostResp.items = items;
                     self.todostResp = todostResp;
 
-                    // console.log(todostResp.items);
                     self.broadcastItems();
                 }
                 scheduleTimer();
@@ -117,7 +116,7 @@ var Fetcher = function(config) {
      * Initiate fetchTodos();
      */
     this.startFetch = function() {
-        console.log("Starting Fetcher");
+        // console.log("Starting Fetcher");
         fetchTodos();
     };
 
@@ -126,10 +125,10 @@ var Fetcher = function(config) {
      */
     this.broadcastItems = function() {
         if (todostResp == null) {
-            console.log('No items to broadcast yet.');
+            // console.log('No items to broadcast yet.');
             return;
         }
-        console.log('Broadcasting ' + todostResp.items.length + ' items.');
+        // console.log('Broadcasting ' + todostResp.items.length + ' items.');
         itemsReceivedCallback(self);
     };
 
