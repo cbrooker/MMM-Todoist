@@ -80,35 +80,40 @@ Module.register("MMM-Todoist", {
         var self = this;
         var items = []
         
-        //Filter the Todos by the Projects specified in the Config
-        tasks.items.forEach(function(item) {
-            self.config.projects.forEach(function(project) {
-                if (item.project_id == project) {
-                    items.push(item);
-                }
-            });
-        });
+        if (tasks != undefined) {
+            if (tasks.items != undefined) {
+                
+                //Filter the Todos by the Projects specified in the Config
+                tasks.items.forEach(function(item) {
+                    self.config.projects.forEach(function(project) {
+                        if (item.project_id == project) {
+                            items.push(item);
+                        }
+                    });
+                });
 
-        //Used for ordering by date
-        items.forEach(function(item) {
-            if (item.due_date_utc === null) {
-                item.due_date_utc = "Fri 31 Dec 2100 23:59:59 +0000";
+                //Used for ordering by date
+                items.forEach(function(item) {
+                    if (item.due_date_utc === null) {
+                        item.due_date_utc = "Fri 31 Dec 2100 23:59:59 +0000";
+                    }
+                    //Not used right now
+                    item.ISOString = new Date(item.due_date_utc.substring(4, 15).concat(item.due_date_utc.substring(15, 23))).toISOString();
+                });
+
+                //Sort Todos by Todoist ordering
+                items.sort(function(a, b) {
+                    var itemA = a.item_order,
+                        itemB = b.item_order;
+                    return itemA - itemB;
+                });
+                
+                //Slice by max Entries 
+                items = items.slice(0, this.config.maximumEntries);
+
+                this.tasks =  {'items' : items, 'projects' : tasks.projects};
             }
-            //Not used right now
-            item.ISOString = new Date(item.due_date_utc.substring(4, 15).concat(item.due_date_utc.substring(15, 23))).toISOString();
-        });
-
-        //Sort Todos by Todoist ordering
-        items.sort(function(a, b) {
-            var itemA = a.item_order,
-                itemB = b.item_order;
-            return itemA - itemB;
-        });
-        
-        //Slice by max Entries 
-        items = items.slice(0, this.config.maximumEntries);
-
-        this.tasks =  {'items' : items, 'projects' : tasks.projects};
+        }
     },
 
 
