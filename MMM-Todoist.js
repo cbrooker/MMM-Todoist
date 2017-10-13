@@ -25,7 +25,7 @@ Module.register("MMM-Todoist", {
 
         //This has been designed to use the Todoist Sync API.
         apiVersion: "v7",
-        apiBase: "https://todoist.com/API",
+        apiBase: "https://todoist.com/api",
         todoistEndpoint: "sync",
         todoistResourceType: '["items", "projects"]'
 
