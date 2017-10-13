@@ -9,77 +9,48 @@
  */
 
 const NodeHelper = require("node_helper");
-var request = require("request");
-const Fetcher = require("./fetcher.js");
+const request = require('request');
 
 module.exports = NodeHelper.create({
     start: function() {
-        console.log("Starting module: " + this.name);
-        this.config = [];
-        this.fetchers = [];
+        console.log("Starting node helper for: " + this.name);
     },
 
-    // Override socketNotificationReceived method.
     socketNotificationReceived: function(notification, payload) {
-        if (notification === "START_TODOIST") {
-            this.createFetcher(payload); //Payload is the config.
+        if (notification === "FETCH_TODOIST") {
+            this.config = payload;
+            this.fetchTodos();
         }
     },
-
-    createFetcher: function(config) {
+    
+    fetchTodos : function() {
         var self = this;
+        //request.debug = true;
 
-        var fetcher;
-        if (typeof this.fetcher === "undefined") {
-            // console.log("Create new Todoist fetcher");
-            fetcher = new Fetcher(config);
-            fetcher.onReceive(function(fetcher) {
-                self.broadcastTodos();
+        request({
+                url: self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint + "/",
+                method: "POST",
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded',
+                    'cache-control': 'no-cache'
+                },
+                form: {
+                    token: self.config.accessToken,
+                    sync_token: '*',
+                    resource_types: self.config.todoistResourceType
+                }
+            },
+            function(error, response, body) {
+                if (error) { 
+                     self.sendSocketNotification("FETCH_ERROR", {
+                        error: error
+                    });
+                    return console.error(" ERROR - MMM-Todoist: " + error); 
+                }
+                if (response.statusCode === 200) {
+                    self.sendSocketNotification("TASKS", JSON.parse(body));
+                }
+                
             });
-
-            fetcher.onError(function(fetcher, error) {
-                self.sendSocketNotification("FETCH_ERROR", {
-                    url: fetcher.id(),
-                    error: error
-                });
-            });
-
-            this.fetcher = {
-                "instance": fetcher
-            };
-        } else {
-            // console.log("Use exsisting Todoist fetcher for list");
-            fetcher = this.fetcher.instance;
-            fetcher.setReloadInterval(config.updateInterval);
-            fetcher.broadcastItems();
-        }
-        fetcher.startFetch();
-    },
-
-    broadcastTodos: function() {
-        if (typeof this.fetcher !== "undefined") {
-            this.sendSocketNotification("TASKS", this.fetcher.instance.todostResponse());
-        }
-
     }
-
-    // // Subclass socketNotificationReceived received.
-    // socketNotificationReceived: function(notification, payload) {
-    //     const self = this;
-
-    //     //CONFIG Receiver (payload contains this.config)
-    //     if (notification === "CONFIG" && this.started == false) {
-    //         this.config = payload;
-    //         self.sendSocketNotification("STARTED");
-    //         self.started = true;
-    //     } else if (notification === "addLists") {
-    //         //(payload contains this.config)
-    //         //createFetcher(projects, reloadInterval, accessToken)
-    //         self.createFetcher(payload.projects, payload.interval * 1000);
-
-    //     } else if (notification === "CONNECTED") {
-    //         this.broadcastTodos();
-    //     }
-    // }
-
 });
