@@ -17,7 +17,7 @@ modules: [
 		config: { // See 'Configuration options' for more information.
           	accessToken: 'accessToken from Todoist',
 			maximumEntries: 60,
-			updateInterval: 60,
+			updateInterval: 60000,
 			projects: [ 166564794 ],
 			fade: false
       }
@@ -71,8 +71,8 @@ The following properties can be configured:
 		</tr>
 		<tr>
 			<td><code>interval</code></td>
-			<td>How often the module should load new todos.<br>
-				<br><b>Possible values:</b> <code>int</code> in <code>seconds</code>
+			<td>How often the module should load new todos. Be careful, this is in ms, NOT seconds! So, too low a number will lock you out for repeated server attempts!<br>
+				<br><b>Possible values:</b> <code>int</code> in <code>milliseconds</code>
 				<br><b>Default value:</b> <code>60</code>
 			</td>
 		</tr>
