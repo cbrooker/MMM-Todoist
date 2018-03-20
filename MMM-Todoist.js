@@ -223,8 +223,15 @@ Module.register("MMM-Todoist", {
 					dueDateCell.innerHTML = "";
 				}
 			}
-			if (dueDateTime.getSeconds() != 59) {
-				dueDateCell.innerHTML += " " + dueDateTime.toLocaleTimeString();
+			if (!this.tasks.items[i].all_day) {
+				function formatTime(d) {
+					  function z(n) {
+						  return (n < 10 ? "0" : "") + n;
+					  }
+					  var h = d.getHours();
+					  return " " + (h % 12 || 12) + ":" + z(d.getMinutes()) + (h < 12 ? " AM" : " PM");
+				}
+				dueDateCell.innerHTML += formatTime(dueDateTime);
 			}
 			row.appendChild(dueDateCell);
 
