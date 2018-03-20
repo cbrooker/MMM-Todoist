@@ -192,8 +192,11 @@ Module.register("MMM-Todoist", {
 			dueDateCell.className = "bright ";
 
 			var oneDay = 24 * 60 * 60 * 1000;
-			var dueDate = new Date(this.tasks.items[i].due_date_utc);
-			var diffDays = Math.floor((dueDate - new Date()) / (oneDay));
+			var dueDateTime = new Date(this.tasks.items[i].due_date_utc);
+			var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
+			var now = new Date();
+			var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+			var diffDays = Math.floor((dueDate - today) / (oneDay));
 			var months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
 			switch (diffDays) {
