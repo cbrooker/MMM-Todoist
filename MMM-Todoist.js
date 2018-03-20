@@ -223,6 +223,9 @@ Module.register("MMM-Todoist", {
 					dueDateCell.innerHTML = "";
 				}
 			}
+			if (dueDateTime.getSeconds() != 59) {
+				dueDateCell.innerHTML += " " + dueDateTime.toLocaleTimeString();
+			}
 			row.appendChild(dueDateCell);
 
 			//ShowProject
