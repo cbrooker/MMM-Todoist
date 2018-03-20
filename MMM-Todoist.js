@@ -189,11 +189,14 @@ Module.register("MMM-Todoist", {
 			row.appendChild(todoCell);
 
 			var dueDateCell = document.createElement("td");
-			dueDateCell.className = "bright ";
+			dueDateCell.className = "bright align-right ";
 
 			var oneDay = 24 * 60 * 60 * 1000;
-			var dueDate = new Date(this.tasks.items[i].due_date_utc);
-			var diffDays = Math.floor((dueDate - new Date()) / (oneDay));
+			var dueDateTime = new Date(this.tasks.items[i].due_date_utc);
+			var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
+			var now = new Date();
+			var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+			var diffDays = Math.floor((dueDate - today) / (oneDay));
 			var months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
 			switch (diffDays) {
@@ -219,6 +222,16 @@ Module.register("MMM-Todoist", {
 				if (diffDays > 1000) {
 					dueDateCell.innerHTML = "";
 				}
+			}
+			if (!this.tasks.items[i].all_day) {
+				function formatTime(d) {
+					  function z(n) {
+						  return (n < 10 ? "0" : "") + n;
+					  }
+					  var h = d.getHours();
+					  return " " + (h % 12 || 12) + ":" + z(d.getMinutes()) + (h < 12 ? " AM" : " PM");
+				}
+				dueDateCell.innerHTML += formatTime(dueDateTime);
 			}
 			row.appendChild(dueDateCell);
 
@@ -246,7 +259,7 @@ Module.register("MMM-Todoist", {
 				var steps = this.tasks.items.length - startingPoint;
 				if (i >= startingPoint) {
 					var currentStep = i - startingPoint;
-					todoCell.style.opacity = 1 - (1 / steps * currentStep);
+					row.style.opacity = 1 - (1 / steps * currentStep);
 				}
 			}
 			// End Create fade effect by MichMich (MIT)
