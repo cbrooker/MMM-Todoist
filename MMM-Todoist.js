@@ -252,7 +252,7 @@ Module.register("MMM-Todoist", {
 				var steps = this.tasks.items.length - startingPoint;
 				if (i >= startingPoint) {
 					var currentStep = i - startingPoint;
-					todoCell.style.opacity = 1 - (1 / steps * currentStep);
+					row.style.opacity = 1 - (1 / steps * currentStep);
 				}
 			}
 			// End Create fade effect by MichMich (MIT)
