@@ -95,6 +95,7 @@ Module.register("MMM-Todoist", {
 				items.forEach(function(item) {
 					if (item.due_date_utc === null) {
 						item.due_date_utc = "Fri 31 Dec 2100 23:59:59 +0000";
+						item.all_day = true;
 					}
 					//Not used right now
 					item.ISOString = new Date(item.due_date_utc.substring(4, 15).concat(item.due_date_utc.substring(15, 23))).toISOString();
