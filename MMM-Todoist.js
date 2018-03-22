@@ -197,39 +197,34 @@ Module.register("MMM-Todoist", {
 			var now = new Date();
 			var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 			var diffDays = Math.floor((dueDate - today) / (oneDay));
-			var months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
-			switch (diffDays) {
-			case -1:
+			if (diffDays < -1) {
+				dueDateCell.innerHTML = dueDate.toLocaleDateString(undefined, {"month": "short"}) + " " + dueDate.getDate();
+				dueDateCell.className += "xsmall overdue";
+			} else if (diffDays === -1) {
 				dueDateCell.innerHTML = this.translate("YESTERDAY");
 				dueDateCell.className += "xsmall overdue";
-				break;
-			case 0:
+			} else if (diffDays === 0) {
 				dueDateCell.innerHTML = this.translate("TODAY");
 				dueDateCell.className += "today";
-				break;
-			case 1:
+			} else if (diffDays === 1) {
 				dueDateCell.innerHTML = this.translate("TOMORROW");
 				dueDateCell.className += "xsmall tomorrow";
-				break;
+			} else if (diffDays <= 7) {
+				dueDateCell.innerHTML = dueDate.toLocaleDateString(undefined, {"weekday": "short"}) + " " + dueDate.getDate();
+				dueDateCell.className += "xsmall";
+			} else if (diffDays <= 1000) {
+				dueDateCell.innerHTML = dueDate.toLocaleDateString(undefined, {"month": "short"}) + " " + dueDate.getDate();
+				dueDateCell.className += "xsmall";
 			}
 
-			if (dueDateCell.innerHTML == "") {
-				dueDateCell.innerHTML = this.translate(months[dueDate.getMonth()]) + " " + dueDate.getDate();
-				if (diffDays < -1) {
-					dueDateCell.className += "xsmall overdue";
-				}
-				if (diffDays > 1000) {
-					dueDateCell.innerHTML = "";
-				}
-			}
 			if (!this.tasks.items[i].all_day) {
 				function formatTime(d) {
-					  function z(n) {
-						  return (n < 10 ? "0" : "") + n;
-					  }
-					  var h = d.getHours();
-					  return " " + (h % 12 || 12) + ":" + z(d.getMinutes()) + (h < 12 ? " AM" : " PM");
+						function z(n) {
+							return (n < 10 ? "0" : "") + n;
+						}
+						var h = d.getHours();
+						return " " + (h % 12 || 12) + ":" + z(d.getMinutes()) + (h < 12 ? " AM" : " PM");
 				}
 				dueDateCell.innerHTML += formatTime(dueDateTime);
 			}
