@@ -190,7 +190,7 @@ Module.register("MMM-Todoist", {
 			row.appendChild(todoCell);
 
 			var dueDateCell = document.createElement("td");
-			dueDateCell.className = "bright align-right ";
+			dueDateCell.className = "bright align-right dueDate ";
 
 			var oneDay = 24 * 60 * 60 * 1000;
 			var dueDateTime = new Date(this.tasks.items[i].due_date_utc);
