@@ -119,6 +119,16 @@ The following properties can be configured:
 - [request](https://www.npmjs.com/package/request) (installed via `npm install`)
 
 
+# Screen shots
+![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/1.png)
+![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/2.png)
+![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/3.png)
+![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/4.png)
+![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/5.png)
+![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/6.png)
+![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/7.png)
+
+
 ##Attribution
 
 This project is based on work done by Paul-Vincent Roll in the MMM-Wunderlist module. (https://github.com/paviro/MMM-Wunderlist)
