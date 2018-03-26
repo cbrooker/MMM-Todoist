@@ -225,14 +225,26 @@ Module.register("MMM-Todoist", {
 				}
 			}
 			if (!this.tasks.items[i].all_day) {
-				function formatTime(d) {
+				if (config.timeFormat == 12) {
+					function formatTime12(d) {
 					  function z(n) {
 						  return (n < 10 ? "0" : "") + n;
 					  }
 					  var h = d.getHours();
 					  return " " + (h % 12 || 12) + ":" + z(d.getMinutes()) + (h < 12 ? " AM" : " PM");
+					}
+					dueDateCell.innerHTML += formatTime12(dueDateTime);
 				}
-				dueDateCell.innerHTML += formatTime(dueDateTime);
+				if (config.timeFormat == 24) {
+					function formatTime24(d) {
+						function z(n) {
+							return (n < 10 ? "0" : "") + n;
+						}
+						var h = d.getHours();
+						return " " + h + ":" + z(d.getMinutes());
+					  }
+					  dueDateCell.innerHTML += formatTime24(dueDateTime);
+				}
 			}
 			row.appendChild(dueDateCell);
 
