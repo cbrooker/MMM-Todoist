@@ -120,13 +120,28 @@ The following properties can be configured:
 
 
 # Screen shots
-![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/1.png)
-![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/2.png)
-![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/3.png)
-![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/4.png)
-![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/5.png)
-![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/6.png)
-![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/7.png)
+A few sample Screen Shots to show you what this module looks like. It's fairly configurable and changes considerably depending on how you use Todoist, how many projects you include, and how you sort.  
+
+Options enabled: orderBy:todoist, showProjects: true
+![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/1.png)  
+
+Options enabled: orderBy:dueDateAsc, showProjects: true
+![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/2.png)  
+
+Options enabled: orderBy:dueDateAsc, showProjects: false
+![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/3.png)  
+
+Options enabled: orderBy:todoist, showProjects: false
+![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/4.png)  
+
+Options enabled: orderBy:todoist, showProjects: true
+![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/5.png)  
+
+Options enabled: orderBy:dueDateAsc, showProjects: true
+![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/6.png)  
+
+Options enabled: orderBy:dueDateAsc, showProjects: false
+![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/7.png)  
 
 
 ##Attribution
