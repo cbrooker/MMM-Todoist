@@ -161,11 +161,12 @@ Module.register("MMM-Todoist", {
 		}
 
 		for (var i = 0; i < this.tasks.items.length; i++) {
+			var item = this.tasks.items[i];
 			var row = document.createElement("tr");
 			table.appendChild(row);
 
 			var priorityCell = document.createElement("td");
-			switch (this.tasks.items[i].priority) {
+			switch (item.priority) {
 			case 4:
 				priorityCell.className = "priority priority1";
 				break;
@@ -186,18 +187,19 @@ Module.register("MMM-Todoist", {
 
 			var todoCell = document.createElement("td");
 			todoCell.className = "title bright alignLeft";
-			todoCell.innerHTML = this.tasks.items[i].content;
+			todoCell.innerHTML = item.content;
 			row.appendChild(todoCell);
 
 			var dueDateCell = document.createElement("td");
 			dueDateCell.className = "bright align-right dueDate ";
 
 			var oneDay = 24 * 60 * 60 * 1000;
-			var dueDateTime = new Date(this.tasks.items[i].due_date_utc);
+			var dueDateTime = new Date(item.due_date_utc);
 			var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
 			var now = new Date();
 			var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-			var diffDays = Math.floor((dueDate - today) / (oneDay));
+			var diffDays = Math.floor((dueDate - today + 7200000) / (oneDay));
+			var diffMonths = (dueDate.getFullYear() * 12 + dueDate.getMonth()) - (now.getFullYear() * 12 + now.getMonth());
 
 			if (diffDays < -1) {
 				dueDateCell.innerHTML = dueDate.toLocaleDateString(config.language, {"month": "short"}) + " " + dueDate.getDate();
@@ -207,50 +209,39 @@ Module.register("MMM-Todoist", {
 				dueDateCell.className += "xsmall overdue";
 			} else if (diffDays === 0) {
 				dueDateCell.innerHTML = this.translate("TODAY");
-				dueDateCell.className += "today";
+				if (item.all_day || dueDateTime >= now) {
+					dueDateCell.className += "today";
+				} else {
+					dueDateCell.className += "overdue";
+				}
 			} else if (diffDays === 1) {
 				dueDateCell.innerHTML = this.translate("TOMORROW");
 				dueDateCell.className += "xsmall tomorrow";
 			} else if (diffDays < 7) {
 				dueDateCell.innerHTML = dueDate.toLocaleDateString(config.language, {"weekday": "short"});
 				dueDateCell.className += "xsmall";
-			} else if (diffDays <= 1000) {
+			} else if (diffMonths < 7 || dueDate.getFullYear() == now.getFullYear()) {
 				dueDateCell.innerHTML = dueDate.toLocaleDateString(config.language, {"month": "short"}) + " " + dueDate.getDate();
+				dueDateCell.className += "xsmall";
+			} else {
+				dueDateCell.innerHTML = dueDate.toLocaleDateString(config.language, {"month": "short"}) + " " + dueDate.getDate() + " " + dueDate.getFullYear();
 				dueDateCell.className += "xsmall";
 			}
 
-			// if (dueDateCell.innerHTML == "") {
-			// 	dueDateCell.innerHTML = this.translate(months[dueDate.getMonth()]) + " " + dueDate.getDate();
-			// 	if (diffDays < -1) {
-			// 		dueDateCell.className += "xsmall overdue";
-			// 	}
-			// 	if (diffDays > 1000) {
-			// 		dueDateCell.innerHTML = "";
-			// 	}
-			// }
-
-
-			if (dueDateCell.innerHTML !== "" && !this.tasks.items[i].all_day) {
-				if (config.timeFormat == 12) {
-					function formatTime12(d) {
-					  function z(n) {
-						  return (n < 10 ? "0" : "") + n;
-					  }
-					  var h = d.getHours();
-					  return " " + (h % 12 || 12) + ":" + z(d.getMinutes()) + (h < 12 ? " AM" : " PM");
+			if (dueDateCell.innerHTML !== "" && !item.all_day) {
+				function formatTime(d) {
+					function z(n) {
+						return (n < 10 ? "0" : "") + n;
 					}
-					dueDateCell.innerHTML += formatTime12(dueDateTime);
+					var h = d.getHours();
+					var m = z(d.getMinutes());
+					if (config.timeFormat == 12) {
+						return " " + (h % 12 || 12) + ":" + m + (h < 12 ? " AM" : " PM");
+					} else {
+						return " " + h + ":" + m;
+					}
 				}
-				if (config.timeFormat == 24) {
-					function formatTime24(d) {
-						function z(n) {
-							return (n < 10 ? "0" : "") + n;
-						}
-						var h = d.getHours();
-						return " " + h + ":" + z(d.getMinutes());
-					  }
-					dueDateCell.innerHTML += formatTime24(dueDateTime);
-				}
+				dueDateCell.innerHTML += formatTime(dueDateTime);
 			}
 			row.appendChild(dueDateCell);
 
@@ -261,7 +252,7 @@ Module.register("MMM-Todoist", {
 				spacerCell2.innerHTML = "";
 				row.appendChild(spacerCell2);
 
-				var project = this.tasks.projects.find(p => p.id === this.tasks.items[i].project_id);
+				var project = this.tasks.projects.find(p => p.id === item.project_id);
 				var projectcolor = this.config.projectColors[project.color];
 				var projectCell = document.createElement("td");
 				projectCell.className = "xsmall";
