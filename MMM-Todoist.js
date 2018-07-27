@@ -20,6 +20,10 @@
   * This can be configured using "displayLastUpdate" and "displayLastUpdateFormat"
   * - Possibility to display long task on several lines(using the code from default module "calendar".
   * This can be configured using "wrapEvents" and "maxTitleLength"
+  *
+  * // Update 27/07/2018 : 
+  * - Correction of start-up update bug
+  * - correction of regression on commit #28 for tasks without dueDate
   * */
  
 //UserPresence Management (PIR sensor)
@@ -373,7 +377,10 @@ Module.register("MMM-Todoist", {
 			} else if (diffMonths < 7 || dueDate.getFullYear() == now.getFullYear()) {
 				dueDateCell.innerHTML = dueDate.toLocaleDateString(config.language, {"month": "short"}) + " " + dueDate.getDate();
 				dueDateCell.className += "xsmall";
-			} else {
+			} else if (item.due_date_utc === "Fri 31 Dec 2100 23:59:59 +0000"){				
+				dueDateCell.innerHTML = "";
+				dueDateCell.className += "xsmall";
+			} else {				
 				dueDateCell.innerHTML = dueDate.toLocaleDateString(config.language, {"month": "short"}) + " " + dueDate.getDate() + " " + dueDate.getFullYear();
 				dueDateCell.className += "xsmall";
 			}
