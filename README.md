@@ -1,5 +1,6 @@
 # MMM-Todoist
 This an extension for the [MagicMirror](https://github.com/MichMich/MagicMirror). It can display your Todoist todos. You can add multiple instances with different lists. Only one account supported.
+The requests to the server will be paused is the module is not displayed (use of a carousel or hidden by Remote-Control for example) or by the use of a PIR sensor and the module MMM-PIR-Sensor. An immediate update will occurs at the return of the module display. 
 
 ## Installation
 1. Navigate into your MagicMirror's `modules` folder and execute `git clone https://github.com/cbrooker/MMM-Todoist.git`. A new folder will appear navigate into it.
@@ -18,7 +19,7 @@ modules: [
           	accessToken: 'accessToken from Todoist',
 			maximumEntries: 60,
 			updateInterval: 10*60*1000, // Update every 10 minutes
-			projects: [ 166564794 ],
+			projects: [ 166564794 ], //this entry is mandatory
 			fade: false
       }
 	}
@@ -44,6 +45,7 @@ The following properties can be configured:
 			<td>Your Todoist access token, you can get it <a href="https://developer.todoist.com/appconsole.html">here</a>.<br>
 				<br><b>Possible values:</b> <code>string</code>
 				<br><b>Default value:</b> <code>none</code>
+				<br><b>Note:</b> It is possible to use the "Test token" and so not to follow the steps of oAuth token. For the web site value requested, you can use "http://example.com" if you don't have a website. 
 			</td>
 		</tr>
 		<tr>
@@ -60,6 +62,7 @@ The following properties can be configured:
 				2) Click on a Project in the left menu<br>
 				3) Your browser URL will change to something like<br> <code>"https://todoist.com/app?lang=en&v=818#project%2F166564897"</code><br><br>
 				Everything after %2F is the Project ID. In this case "166564897"
+				<b>This value is mandatory</b>.
 			</td>
 		</tr>
 		<tr>
@@ -107,10 +110,34 @@ The following properties can be configured:
 				<br><b>Default value:</b> <code>"todoist"</code>
 			</td>
 		</tr>
-
-
-
-
+		<tr>
+			<td><code>displayLastUpdate</code></td>
+			<td>If true this will display the last update time at the end of the task list. See screenshot bellow<br>
+				<br><b>Possible values:</b> <code>boolean</code>
+				<br><b>Default value:</b> <code>false</code>
+			</td>
+		</tr>
+		<tr>
+			<td><code>displayLastUpdateFormat</code></td>
+			<td>Format to use for the time display if displayLastUpdate:true <br>
+				<br><b>Possible values:</b> See [Moment.js formats](http://momentjs.com/docs/#/parsing/string-format/)
+				<br><b>Default value:</b> <code>'dd - HH:mm:ss'</code>
+			</td>
+		</tr>
+		<tr>
+			<td><code>wrapEvents</code></td>
+			<td>If true this will display the long tasks on several lines, according on the value <code>maxTitleLength</code>. See screenshot bellow. <br>
+				<br><b>Possible values:</b> <code>boolean</code>
+				<br><b>Default value:</b> <code>false</code>
+			</td>
+		</tr>
+		<tr>
+			<td><code>maxTitleLength</code></td>
+			<td>Value cut the display of long tasks on several lines. See screenshot bellow<br>
+				<br><b>Possible values:</b> <code>10</code> - <code>50</code>
+				<br><b>Default value:</b> <code>25</code>
+			</td>
+		</tr>
 
 	</tbody>
 </table>
@@ -121,6 +148,9 @@ The following properties can be configured:
 
 # Screen shots
 A few sample Screen Shots to show you what this module looks like. It's fairly configurable and changes considerably depending on how you use Todoist, how many projects you include, and how you sort.  
+
+Option enabled: displayLastUpdate: true, wrapEvents: true, maxTitleLenght: 25
+![My image](https://github.com/AgP42/MMM-Todoist/blob/master/todoist.png)
 
 Options enabled: orderBy:todoist, showProjects: true
 ![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/1.png)  
