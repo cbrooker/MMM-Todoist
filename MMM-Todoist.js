@@ -69,9 +69,8 @@ Module.register("MMM-Todoist", {
 		var self = this;
 		Log.info("Starting module: " + this.name);
 		
-		var updateIntervalID = 0; // Definition of the IntervalID to be able to stop and start it again
-		var ModuleToDoIstHidden = false; // by default it is considered displayed. Note : core function "this.hidden" has strange behaviour, so not used here
-		var lastUpdate = 0; //timestamp of the last module update. set at 0 at start-up
+		this.updateIntervalID = 0; // Definition of the IntervalID to be able to stop and start it again
+		this.ModuleToDoIstHidden = false; // by default it is considered displayed. Note : core function "this.hidden" has strange behaviour, so not used here
 		
 		//to display "Loading..." at start-up
 		this.title = "Loading...";
@@ -89,7 +88,7 @@ Module.register("MMM-Todoist", {
 			}
 		}
 
-//		this.sendSocketNotification("FETCH_TODOIST", this.config); //removed from start-up as it is now requested by "resume" core function just after start-up. Removed here to avoid double request to the server. impact : 2~3seconds of delay at start-up
+		this.sendSocketNotification("FETCH_TODOIST", this.config); 
 
 		//add ID to the setInterval functionto be able to stop it later on
 		this.updateIntervalID = setInterval(function () {
