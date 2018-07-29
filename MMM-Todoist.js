@@ -84,10 +84,8 @@ Module.register("MMM-Todoist", {
 		}
 
 		// Support legacy properties
-		if (this.config.lists !== undefined) {
-			if (this.config.lists.length > 0) {
-				this.config.projects = this.config.lists;
-			}
+		if (this.config.lists && this.config.lists.length > 0) {
+			this.config.projects = this.config.lists;
 		}
 
 		this.sendSocketNotification("FETCH_TODOIST", this.config); 
@@ -223,77 +221,77 @@ Module.register("MMM-Todoist", {
 		var self = this;
 		var items = [];
 
-		if (tasks != undefined) {
-			if (tasks.items != undefined) {
-				// Filter the Todos by the Projects specified in the Config
-				tasks.items.forEach(function(item) {
-					self.config.projects.forEach(function(project) {
-						if (item.project_id == project) {
-							items.push(item);
-						}
-					});
-				});
-
-				// Used for ordering by date
-				items.forEach(function(item) {
-					if (item.due_date_utc === null) {
-						item.due_date_utc = "Fri 31 Dec 2100 23:59:59 +0000";
-						item.all_day = true;
+		if (tasks && tasks.items) {
+			// Filter the Todos by the Projects specified in the Config
+			tasks.items.forEach(function(item) {
+				self.config.projects.forEach(function(project) {
+					if (item.project_id == project) {
+						items.push(item);
 					}
-					// Not used right now
-					item.ISOString = new Date(
-						item.due_date_utc
-							.substring(4, 15)
-							.concat(item.due_date_utc.substring(15, 23))
-					).toISOString();
 				});
+			});
 
-				// Sorting code if you want to add new methods.
-				switch (self.config.sortType) {
-				case "todoist":
-					sorteditems = self.sortByTodoist(items);
-					break;
-				case "dueDateAsc":
-					sorteditems = self.sortByDueDateAsc(items);
-					break;
-				case "dueDateDesc":
-					sorteditems = self.sortByDueDateDesc(items);
-					break;
-				default:
-					sorteditems = self.sortByTodoist(items);
-					break;
+			// Used for ordering by date
+			items.forEach(function(item) {
+				if (item.due_date_utc === null) {
+					item.due_date_utc = "Fri 31 Dec 2100 23:59:59 +0000";
+					item.all_day = true;
 				}
+				// Not used right now
+				item.ISOString = new Date(
+					item.due_date_utc
+						.substring(4, 15)
+						.concat(item.due_date_utc.substring(15, 23))
+				).toISOString();
+			});
 
-				// Slice by max Entries
-				items = items.slice(0, this.config.maximumEntries);
+			// Sorting code
+			// To extend sorting add a lowercase property of the sorting function to the following object
+			sortFuncs = {
+				todoist: function(a, b) {
+					return a.item_order - b.item_order;
+				},
+				duedate: function(a, b) {
+					var dateA = new Date(a.ISOString),
+						dateB = new Date(b.ISOString);
+					return dateA - dateB;
+				},
+				priority: function(a, b) {
+					return a.priority - b.priority;
+				},
+				alphabetical: function(a, b) {
+					return a.content.toLowerCase().localeCompare(b.content.toLowerCase());
+				}
+			};
 
-				this.tasks = { items: items, projects: tasks.projects };
-			}
+			let sortTypes = this.config.sortTypes ? this.config.sortTypes.map(function(element) {
+				// Convert the given types to lowcase
+				type = element.type.toLowerCase();
+				// Convert the direction to 1 (ASC) by default, otherwise -1 (DESC)
+				if (element.direction) {
+					direction = element.direction.toLowerCase().charAt(0) === "d" ? -1 : 1;
+				} else {
+					direction = 1;
+				}
+				return { type: type, direction: direction };
+			}) : [];
+			// Sort by each item in sort types
+			items.sort(function(a, b) {
+				return self.sortByTypes(a, b, sortTypes, sortFuncs);
+			});
+
+			// Slice by max Entries
+			items = items.slice(0, this.config.maximumEntries);
+
+			this.tasks = { items: items, projects: tasks.projects };
 		}
 	},
-	sortByTodoist: function(itemstoSort) {
-		itemstoSort.sort(function(a, b) {
-			var itemA = a.item_order,
-				itemB = b.item_order;
-			return itemA - itemB;
-		});
-		return itemstoSort;
-	},
-	sortByDueDateAsc: function(itemstoSort) {
-		itemstoSort.sort(function(a, b) {
-			var dateA = new Date(a.ISOString),
-	        dateB = new Date(b.ISOString);
-    	    return dateA - dateB;
-		});
-		return itemstoSort;
-	},
-	sortByDueDateDesc: function(itemstoSort) {
-		itemstoSort.sort(function(a, b) {
-			var dateA = new Date(a.ISOString),
-	        dateB = new Date(b.ISOString);
-    	    return dateB - dateA;
-		});
-		return itemstoSort;
+	sortByTypes: function sortByTypes(a, b, sortTypes, sortFuncs) {
+		if (sortTypes.length === 0) {
+			return 0;
+		}
+		const sortType = sortTypes[0];
+		return sortType.direction * sortFuncs[sortType.type](a, b) || sortByTypes(a, b, sortTypes.slice(1), sortFuncs);
 	},
 
 	getDom: function() {
