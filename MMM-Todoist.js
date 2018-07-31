@@ -8,7 +8,6 @@
  * MIT Licensed.
  */
  
- 
  /*
   * Update by AgP42 the 18/07/2018
   * Modification added : 
@@ -24,38 +23,37 @@
   * // Update 27/07/2018 : 
   * - Correction of start-up update bug
   * - correction of regression on commit #28 for tasks without dueDate
-  * */
+ */
  
-//UserPresence Management (PIR sensor)
-var UserPresence = true; //true by default, so no impact for user without a PIR sensor
+// UserPresence Management (PIR sensor)
+var UserPresence = true; // true by default, so no impact for user without a PIR sensor
 
 Module.register("MMM-Todoist", {
-
 	defaults: {
 		maximumEntries: 10,
 		projects: ["inbox"],
 		updateInterval: 10 * 60 * 1000, // every 10 minutes,
 		fade: true,
 		fadePoint: 0.25,
-		sortType: "todoist",
+		sortFields: [{field: "todoist", direction: "asc"}],
 		
-		//New config from AgP42
-		displayLastUpdate: false, //add or not a line after the tasks with the last server update time
-		displayLastUpdateFormat: 'dd - HH:mm:ss', //format to display the last update. See Moment.js documentation for all display possibilities
-		maxTitleLength: 25, //10 to 50. Value to cut the line if wrapEvents: true
+		// New config from AgP42
+		displayLastUpdate: false, // add or not a line after the tasks with the last server update time
+		displayLastUpdateFormat: "dd - HH:mm:ss", // format to display the last update. See Moment.js documentation for all display possibilities
+		maxTitleLength: 25, // 10 to 50. Value to cut the line if wrapEvents: true
 		wrapEvents: false, // wrap events to multiple lines breaking at maxTitleLength
 		
 		showProject: true,
 		projectColors: ["#95ef63", "#ff8581", "#ffc471", "#f9ec75", "#a8c8e4", "#d2b8a3", "#e2a8e4", "#cccccc", "#fb886e",
 			"#ffcc00", "#74e8d3", "#3bd5fb", "#dc4fad", "#ac193d", "#d24726", "#82ba00", "#03b3b2", "#008299",
 			"#5db2ff", "#0072c6", "#000000", "#777777"
-		], //These colors come from Todoist and their order matters if you want the colors to match your Todoist project colors.
+		], // These colors come from Todoist and their order matters if you want the colors to match your Todoist project colors.
 
-		//This has been designed to use the Todoist Sync API.
+		// This has been designed to use the Todoist Sync API.
 		apiVersion: "v7",
 		apiBase: "https://todoist.com/api",
 		todoistEndpoint: "sync",
-		todoistResourceType: "[\"items\", \"projects\"]"
+		todoistResourceType: '["items", "projects"]'
 	},
 
 	// Define required scripts.
@@ -76,7 +74,7 @@ Module.register("MMM-Todoist", {
 		this.updateIntervalID = 0; // Definition of the IntervalID to be able to stop and start it again
 		this.ModuleToDoIstHidden = false; // by default it is considered displayed. Note : core function "this.hidden" has strange behaviour, so not used here
 		
-		//to display "Loading..." at start-up
+		// to display "Loading..." at start-up
 		this.title = "Loading...";
 		this.loaded = false;
 
@@ -85,77 +83,73 @@ Module.register("MMM-Todoist", {
 			return;
 		}
 
-		//Support legacy properties
-		if (this.config.lists !== undefined) {
-			if (this.config.lists.length > 0) {
-				this.config.projects = this.config.lists;
-			}
+		// Support legacy properties
+		if (this.config.lists && this.config.lists.length > 0) {
+			this.config.projects = this.config.lists;
 		}
 
 		this.sendSocketNotification("FETCH_TODOIST", this.config); 
 
-		//add ID to the setInterval functionto be able to stop it later on
-		this.updateIntervalID = setInterval(function () {
+		// add ID to the setInterval functionto be able to stop it later on
+		this.updateIntervalID = setInterval(function() {
 			self.sendSocketNotification("FETCH_TODOIST", self.config);
 		}, this.config.updateInterval);
 		
-//		Log.log(this.name + " a fini de démarrer, projects - updateIntervalID : " + this.config.projects + " - " + this.updateIntervalID);
-		
+		// Log.log(this.name + " a fini de démarrer, projects - updateIntervalID : " + this.config.projects + " - " + this.updateIntervalID);
 	},
 
-//Modif AgP42 - 16/07/2018	
+	// Modif AgP42 - 16/07/2018
 
-	suspend: function() { //called by core system when the module is not displayed anymore on the screen
+	suspend: function() {
+		// called by core system when the module is not displayed anymore on the screen
 		this.ModuleToDoIstHidden = true; 
-		//Log.log("Fct suspend - ModuleHidden = " + ModuleHidden);
+		// Log.log("Fct suspend - ModuleHidden = " + ModuleHidden);
 		this.GestionUpdateIntervalToDoIst();
 	},
 	
-	resume: function() { //called by core system when the module is displayed on the screen
+	resume: function() {
+		// called by core system when the module is displayed on the screen
 		this.ModuleToDoIstHidden = false;
-		//Log.log("Fct resume - ModuleHidden = " + ModuleHidden);
+		// Log.log("Fct resume - ModuleHidden = " + ModuleHidden);
 		this.GestionUpdateIntervalToDoIst();	
 	},
 
 	notificationReceived: function(notification, payload) {
-		if (notification === "USER_PRESENCE") { // notification sended by module MMM-PIR-Sensor. See its doc
-			//Log.log("Fct notificationReceived USER_PRESENCE - payload = " + payload);
+		if (notification === "USER_PRESENCE") {
+			// notification sended by module MMM-PIR-Sensor. See its doc
+			// Log.log("Fct notificationReceived USER_PRESENCE - payload = " + payload);
 			UserPresence = payload;
 			this.GestionUpdateIntervalToDoIst();
 		}
 	},
 
 	GestionUpdateIntervalToDoIst: function() {
-		if (UserPresence === true && this.ModuleToDoIstHidden === false){ 
+		if (UserPresence === true && this.ModuleToDoIstHidden === false) {
 			var self = this;
-		//	Log.log(this.name + " est revenu et user present ! On update : " + this.config.projects);
+			// Log.log(this.name + " est revenu et user present ! On update : " + this.config.projects);
 	
 			// update now
 			this.sendSocketNotification("FETCH_TODOIST", this.config);
-		//	Log.log("Update immédiat demandé pour : " + this.config.projects);
+			// Log.log("Update immédiat demandé pour : " + this.config.projects);
 
-			
-			//if no IntervalID defined, we set one again. This is to avoid several setInterval simultaneously
-			if (this.updateIntervalID === 0){
-						
-				this.updateIntervalID = setInterval(function () {
+			// if no IntervalID defined, we set one again. This is to avoid several setInterval simultaneously
+			if (this.updateIntervalID === 0) {
+				this.updateIntervalID = setInterval(function() {
 					self.sendSocketNotification("FETCH_TODOIST", self.config);
 					}, this.config.updateInterval);
 					
-		//	Log.log("Remise en route timer, projects - updateIntervalID : " + this.config.projects + " - " + this.updateIntervalID);
-
+				// Log.log("Remise en route timer, projects - updateIntervalID : " + this.config.projects + " - " + this.updateIntervalID);
 			}
-			
-		}else{ //if (UserPresence = false OR ModuleHidden = true)
-			Log.log("Personne regarde : on stop l'update " + this.name + " projet : " + this.config.projects);
+		} else {
+			// if (UserPresence = false OR ModuleHidden = true)
+			// Log.log("Personne regarde : on stop l'update " + this.name + " projet : " + this.config.projects);
 			clearInterval(this.updateIntervalID); // stop the update interval of this module
-			this.updateIntervalID=0; //reset the flag to be able to start another one at resume
+			this.updateIntervalID = 0; // reset the flag to be able to start another one at resume
 		}
 	},
 	
+	// Code from MichMich from default module Calendar : to manage task displayed on several lines
 	
-//Code from MichMich from default module Calendar : to manage task displayed on several lines
-
 	/**
 	 * Shortens a string if it's longer than maxLength and add a ellipsis to the end
 	 *
@@ -164,7 +158,7 @@ Module.register("MMM-Todoist", {
 	 * @param {boolean} wrapEvents Wrap the text after the line has reached maxLength
 	 * @returns {string} The shortened string
 	 */
-	shorten: function (string, maxLength, wrapEvents) {
+	shorten: function(string, maxLength, wrapEvents) {
 		if (typeof string !== "string") {
 			return "";
 		}
@@ -176,13 +170,14 @@ Module.register("MMM-Todoist", {
 
 			for (var i = 0; i < words.length; i++) {
 				var word = words[i];
-				if (currentLine.length + word.length < (typeof maxLength === "number" ? maxLength : 25) - 1) { // max - 1 to account for a space
-					currentLine += (word + " ");
+				if (currentLine.length + word.length < (typeof maxLength === "number" ? maxLength : 25) - 1) {
+					// max - 1 to account for a space
+					currentLine += word + " ";
 				} else {
 					if (currentLine.length > 0) {
-						temp += (currentLine + "<br>" + word + " ");
+						temp += currentLine + "<br>" + word + " ";
 					} else {
-						temp += (word + "<br>");
+						temp += word + "<br>";
 					}
 					currentLine = "";
 				}
@@ -190,22 +185,26 @@ Module.register("MMM-Todoist", {
 
 			return (temp + currentLine).trim();
 		} else {
-			if (maxLength && typeof maxLength === "number" && string.length > maxLength) {
+			if (
+				maxLength &&
+				typeof maxLength === "number" &&
+				string.length > maxLength
+			) {
 				return string.trim().slice(0, maxLength) + "&hellip;";
 			} else {
 				return string.trim();
 			}
 		}
 	},
-//end modif AgP
+	// end modif AgP
 
 	// Override socket notification handler.
 	socketNotificationReceived: function(notification, payload) {
 		if (notification === "TASKS") {
 			this.filterTodoistData(payload);
 			
-			if(this.config.displayLastUpdate){
-				this.lastUpdate = Date.now() / 1000 ; //save the timestamp of the last update to be able to display it		
+			if (this.config.displayLastUpdate) {
+				this.lastUpdate = Date.now() / 1000; // save the timestamp of the last update to be able to display it
 			}
 			
 			Log.log("ToDoIst update OK, projet : " + this.config.projects + " at : " 
@@ -213,93 +212,93 @@ Module.register("MMM-Todoist", {
 			
 			this.loaded = true;
 			this.updateDom(1000);
-		}else if (notification === "FETCH_ERROR") {
+		} else if (notification === "FETCH_ERROR") {
 			Log.error("Todoist Error. Could not fetch todos: " + payload.error);
 		}
 	},
 
-	filterTodoistData: function(tasks){
+	filterTodoistData: function(tasks) {
 		var self = this;
 		var items = [];
 
-		if (tasks != undefined) {
-			if (tasks.items != undefined) {
-
-				//Filter the Todos by the Projects specified in the Config
-				tasks.items.forEach(function(item) {
-					self.config.projects.forEach(function(project) {
-						if (item.project_id == project) {
-							items.push(item);
-						}
-					});
-				});
-
-				//Used for ordering by date
-				items.forEach(function(item) {
-					if (item.due_date_utc === null) {
-						item.due_date_utc = "Fri 31 Dec 2100 23:59:59 +0000";
-						item.all_day = true;
+		if (tasks && tasks.items) {
+			// Filter the Todos by the Projects specified in the Config
+			tasks.items.forEach(function(item) {
+				self.config.projects.forEach(function(project) {
+					if (item.project_id == project) {
+						items.push(item);
 					}
-					//Not used right now
-					item.ISOString = new Date(item.due_date_utc.substring(4, 15).concat(item.due_date_utc.substring(15, 23))).toISOString();
 				});
+			});
 
-
-				//***** Sorting code if you want to add new methods. */
-				switch (self.config.sortType) {
-				case "todoist":
-					sorteditems = self.sortByTodoist(items);
-					break;
-				case "dueDateAsc":
-					sorteditems = self.sortByDueDateAsc(items);
-					break;
-				case "dueDateDesc":
-					sorteditems = self.sortByDueDateDesc(items);
-					break;
-				default:
-					sorteditems = self.sortByTodoist(items);
-					break;
+			// Used for ordering by date
+			items.forEach(function(item) {
+				if (item.due_date_utc === null) {
+					item.due_date_utc = "Fri 31 Dec 2100 23:59:59 +0000";
+					item.all_day = true;
 				}
+				// Not used right now
+				item.ISOString = new Date(
+					item.due_date_utc
+						.substring(4, 15)
+						.concat(item.due_date_utc.substring(15, 23))
+				).toISOString();
+			});
 
-				//Slice by max Entries
-				items = items.slice(0, this.config.maximumEntries);
+			// Sorting code
+			// To extend sorting add a lowercase property of the sorting function to the following object
+			sortFunctions = {
+				todoist: function(a, b) {
+					return a.item_order - b.item_order;
+				},
+				duedate: function(a, b) {
+					var dateA = new Date(a.ISOString),
+						dateB = new Date(b.ISOString);
+					return dateA - dateB;
+				},
+				priority: function(a, b) {
+					return a.priority - b.priority;
+				},
+				alphabetical: function(a, b) {
+					return a.content.toLowerCase().localeCompare(b.content.toLowerCase());
+				}
+			};
 
-				this.tasks =  {"items" : items, "projects" : tasks.projects};
-			}
+			let sortFields = this.config.sortFields ? this.config.sortFields.map(function(element) {
+				// Convert the given fields to lowcase
+				field = element.field.toLowerCase();
+				// Convert the direction to 1 (ASC) by default, otherwise -1 (DESC)
+				if (element.direction) {
+					direction = element.direction.toLowerCase().charAt(0) === "d" ? -1 : 1;
+				} else {
+					direction = 1;
+				}
+				return { field, direction };
+			}) : [];
+			// Sort by each of the fields in sortFields
+			items.sort(function(a, b) {
+				return self.sortByFields(a, b, sortFields, sortFunctions);
+			});
+
+			// Slice by max Entries
+			items = items.slice(0, this.config.maximumEntries);
+
+			this.tasks = { items: items, projects: tasks.projects };
 		}
 	},
-	sortByTodoist: function(itemstoSort) {
-		itemstoSort.sort(function(a, b) {
-			var itemA = a.item_order,
-				itemB = b.item_order;
-			return itemA - itemB;
-		});
-		return itemstoSort;
+	sortByFields: function sortByFields(a, b, sortFields, sortFunctions) {
+		if (sortFields.length === 0) {
+			return 0;
+		}
+		const sortField = sortFields[0];
+		return sortField.direction * sortFunctions[sortField.field](a, b) || sortByFields(a, b, sortFields.slice(1), sortFunctions);
 	},
-	sortByDueDateAsc: function(itemstoSort) {
-		itemstoSort.sort(function(a, b) {
-			var dateA = new Date(a.ISOString),
-	        dateB = new Date(b.ISOString);
-    	    return dateA - dateB;
-		});
-		return itemstoSort;
-	},
-	sortByDueDateDesc: function(itemstoSort) {
-		itemstoSort.sort(function(a, b) {
-			var dateA = new Date(a.ISOString),
-	        dateB = new Date(b.ISOString);
-    	    return dateB - dateA;
-		});
-		return itemstoSort;
-	},
-
 
 	getDom: function() {
-		
-		//Add a new div to be able to display the update time alone after all the task
+		// Add a new div to be able to display the update time alone after all the task
 		var wrapper = document.createElement("div");
 		
-		//display "loading..." is not loaded
+		// display "Loading..." is not loaded
 		if (!this.loaded) {
 			wrapper.innerHTML = "Loading...";
 			wrapper.className = "dimmed light small";
@@ -340,7 +339,11 @@ Module.register("MMM-Todoist", {
 
 			var todoCell = document.createElement("td");
 			todoCell.className = "title bright alignLeft";
-			todoCell.innerHTML = this.shorten(item.content, this.config.maxTitleLength, this.config.wrapEvents);
+			todoCell.innerHTML = this.shorten(
+				item.content,
+				this.config.maxTitleLength,
+				this.config.wrapEvents
+			);
 
 			row.appendChild(todoCell);
 
@@ -349,14 +352,30 @@ Module.register("MMM-Todoist", {
 
 			var oneDay = 24 * 60 * 60 * 1000;
 			var dueDateTime = new Date(item.due_date_utc);
-			var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
+			var dueDate = new Date(
+				dueDateTime.getFullYear(),
+				dueDateTime.getMonth(),
+				dueDateTime.getDate()
+			);
 			var now = new Date();
-			var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-			var diffDays = Math.floor((dueDate - today + 7200000) / (oneDay));
-			var diffMonths = (dueDate.getFullYear() * 12 + dueDate.getMonth()) - (now.getFullYear() * 12 + now.getMonth());
+			var today = new Date(
+				now.getFullYear(),
+				now.getMonth(),
+				now.getDate()
+			);
+			var diffDays = Math.floor((dueDate - today + 7200000) / oneDay);
+			var diffMonths =
+				dueDate.getFullYear() * 12 +
+				dueDate.getMonth() -
+				(now.getFullYear() * 12 + now.getMonth());
 
 			if (diffDays < -1) {
-				dueDateCell.innerHTML = dueDate.toLocaleDateString(config.language, {"month": "short"}) + " " + dueDate.getDate();
+				dueDateCell.innerHTML =
+					dueDate.toLocaleDateString(config.language, {
+						month: "short"
+					}) +
+					" " +
+					dueDate.getDate();
 				dueDateCell.className += "xsmall overdue";
 			} else if (diffDays === -1) {
 				dueDateCell.innerHTML = this.translate("YESTERDAY");
@@ -372,16 +391,32 @@ Module.register("MMM-Todoist", {
 				dueDateCell.innerHTML = this.translate("TOMORROW");
 				dueDateCell.className += "xsmall tomorrow";
 			} else if (diffDays < 7) {
-				dueDateCell.innerHTML = dueDate.toLocaleDateString(config.language, {"weekday": "short"});
+				dueDateCell.innerHTML = dueDate.toLocaleDateString(
+					config.language,
+					{ weekday: "short" }
+				);
 				dueDateCell.className += "xsmall";
-			} else if (diffMonths < 7 || dueDate.getFullYear() == now.getFullYear()) {
-				dueDateCell.innerHTML = dueDate.toLocaleDateString(config.language, {"month": "short"}) + " " + dueDate.getDate();
+			} else if (
+				diffMonths < 7 ||
+				dueDate.getFullYear() == now.getFullYear()
+			) {
+				dueDateCell.innerHTML =
+					dueDate.toLocaleDateString(config.language, {
+						month: "short"
+					}) +
+					" " +
+					dueDate.getDate();
 				dueDateCell.className += "xsmall";
-			} else if (item.due_date_utc === "Fri 31 Dec 2100 23:59:59 +0000"){				
+			} else if (item.due_date_utc === "Fri 31 Dec 2100 23:59:59 +0000") {
 				dueDateCell.innerHTML = "";
 				dueDateCell.className += "xsmall";
 			} else {				
-				dueDateCell.innerHTML = dueDate.toLocaleDateString(config.language, {"month": "short"}) + " " + dueDate.getDate() + " " + dueDate.getFullYear();
+				dueDateCell.innerHTML =
+					dueDate.toLocaleDateString(config.language, {
+						month: "short"
+					}) + " " +
+					dueDate.getDate() + " " +
+					dueDate.getFullYear();
 				dueDateCell.className += "xsmall";
 			}
 
@@ -402,50 +437,57 @@ Module.register("MMM-Todoist", {
 			}
 			row.appendChild(dueDateCell);
 
-			//ShowProject
+			// ShowProject
 			if (this.config.showProject) {
 				var spacerCell2 = document.createElement("td");
 				spacerCell2.className = "spacerCell";
 				spacerCell2.innerHTML = "";
 				row.appendChild(spacerCell2);
 
-				var project = this.tasks.projects.find(p => p.id === item.project_id);
+				var project = this.tasks.projects.find(
+					p => p.id === item.project_id
+				);
 				var projectcolor = this.config.projectColors[project.color];
 				var projectCell = document.createElement("td");
 				projectCell.className = "xsmall";
-				projectCell.innerHTML = project.name + "<span class='projectcolor' style='color: " + projectcolor + "; background-color: " + projectcolor + "'></span>";
+				projectCell.innerHTML =
+					project.name +
+					"<span class='projectcolor' style='color: " +
+					projectcolor +
+					"; background-color: " +
+					projectcolor +
+					"'></span>";
 				row.appendChild(projectCell);
 			}
 			
-
 			// Create fade effect by MichMich (MIT)
 			if (this.config.fade && this.config.fadePoint < 1) {
 				if (this.config.fadePoint < 0) {
 					this.config.fadePoint = 0;
 				}
-				var startingPoint = this.tasks.items.length * this.config.fadePoint;
+				var startingPoint =
+					this.tasks.items.length * this.config.fadePoint;
 				var steps = this.tasks.items.length - startingPoint;
 				if (i >= startingPoint) {
 					var currentStep = i - startingPoint;
-					row.style.opacity = 1 - (1 / steps * currentStep);
+					row.style.opacity = 1 - (1 / steps) * currentStep;
 				}
 			}
 			// End Create fade effect by MichMich (MIT)
 		}
-		wrapper.appendChild(table); //quand la table est finie (loop des sensors finie), on l'ajoute au wrapper
-
+		wrapper.appendChild(table); // quand la table est finie (loop des sensors finie), on l'ajoute au wrapper
 		
 		// display the update time at the end, if defined so by the user config
-		if(this.config.displayLastUpdate){
-
+		if (this.config.displayLastUpdate) {
 			var updateinfo = document.createElement("div");
 			updateinfo.className = "xsmall light align-left";
-			updateinfo.innerHTML = "Update : " + moment.unix(this.lastUpdate).format(this.config.displayLastUpdateFormat);
+			updateinfo.innerHTML =
+				"Update : " +
+				moment .unix(this.lastUpdate)
+					.format(this.config.displayLastUpdateFormat);
 			wrapper.appendChild(updateinfo);
 		}
 
 		return wrapper;
 	}
-	
-
 });
