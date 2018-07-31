@@ -35,7 +35,7 @@ Module.register("MMM-Todoist", {
 		updateInterval: 10 * 60 * 1000, // every 10 minutes,
 		fade: true,
 		fadePoint: 0.25,
-		sortType: "todoist",
+		sortFields: [{field: "todoist", direction: "asc"}],
 		
 		// New config from AgP42
 		displayLastUpdate: false, // add or not a line after the tasks with the last server update time
@@ -247,7 +247,7 @@ Module.register("MMM-Todoist", {
 
 			// Sorting code
 			// To extend sorting add a lowercase property of the sorting function to the following object
-			sortFuncs = {
+			sortFunctions = {
 				todoist: function(a, b) {
 					return a.item_order - b.item_order;
 				},
@@ -264,20 +264,20 @@ Module.register("MMM-Todoist", {
 				}
 			};
 
-			let sortTypes = this.config.sortTypes ? this.config.sortTypes.map(function(element) {
-				// Convert the given types to lowcase
-				type = element.type.toLowerCase();
+			let sortFields = this.config.sortFields ? this.config.sortFields.map(function(element) {
+				// Convert the given fields to lowcase
+				field = element.field.toLowerCase();
 				// Convert the direction to 1 (ASC) by default, otherwise -1 (DESC)
 				if (element.direction) {
 					direction = element.direction.toLowerCase().charAt(0) === "d" ? -1 : 1;
 				} else {
 					direction = 1;
 				}
-				return { type: type, direction: direction };
+				return { field, direction };
 			}) : [];
-			// Sort by each item in sort types
+			// Sort by each of the fields in sortFields
 			items.sort(function(a, b) {
-				return self.sortByTypes(a, b, sortTypes, sortFuncs);
+				return self.sortByFields(a, b, sortFields, sortFunctions);
 			});
 
 			// Slice by max Entries
@@ -286,12 +286,12 @@ Module.register("MMM-Todoist", {
 			this.tasks = { items: items, projects: tasks.projects };
 		}
 	},
-	sortByTypes: function sortByTypes(a, b, sortTypes, sortFuncs) {
-		if (sortTypes.length === 0) {
+	sortByFields: function sortByFields(a, b, sortFields, sortFunctions) {
+		if (sortFields.length === 0) {
 			return 0;
 		}
-		const sortType = sortTypes[0];
-		return sortType.direction * sortFuncs[sortType.type](a, b) || sortByTypes(a, b, sortTypes.slice(1), sortFuncs);
+		const sortField = sortFields[0];
+		return sortField.direction * sortFunctions[sortField.field](a, b) || sortByFields(a, b, sortFields.slice(1), sortFunctions);
 	},
 
 	getDom: function() {

@@ -19,11 +19,21 @@ modules: [
         position: "top_right", // This can be any of the regions. Best results in left or right regions.
         header: "Todoist", // This is optional
         config: { // See 'Configuration options' for more information.
-            accessToken: "accessToken from Todoist",
-            maximumEntries: 60,
+            accessToken: "accessToken from Todoist", // This entry is mandatory
+            projects: [166564794], // This entry is mandatory
             updateInterval: 10 * 60 * 1000, // Update every 10 minutes
-            projects: [166564794], //this entry is mandatory
-            fade: false
+            maximumEntries: 60,
+            fade: false,
+            sortFields: [ // Sort first by dueDate ascending then prioity descending
+                {
+                    field: "dueDate",
+                    direction: "asc"
+                },
+                {
+                    field: "priority",
+                    direction: "desc"
+                }
+            ]
         }
     }
 ];
@@ -103,13 +113,15 @@ The following properties can be configured:
             </td>
         </tr>
         <tr>
-            <td><code>sortType</code></td>
-            <td>This will determine the sorting method used when displaying your Todos.<br>
-                <br><b>Possible values:</b> <br />
-                <code>"todoist"</code> <span>- Sort based on the order in Todoist.</span> </br >
-                <code>"dueDateAsc"</code> <span>- Sort based on the Due Date of the Todo Ascending. (Oldest date first)</span> </br>
-                <code>"dueDateDesc"</code> <span>- Sort based on the Due Date of the Todo Descending. (Newest date first)</span></br>
-                <br><b>Default value:</b> <code>"todoist"</code>
+            <td><code>sortFields</code></td>
+            <td>An array that will determine the sorting method used when displaying your Todos. The todos will be sorted by each item in the array in order.<br>
+                <br><b>Possible values:</b> <code>array</code> of <code>{field: "field", direction: "asc or desc"}</code></br>
+                <b>Possible fields:</b></br>
+                1) <code>"todoist"</code> - Sort based on the order in Todoist.</br>
+                2) <code>"alphabetical"</code> - Sort based on the title of the Todo. (Alphabetically)</br>
+                3) <code>"dueDate"</code> - Sort based on the Due Date of the Todo. (Defaults to oldest date first)</br>
+                4) <code>"priority"</code> - Sort based on the priotiry of the Todo. (Defaults to highest first priority first)</br>
+                <b>Default value:</b> <code>[ {field: "todoist", direction: "asc"} ]</code>
             </td>
         </tr>
         <tr>
@@ -140,7 +152,6 @@ The following properties can be configured:
                 <br><b>Default value:</b> <code>25</code>
             </td>
         </tr>
-
     </tbody>
 
 </table>
