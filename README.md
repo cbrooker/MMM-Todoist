@@ -138,6 +138,20 @@ The following properties can be configured:
 				<br><b>Default value:</b> <code>25</code>
 			</td>
 		</tr>
+		<tr>
+			<td><code>displayTasksWithinDays</code></td>
+			<td>If non-negative, only display tasks with a due date within <code>displayTasksWithinDays</code> days. For instance, setting this to 0 will only show tasks due today or overdue. This will not affect tasks without a due date, <code>displayTasksWithoutDue</code> controls those.<br>
+				<br><b>Possible values:</b> <code>-1</code> - <code>∞</code>
+				<br><b>Default value:</b> <code>-1</code> (filtering disabled)
+			</td>
+		</tr>
+		<tr>
+			<td><code>displayTasksWithoutDue</code></td>
+			<td>Controls if tasks without a due date are displayed.<br>
+				<br><b>Possible values:</b> <code>boolean</code>
+				<br><b>Default value:</b> <code>true</code>
+			</td>
+		</tr>
 
 	</tbody>
 </table>

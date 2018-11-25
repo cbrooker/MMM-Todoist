@@ -44,6 +44,8 @@ Module.register("MMM-Todoist", {
 		displayLastUpdateFormat: 'dd - HH:mm:ss', //format to display the last update. See Moment.js documentation for all display possibilities
 		maxTitleLength: 25, //10 to 50. Value to cut the line if wrapEvents: true
 		wrapEvents: false, // wrap events to multiple lines breaking at maxTitleLength
+		displayTasksWithoutDue: true, // Set to false to not print tasks without a due date
+		displayTasksWithinDays: -1, // If >= 0, do not print tasks with a due date more than this number of days into the future (e.g., 0 prints today and overdue)
 		
 		showProject: true,
 		projectColors: ["#95ef63", "#ff8581", "#ffc471", "#f9ec75", "#a8c8e4", "#d2b8a3", "#e2a8e4", "#cccccc", "#fb886e",
@@ -224,6 +226,21 @@ Module.register("MMM-Todoist", {
 
 		if (tasks != undefined) {
 			if (tasks.items != undefined) {
+				if (self.config.displayTasksWithinDays > -1 || !self.config.displayTasksWithoutDue) {
+					tasks.items = tasks.items.filter(function(item) {
+						if(item.due_date_utc === null) {
+							return self.config.displayTasksWithoutDue;
+						}
+
+						var oneDay = 24 * 60 * 60 * 1000;
+						var dueDateTime = new Date(item.due_date_utc);
+						var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
+						var now = new Date();
+						var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+						var diffDays = Math.floor((dueDate - today + 7200000) / (oneDay));
+						return diffDays <= self.config.displayTasksWithinDays;
+					});
+				}
 
 				//Filter the Todos by the Projects specified in the Config
 				tasks.items.forEach(function(item) {
