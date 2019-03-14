@@ -198,7 +198,7 @@ Module.register("MMM-Todoist", {
 				this.lastUpdate = Date.now() / 1000; //save the timestamp of the last update to be able to display it
 			}
 
-			Log.log("ToDoIst update OK, projet : " + this.config.projects + " at : " + moment.unix(this.lastUpdate).format(this.config.displayLastUpdateFormat)); //AgP
+			Log.log("ToDoIst update OK, project : " + this.config.projects + " at : " + moment.unix(this.lastUpdate).format(this.config.displayLastUpdateFormat)); //AgP
 
 			this.loaded = true;
 			this.updateDom(1000);
