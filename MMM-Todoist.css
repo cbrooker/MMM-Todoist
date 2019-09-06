@@ -1,0 +1,51 @@
+.priority {
+    width: 3px;
+    border-right: 3px;
+}
+
+.priority1 {
+    background-color: #ac0000;
+}
+
+.priority2 {
+    background-color: #f8801c;
+}
+
+.priority3 {
+    background-color: #fcc12b;
+}
+
+.alignLeft {
+    text-align: left;
+}
+
+.spacerCell {
+    width: 3px;
+}
+
+.overdue {
+    text-decoration: underline #ac0000;
+}
+
+.today {
+    text-decoration: underline #03a05c;
+}
+
+.tomorrow {
+    text-decoration: underline #166cec;
+}
+
+.projectcolor {
+    padding: 0 !important;
+    margin-left: 4px !important;
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 12px;
+    vertical-align: top;
+    margin-top: 3px;
+}
+
+.dueDate {
+    min-width: 100px;
+}
