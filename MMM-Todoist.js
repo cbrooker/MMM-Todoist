@@ -54,8 +54,8 @@ Module.register("MMM-Todoist", {
 		], //These colors come from Todoist and their order matters if you want the colors to match your Todoist project colors.
 
 		//This has been designed to use the Todoist Sync API.
-		apiVersion: "v7",
-		apiBase: "https://todoist.com/api",
+		apiVersion: "v8",
+		apiBase: "https://todoist.com/API",
 		todoistEndpoint: "sync",
 		todoistResourceType: "[\"items\", \"projects\"]"
 	},
@@ -224,12 +224,12 @@ Module.register("MMM-Todoist", {
 
 		if (self.config.displayTasksWithinDays > -1 || !self.config.displayTasksWithoutDue) {
 			tasks.items = tasks.items.filter(function (item) {
-				if (item.due_date_utc === null) {
+				if (item.due === null) {
 					return self.config.displayTasksWithoutDue;
 				}
 
 				var oneDay = 24 * 60 * 60 * 1000;
-				var dueDateTime = new Date(item.due_date_utc);
+				var dueDateTime = new Date(item.due.date);
 				var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
 				var now = new Date();
 				var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -241,7 +241,7 @@ Module.register("MMM-Todoist", {
 		//Filter the Todos by the Projects specified in the Config
 		tasks.items.forEach(function (item) {
 			self.config.projects.forEach(function (project) {
-				if (item.project_id == project) {
+				if (item.legacy_project_id == project) {
 					items.push(item);
 				}
 			});
@@ -249,12 +249,21 @@ Module.register("MMM-Todoist", {
 
 		//Used for ordering by date
 		items.forEach(function (item) {
-			if (item.due_date_utc === null) {
-				item.due_date_utc = "Fri 31 Dec 2100 23:59:59 +0000";
+			if (item.due === null) {
+				item.due = {}
+				item.due["date"] = "2100-12-31";
 				item.all_day = true;
 			}
 			//Not used right now
-			item.ISOString = new Date(item.due_date_utc.substring(4, 15).concat(item.due_date_utc.substring(15, 23))).toISOString();
+			item.ISOString = new Date(item.due.date);
+
+			// as v8 API does not have 'all_day' field anymore then check due.date for presence of time
+			// if due.date has a time then set item.all_day to false else all_day is true
+			if (item.due.date.length > 10) {
+				item.all_day = false
+			} else {
+				item.all_day = true
+			}
 		});
 
 
@@ -281,7 +290,6 @@ Module.register("MMM-Todoist", {
 			"items": items,
 			"projects": tasks.projects
 		};
-
 
 	},
 	sortByTodoist: function (itemstoSort) {
@@ -364,7 +372,7 @@ Module.register("MMM-Todoist", {
 			dueDateCell.className = "bright align-right dueDate ";
 
 			var oneDay = 24 * 60 * 60 * 1000;
-			var dueDateTime = new Date(item.due_date_utc);
+			var dueDateTime = new Date(item.due.date);
 			var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
 			var now = new Date();
 			var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -399,7 +407,7 @@ Module.register("MMM-Todoist", {
 					"month": "short"
 				}) + " " + dueDate.getDate();
 				dueDateCell.className += "xsmall";
-			} else if (item.due_date_utc === "Fri 31 Dec 2100 23:59:59 +0000") {
+			} else if (item.due.date === "2100-12-31T23:59:59 +0000") {
 				dueDateCell.innerHTML = "";
 				dueDateCell.className += "xsmall";
 			} else {
@@ -433,7 +441,7 @@ Module.register("MMM-Todoist", {
 				spacerCell2.innerHTML = "";
 				row.appendChild(spacerCell2);
 
-				var project = this.tasks.projects.find(p => p.id === item.project_id);
+				var project = this.tasks.projects.find(p => p.id === item.legacy_project_id);
 				var projectcolor = this.config.projectColors[project.color];
 				var projectCell = document.createElement("td");
 				projectCell.className = "xsmall";

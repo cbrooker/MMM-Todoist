@@ -27,7 +27,7 @@ module.exports = NodeHelper.create({
 		var self = this;
 		//request.debug = true;
 		var acessCode = self.config.accessToken;
-
+		// console.log(self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint + "/")
 		request({
 			url: self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint + "/",
 			method: "POST",
@@ -42,12 +42,15 @@ module.exports = NodeHelper.create({
 			}
 		},
 		function(error, response, body) {
+			// console.log(error)
 			if (error) {
 				self.sendSocketNotification("FETCH_ERROR", {
 					error: error
 				});
 				return console.error(" ERROR - MMM-Todoist: " + error);
 			}
+			// console.log(response.statusCode)
+			console.log(body)
 			if (response.statusCode === 200) {
 				var taskJson = JSON.parse(body);
 				taskJson.accessToken = acessCode;
