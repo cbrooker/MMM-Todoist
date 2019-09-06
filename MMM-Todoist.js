@@ -407,7 +407,7 @@ Module.register("MMM-Todoist", {
 					"month": "short"
 				}) + " " + dueDate.getDate();
 				dueDateCell.className += "xsmall";
-			} else if (item.due.date === "2100-12-31T23:59:59 +0000") {
+			} else if (item.due.date === "2100-12-31") {
 				dueDateCell.innerHTML = "";
 				dueDateCell.className += "xsmall";
 			} else {
