@@ -27,7 +27,6 @@ module.exports = NodeHelper.create({
 		var self = this;
 		//request.debug = true;
 		var acessCode = self.config.accessToken;
-
 		request({
 			url: self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint + "/",
 			method: "POST",
@@ -48,6 +47,7 @@ module.exports = NodeHelper.create({
 				});
 				return console.error(" ERROR - MMM-Todoist: " + error);
 			}
+			console.log(body)
 			if (response.statusCode === 200) {
 				var taskJson = JSON.parse(body);
 				taskJson.accessToken = acessCode;
