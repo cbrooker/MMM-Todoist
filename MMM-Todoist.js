@@ -57,7 +57,8 @@ Module.register("MMM-Todoist", {
 		apiVersion: "v8",
 		apiBase: "https://todoist.com/API",
 		todoistEndpoint: "sync",
-		todoistResourceType: "[\"items\", \"projects\"]"
+		todoistResourceType: "[\"items\", \"projects\"]",
+		debug: false,
 	},
 
 	// Define required scripts.
@@ -241,7 +242,7 @@ Module.register("MMM-Todoist", {
 		//Filter the Todos by the Projects specified in the Config
 		tasks.items.forEach(function (item) {
 			self.config.projects.forEach(function (project) {
-				if (item.legacy_project_id == project) {
+				if (item.project_id == project) {
 					items.push(item);
 				}
 			});
@@ -441,13 +442,13 @@ Module.register("MMM-Todoist", {
 				spacerCell2.innerHTML = "";
 				row.appendChild(spacerCell2);
 
-				var project = this.tasks.projects.find(p => p.id === item.legacy_project_id);
+				var project = this.tasks.projects.find(p => p.id === item.project_id);
 				var projectcolor = this.config.projectColors[project.color];
 				var projectCell = document.createElement("td");
 				projectCell.className = "xsmall";
 				projectCell.innerHTML = project.name + "<span class='projectcolor' style='color: " + projectcolor + "; background-color: " + projectcolor + "'></span>";
 				row.appendChild(projectCell);
-			}
+			} 
 
 
 			// Create fade effect by MichMich (MIT)
