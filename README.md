@@ -20,9 +20,10 @@ modules: [
           	accessToken: 'accessToken from Todoist',
 			maximumEntries: 60,
 			updateInterval: 10*60*1000, // Update every 10 minutes
-			projects: [ 166564794 ], //this entry or labels is mandatory
-            labels: [ "MagicMirror", "Important" ], // Tasks for any projects with these labels will be shown.
-			fade: false
+			fade: false,      
+			// projects and/or labels is mandatory:
+      projects: [ 166564794 ], 
+			labels: [ "MagicMirror", "Important" ] // Tasks for any projects with these labels will be shown.
       }
 	}
 ]
