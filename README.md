@@ -17,12 +17,12 @@ modules: [
 		position: 'top_right',	// This can be any of the regions. Best results in left or right regions.
 		header: 'Todoist', // This is optional
 		config: { // See 'Configuration options' for more information.
-          	accessToken: 'accessToken from Todoist',
+			accessToken: 'accessToken from Todoist',
 			maximumEntries: 60,
 			updateInterval: 10*60*1000, // Update every 10 minutes
 			fade: false,      
 			// projects and/or labels is mandatory:
-      projects: [ 166564794 ], 
+			projects: [ 166564794 ], 
 			labels: [ "MagicMirror", "Important" ] // Tasks for any projects with these labels will be shown.
       }
 	}
