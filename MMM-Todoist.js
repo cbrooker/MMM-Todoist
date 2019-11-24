@@ -71,7 +71,8 @@ Module.register("MMM-Todoist", {
 	getTranslations: function () {
 		return {
 			en: "translations/en.json",
-			de: "translations/de.json"
+			de: "translations/de.json",
+			nb: "translations/nb.json"
 		};
 	},
 
