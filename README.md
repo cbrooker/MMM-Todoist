@@ -1,3 +1,4 @@
+
 # MMM-Todoist
 This an extension for the [MagicMirror](https://github.com/MichMich/MagicMirror). It can display your Todoist todos. You can add multiple instances with different lists. Only one account supported.
 The requests to the server will be paused is the module is not displayed (use of a carousel or hidden by Remote-Control for example) or by the use of a PIR sensor and the module MMM-PIR-Sensor. An immediate update will occurs at the return of the module display. 
@@ -19,7 +20,8 @@ modules: [
           	accessToken: 'accessToken from Todoist',
 			maximumEntries: 60,
 			updateInterval: 10*60*1000, // Update every 10 minutes
-			projects: [ 166564794 ], //this entry is mandatory
+			projects: [ 166564794 ], //this entry or labels is mandatory
+            labels: [ "MagicMirror", "Important" ], // Tasks for any projects with these labels will be shown.
 			fade: false
       }
 	}
@@ -61,8 +63,20 @@ The following properties can be configured:
 				1) Go to Todoist (Log in if you aren't)<br>
 				2) Click on a Project in the left menu<br>
 				3) Your browser URL will change to something like<br> <code>"https://todoist.com/app?lang=en&v=818#project%2F166564897"</code><br><br>
-				Everything after %2F is the Project ID. In this case "166564897"
-				<b>This value is mandatory</b>.
+				Everything after %2F is the Project ID. In this case "166564897"<br><br>
+				<b>This value and/or the labels entry must be specified</b>. If both projects and labels are specified, then tasks from both will be shown.
+			</td>
+		</tr>
+			<tr>
+			<td><code>labels</code></td>
+			<td>
+				Array of label names you want to display. <br>
+				<br><b>Possible values:</b> <code>array</code>
+				<br><b>Default value:</b> <code>[ ]</code>
+				<br><b>Example:</b> <code>["MagicMirror", "Important", "DoInTheMorning"]</code>
+				<br>
+				<br>
+				<b>This value and/or the labels entry must be specified</b>. If both projects and labels are specified, then tasks from both will be shown.
 			</td>
 		</tr>
 		<tr>
