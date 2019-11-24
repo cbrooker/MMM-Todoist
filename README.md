@@ -77,7 +77,7 @@ The following properties can be configured:
 				<br><b>Example:</b> <code>["MagicMirror", "Important", "DoInTheMorning"]</code>
 				<br>
 				<br>
-				<b>This value and/or the labels entry must be specified</b>. If both projects and labels are specified, then tasks from both will be shown.
+				<b>This value and/or the projects entry must be specified</b>. If both projects and labels are specified, then tasks from both will be shown.
 			</td>
 		</tr>
 		<tr>
