@@ -152,7 +152,14 @@ The following properties can be configured:
 				<br><b>Default value:</b> <code>true</code>
 			</td>
 		</tr>
-
+		<tr>
+			<td><code>displaySubtasks</code></td>
+			<td>Controls if subtasks are displayed or not.<br>
+				<br><b>Possible values:</b> <code>boolean</code>
+				<br><b>Default value:</b> <code>true</code>
+			</td>
+		</tr>
+		
 	</tbody>
 </table>
 

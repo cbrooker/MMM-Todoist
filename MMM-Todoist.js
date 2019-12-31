@@ -46,7 +46,8 @@ Module.register("MMM-Todoist", {
 		wrapEvents: false, // wrap events to multiple lines breaking at maxTitleLength
 		displayTasksWithoutDue: true, // Set to false to not print tasks without a due date
 		displayTasksWithinDays: -1, // If >= 0, do not print tasks with a due date more than this number of days into the future (e.g., 0 prints today and overdue)
-
+		// 2019-12-31 by thyed
+		displaySubtasks: true, // set to false to exclude subtasks
 		showProject: true,
 		projectColors: ["#95ef63", "#ff8581", "#ffc471", "#f9ec75", "#a8c8e4", "#d2b8a3", "#e2a8e4", "#cccccc", "#fb886e",
 			"#ffcc00", "#74e8d3", "#3bd5fb", "#dc4fad", "#ac193d", "#d24726", "#82ba00", "#03b3b2", "#008299",
@@ -243,7 +244,10 @@ Module.register("MMM-Todoist", {
 		tasks.items.forEach(function (item) {
 			self.config.projects.forEach(function (project) {
 				if (item.project_id == project) {
-					items.push(item);
+					// 2019-12-31 added by thyed, exclude subtasks
+					// add if displaySubtasks is false and item has no parent or if displaySubtasks is true
+					if ((!self.config.displaySubtasks && item.parent_id === null) || (self.config.displaySubtasks))
+						items.push(item);
 				}
 			});
 		});
@@ -295,8 +299,9 @@ Module.register("MMM-Todoist", {
 	},
 	sortByTodoist: function (itemstoSort) {
 		itemstoSort.sort(function (a, b) {
-			var itemA = a.item_order,
-				itemB = b.item_order;
+			// 2019-12-31 bugfix by thyed, property is child_order, not item_order
+			var itemA = a.child_order,
+				itemB = b.child_order;
 			return itemA - itemB;
 		});
 		return itemstoSort;
