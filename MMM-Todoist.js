@@ -479,7 +479,7 @@ Module.register("MMM-Todoist", {
 				var colIndex = collaboratorsMap.get(item.responsible_uid);
 
 				if (typeof colIndex !== 'undefined') {
-					avatarImg.src = "https://dcff1xvirvpfp.cloudfront.net/" + this.tasks.collaborators[colIndex].image_id + "_small.jpg";
+					avatarImg.src = "https://dcff1xvirvpfp.cloudfront.net/" + this.tasks.collaborators[colIndex].image_id + "_big.jpg";
 				} else avatarImg.src = "/modules/MMM-Todoist/1x1px.png";
 
 				avatarCell.appendChild(avatarImg);
