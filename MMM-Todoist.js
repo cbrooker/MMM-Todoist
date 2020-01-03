@@ -48,6 +48,7 @@ Module.register("MMM-Todoist", {
 		displayTasksWithinDays: -1, // If >= 0, do not print tasks with a due date more than this number of days into the future (e.g., 0 prints today and overdue)
 		// 2019-12-31 by thyed
 		displaySubtasks: true, // set to false to exclude subtasks
+		displayAvatar: false,
 		showProject: true,
 		projectColors: ["#95ef63", "#ff8581", "#ffc471", "#f9ec75", "#a8c8e4", "#d2b8a3", "#e2a8e4", "#cccccc", "#fb886e",
 			"#ffcc00", "#74e8d3", "#3bd5fb", "#dc4fad", "#ac193d", "#d24726", "#82ba00", "#03b3b2", "#008299",
@@ -58,7 +59,7 @@ Module.register("MMM-Todoist", {
 		apiVersion: "v8",
 		apiBase: "https://todoist.com/API",
 		todoistEndpoint: "sync",
-		todoistResourceType: "[\"items\", \"projects\"]",
+		todoistResourceType: "[\"items\", \"projects\", \"collaborators\"]", // thyed added user
 		debug: false,
 	},
 
@@ -293,7 +294,8 @@ Module.register("MMM-Todoist", {
 
 		this.tasks = {
 			"items": items,
-			"projects": tasks.projects
+			"projects": tasks.projects,
+			"collaborators": tasks.collaborators
 		};
 
 	},
@@ -343,11 +345,24 @@ Module.register("MMM-Todoist", {
 			return table;
 		}
 
+
+		// create mapping from user id to collaborator index
+		var collaboratorsMap = new Map();
+
+		for (var value=0; value < this.tasks.collaborators.length; value++) {
+			collaboratorsMap.set( this.tasks.collaborators[value].id, value );
+		}
+
+		console.log(collaboratorsMap);
+
+
+		/* iterate through items, i.e. todo's */
 		for (var i = 0; i < this.tasks.items.length; i++) {
 			var item = this.tasks.items[i];
 			var row = document.createElement("tr");
 			table.appendChild(row);
 
+			/* cell for priority indicator */
 			var priorityCell = document.createElement("td");
 			switch (item.priority) {
 				case 4:
@@ -368,12 +383,13 @@ Module.register("MMM-Todoist", {
 			spacerCell.innerHTML = "";
 			row.appendChild(spacerCell);
 
+			/* cell for todo content */
 			var todoCell = document.createElement("td");
 			todoCell.className = "title bright alignLeft";
 			todoCell.innerHTML = this.shorten(item.content, this.config.maxTitleLength, this.config.wrapEvents);
-
 			row.appendChild(todoCell);
 
+			/* cell for due date */
 			var dueDateCell = document.createElement("td");
 			dueDateCell.className = "bright align-right dueDate ";
 
@@ -440,7 +456,7 @@ Module.register("MMM-Todoist", {
 			}
 			row.appendChild(dueDateCell);
 
-			//ShowProject
+			/* cell for project */
 			if (this.config.showProject) {
 				var spacerCell2 = document.createElement("td");
 				spacerCell2.className = "spacerCell";
@@ -455,6 +471,20 @@ Module.register("MMM-Todoist", {
 				row.appendChild(projectCell);
 			} 
 
+			/* cell for assignee avatar */
+			if (this.config.displayAvatar) {
+				var avatarCell = document.createElement("td");
+				var avatarImg = document.createElement("img");
+
+				var colIndex = collaboratorsMap.get(item.responsible_uid);
+
+				if (typeof colIndex !== 'undefined') {
+					avatarImg.src = "https://dcff1xvirvpfp.cloudfront.net/" + this.tasks.collaborators[colIndex].image_id + "_small.jpg";
+				} else avatarImg.src = "/modules/MMM-Todoist/1x1px.png";
+
+				avatarCell.appendChild(avatarImg);
+				row.appendChild(avatarCell);
+			}
 
 			// Create fade effect by MichMich (MIT)
 			if (this.config.fade && this.config.fadePoint < 1) {

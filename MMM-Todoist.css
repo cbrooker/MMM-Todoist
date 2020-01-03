@@ -49,3 +49,12 @@
 .dueDate {
     min-width: 100px;
 }
+
+img {
+    border-radius: 50%;
+    filter: grayscale(100%);
+    height: 35px;
+    display: block;
+    margin-left: 10px;
+    margin-right: auto;
+}

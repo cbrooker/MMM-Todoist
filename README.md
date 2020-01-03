@@ -170,6 +170,9 @@ The following properties can be configured:
 # Screen shots
 A few sample Screen Shots to show you what this module looks like. It's fairly configurable and changes considerably depending on how you use Todoist, how many projects you include, and how you sort.  
 
+Option enabled: displayAvatar: true
+![My image](https://raw.githubusercontent.com/thyed/MMM-Todoist/master/todoist-avatars.png)
+
 Option enabled: displayLastUpdate: true, wrapEvents: true, maxTitleLenght: 25
 ![My image](https://github.com/AgP42/MMM-Todoist/blob/master/todoist.png)
 
