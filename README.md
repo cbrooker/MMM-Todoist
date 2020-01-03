@@ -159,6 +159,13 @@ The following properties can be configured:
 				<br><b>Default value:</b> <code>true</code>
 			</td>
 		</tr>
+		<tr>
+			<td><code>displayAvatar</code></td>
+			<td>Display avatar images of collaborators assigned to tasks in shared projects.<br>
+				<br><b>Possible values:</b> <code>boolean</code>
+				<br><b>Default value:</b> <code>false</code>
+			</td>
+		</tr>		
 		
 	</tbody>
 </table>
@@ -198,7 +205,7 @@ Options enabled: orderBy:dueDateAsc, showProjects: false
 ![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/7.png)  
 
 
-##Attribution
+## Attribution
 
 This project is based on work done by Paul-Vincent Roll in the MMM-Wunderlist module. (https://github.com/paviro/MMM-Wunderlist)
 
