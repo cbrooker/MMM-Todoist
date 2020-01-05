@@ -10,18 +10,20 @@
 
 
 /*
+ * Update by mabahj 24/11/2019
+ * - Added support for labels in addtion to projects
  * Update by AgP42 the 18/07/2018
- * Modification added : 
- * - Management of a PIR sensor with the module MMM-PIR-Sensor (by PaViRo). In case PIR module detect no user, 
+ * Modification added :
+ * - Management of a PIR sensor with the module MMM-PIR-Sensor (by PaViRo). In case PIR module detect no user,
  * the update of the ToDoIst is stopped and will be requested again at the return of the user
  * - Management of the "module.hidden" by the core system : same behaviour as "User_Presence" by the PIR sensor
  * - Add "Loading..." display when the infos are not yet loaded from the server
- * - Possibility to add the last update time from server at the end of the module. 
+ * - Possibility to add the last update time from server at the end of the module.
  * This can be configured using "displayLastUpdate" and "displayLastUpdateFormat"
  * - Possibility to display long task on several lines(using the code from default module "calendar".
  * This can be configured using "wrapEvents" and "maxTitleLength"
  *
- * // Update 27/07/2018 : 
+ * // Update 27/07/2018 :
  * - Correction of start-up update bug
  * - correction of regression on commit #28 for tasks without dueDate
  * */
@@ -34,6 +36,7 @@ Module.register("MMM-Todoist", {
 	defaults: {
 		maximumEntries: 10,
 		projects: ["inbox"],
+    labels: [""],
 		updateInterval: 10 * 60 * 1000, // every 10 minutes,
 		fade: true,
 		fadePoint: 0.25,
@@ -59,7 +62,9 @@ Module.register("MMM-Todoist", {
 		apiVersion: "v8",
 		apiBase: "https://todoist.com/API",
 		todoistEndpoint: "sync",
+
 		todoistResourceType: "[\"items\", \"projects\", \"collaborators\"]", // thyed added user
+
 		debug: false,
 	},
 
@@ -70,7 +75,8 @@ Module.register("MMM-Todoist", {
 	getTranslations: function () {
 		return {
 			en: "translations/en.json",
-			de: "translations/de.json"
+			de: "translations/de.json",
+			nb: "translations/nb.json"
 		};
 	},
 
@@ -213,6 +219,7 @@ Module.register("MMM-Todoist", {
 	filterTodoistData: function (tasks) {
 		var self = this;
 		var items = [];
+    var labelIds = [];
 
 
 		if (tasks == undefined) {
@@ -224,6 +231,19 @@ Module.register("MMM-Todoist", {
 		if (tasks.items == undefined) {
 			return;
 		}
+    
+    // Loop through labels fetched from API and find corresponding label IDs for task filtering
+    // Could be re-used for project names -> project IDs.
+    if (self.config.labels.length>0 && tasks.labels != undefined) {
+      for (let apiLabel of tasks.labels) {
+        for (let configLabelName of self.config.labels) {
+          if (apiLabel.name == configLabelName) {
+            labelIds.push(apiLabel.id);
+            break;
+          }
+        }
+      }
+    }
 
 		if (self.config.displayTasksWithinDays > -1 || !self.config.displayTasksWithoutDue) {
 			tasks.items = tasks.items.filter(function (item) {
@@ -241,16 +261,36 @@ Module.register("MMM-Todoist", {
 			});
 		}
 
-		//Filter the Todos by the Projects specified in the Config
-		tasks.items.forEach(function (item) {
-			self.config.projects.forEach(function (project) {
-				if (item.project_id == project) {
-					// 2019-12-31 added by thyed, exclude subtasks
-					// add if displaySubtasks is false and item has no parent or if displaySubtasks is true
-					if ((!self.config.displaySubtasks && item.parent_id === null) || (self.config.displaySubtasks))
-						items.push(item);
-				}
-			});
+
+		//Filter the Todos by the Projects and Label specified in the Config
+		tasks.items.forEach(function (item) {      
+
+      var isAdded=0; // To prevent a task in added twice. Far from fancy, can be improved. But it works.
+
+      // Filter using label if a label is configured
+      if (labelIds.length>0 && item.labels.length > 0) {
+        // Check all the labels assigned to the task. Add to items if match with configured label
+        for (let label of item.labels) {
+          for (let labelNumber of labelIds) {
+            if (label == labelNumber && isAdded==0) {
+              items.push(item);
+              isAdded=1; // Prevent double additions
+              break;
+            }
+          }
+        }
+      }
+
+      // Filter using projets if projects are configured
+      if (isAdded==0 && self.config.projects.length>0){
+			  self.config.projects.forEach(function (project) {
+			  	if (item.project_id == project) {
+            items.push(item);
+			  	}
+			  });
+      }
+
+
 		});
 
 		//Used for ordering by date
@@ -469,7 +509,7 @@ Module.register("MMM-Todoist", {
 				projectCell.className = "xsmall";
 				projectCell.innerHTML = project.name + "<span class='projectcolor' style='color: " + projectcolor + "; background-color: " + projectcolor + "'></span>";
 				row.appendChild(projectCell);
-			} 
+			}
 
 			/* cell for assignee avatar */
 			if (this.config.displayAvatar) {
