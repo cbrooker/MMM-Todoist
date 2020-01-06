@@ -515,10 +515,11 @@ Module.register("MMM-Todoist", {
 			if (this.config.displayAvatar) {
 				var avatarCell = document.createElement("td");
 				var avatarImg = document.createElement("img");
+				avatarImg.className = "todoAvatarImg";
 
 				var colIndex = collaboratorsMap.get(item.responsible_uid);
-
 				if (typeof colIndex !== 'undefined') {
+					
 					avatarImg.src = "https://dcff1xvirvpfp.cloudfront.net/" + this.tasks.collaborators[colIndex].image_id + "_big.jpg";
 				} else avatarImg.src = "/modules/MMM-Todoist/1x1px.png";
 
