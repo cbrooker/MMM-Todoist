@@ -127,7 +127,7 @@ The following properties can be configured:
 		</tr>
 		<tr>
 			<td><code>displayLastUpdate</code></td>
-			<td>If true this will display the last update time at the end of the task list. See screenshot bellow<br>
+			<td>If true this will display the last update time at the end of the task list. See screenshot below<br>
 				<br><b>Possible values:</b> <code>boolean</code>
 				<br><b>Default value:</b> <code>false</code>
 			</td>
@@ -141,14 +141,14 @@ The following properties can be configured:
 		</tr>
 		<tr>
 			<td><code>wrapEvents</code></td>
-			<td>If true this will display the long tasks on several lines, according on the value <code>maxTitleLength</code>. See screenshot bellow. <br>
+			<td>If true this will display the long tasks on several lines, according on the value <code>maxTitleLength</code>. See screenshot below. <br>
 				<br><b>Possible values:</b> <code>boolean</code>
 				<br><b>Default value:</b> <code>false</code>
 			</td>
 		</tr>
 		<tr>
 			<td><code>maxTitleLength</code></td>
-			<td>Value cut the display of long tasks on several lines. See screenshot bellow<br>
+			<td>Value cut the display of long tasks on several lines. See screenshot below<br>
 				<br><b>Possible values:</b> <code>10</code> - <code>50</code>
 				<br><b>Default value:</b> <code>25</code>
 			</td>

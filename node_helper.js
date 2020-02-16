@@ -48,7 +48,7 @@ module.exports = NodeHelper.create({
 				return console.error(" ERROR - MMM-Todoist: " + error);
 			}
 			if(self.config.debug){
-				console.log(body)
+				console.log(body);
 			}
 			if (response.statusCode === 200) {
 				var taskJson = JSON.parse(body);
@@ -56,8 +56,8 @@ module.exports = NodeHelper.create({
 				self.sendSocketNotification("TASKS", taskJson);
 			}
 			else{
-				console.log("Todoist api request status="+response.statusCode)
-			} 
+				console.log("Todoist api request status="+response.statusCode);
+			}
 
 		});
 	}
