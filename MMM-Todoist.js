@@ -64,7 +64,7 @@ Module.register("MMM-Todoist", {
 
 		todoistResourceType: "[\"items\", \"projects\", \"collaborators\"]", // thyed added user
 
-		debug: false,
+		debug: false
 	},
 
 	// Define required scripts.
@@ -197,9 +197,9 @@ Module.register("MMM-Todoist", {
 	//end modif AgP
 
 	// Override socket notification handler.
+	// ******** Data sent from the Backend helper. This is the data from the Todoist API ************
 	socketNotificationReceived: function (notification, payload) {
 		if (notification === "TASKS") {
-			console.log(payload);
 			this.filterTodoistData(payload);
 
 			if (this.config.displayLastUpdate) {
@@ -260,7 +260,6 @@ Module.register("MMM-Todoist", {
 
 		//Filter the Todos by the Projects and Label specified in the Config
 		tasks.items.forEach(function (item) {
-
 			var isAdded=0; // To prevent a task in added twice. Far from fancy, can be improved. But it works.
 
 			// Filter using label if a label is configured
@@ -286,6 +285,15 @@ Module.register("MMM-Todoist", {
 			  });
 			}
 		});
+
+		//**** FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs */
+		if (self.config.debug) {
+			console.log("%c *** PROJECT -- ID ***", "background: #222; color: #bada55");
+			tasks.projects.forEach(project => {
+				console.log("%c" + project.name + " -- " + project.id, "background: #222; color: #bada55");
+			});
+		};
+		//****** */
 
 		//Used for ordering by date
 		items.forEach(function (item) {
@@ -537,6 +545,18 @@ Module.register("MMM-Todoist", {
 			updateinfo.innerHTML = "Update : " + moment.unix(this.lastUpdate).format(this.config.displayLastUpdateFormat);
 			wrapper.appendChild(updateinfo);
 		}
+
+		//**** FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs - (People who can't see console) */
+		if (this.config.debug) {
+			var projectsids = document.createElement("div");
+			projectsids.className = "xsmall light align-left";
+			projectsids.innerHTML = "<span>*** PROJECT -- ID ***</span><br />";
+			this.tasks.projects.forEach(project => {
+				projectsids.innerHTML += "<span>" + project.name + " -- " + project.id + "</span><br />";
+			});
+			wrapper.appendChild(projectsids);
+		};
+		//****** */
 
 		return wrapper;
 	}
