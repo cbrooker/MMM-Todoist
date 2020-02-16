@@ -65,6 +65,8 @@ The following properties can be configured:
 				2) Click on a Project in the left menu<br>
 				3) Your browser URL will change to something like<br> <code>"https://todoist.com/app?lang=en&v=818#project%2F166564897"</code><br><br>
 				Everything after %2F is the Project ID. In this case "166564897"<br><br>
+				<hr />
+				Alternatively, if you add <b>debug=true</b> in your config.js the Projects and ProjectsIDs will be displayed on MagicMirror as well as in the Browser console.<br><br>
 				<b>This value and/or the labels entry must be specified</b>. If both projects and labels are specified, then tasks from both will be shown.
 			</td>
 		</tr>
