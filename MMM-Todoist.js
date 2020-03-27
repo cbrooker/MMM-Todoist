@@ -258,7 +258,7 @@ Module.register("MMM-Todoist", {
 			});
 		}
 
-		//Filter the Todos by the Projects and Label specified in the Config
+		//Filter the Todos by the criteria specified in the Config
 		tasks.items.forEach(function (item) {
 			// Ignore sub-tasks
 			if (item.parent_id!=null && !self.config.displaySubtasks) { return; }
