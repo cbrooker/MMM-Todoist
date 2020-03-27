@@ -262,6 +262,9 @@ Module.register("MMM-Todoist", {
 		tasks.items.forEach(function (item) {
 			var isAdded=0; // To prevent a task in added twice. Far from fancy, can be improved. But it works.
 
+			// Ignore sub-tasks
+			if (item.parent_id!=null && !self.config.displaySubtasks) { return; }
+
 			// Filter using label if a label is configured
 			if (labelIds.length>0 && item.labels.length > 0) {
 				// Check all the labels assigned to the task. Add to items if match with configured label
