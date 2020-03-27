@@ -260,8 +260,6 @@ Module.register("MMM-Todoist", {
 
 		//Filter the Todos by the Projects and Label specified in the Config
 		tasks.items.forEach(function (item) {
-			var isAdded=0; // To prevent a task in added twice. Far from fancy, can be improved. But it works.
-
 			// Ignore sub-tasks
 			if (item.parent_id!=null && !self.config.displaySubtasks) { return; }
 
@@ -270,20 +268,20 @@ Module.register("MMM-Todoist", {
 				// Check all the labels assigned to the task. Add to items if match with configured label
 				for (let label of item.labels) {
 					for (let labelNumber of labelIds) {
-						if (label == labelNumber && isAdded==0) {
+						if (label == labelNumber) {
 							items.push(item);
-							isAdded=1; // Prevent double additions
-							break;
+							return;
 						}
 					}
 				}
 			}
 
 			// Filter using projets if projects are configured
-			if (isAdded==0 && self.config.projects.length>0){
+			if (self.config.projects.length>0){
 			  self.config.projects.forEach(function (project) {
 			  		if (item.project_id == project) {
 						items.push(item);
+						return;
 					}
 			  });
 			}
