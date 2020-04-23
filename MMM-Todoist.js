@@ -52,10 +52,34 @@ Module.register("MMM-Todoist", {
 		displaySubtasks: true, // set to false to exclude subtasks
 		displayAvatar: false,
 		showProject: true,
-		projectColors: ["#95ef63", "#ff8581", "#ffc471", "#f9ec75", "#a8c8e4", "#d2b8a3", "#e2a8e4", "#cccccc", "#fb886e",
-			"#ffcc00", "#74e8d3", "#3bd5fb", "#dc4fad", "#ac193d", "#d24726", "#82ba00", "#03b3b2", "#008299",
-			"#5db2ff", "#0072c6", "#000000", "#777777"
-		], //These colors come from Todoist and their order matters if you want the colors to match your Todoist project colors.
+		// projectColors: ["#95ef63", "#ff8581", "#ffc471", "#f9ec75", "#a8c8e4", "#d2b8a3", "#e2a8e4", "#cccccc", "#fb886e",
+		// 	"#ffcc00", "#74e8d3", "#3bd5fb", "#dc4fad", "#ac193d", "#d24726", "#82ba00", "#03b3b2", "#008299",
+		// 	"#5db2ff", "#0072c6", "#000000", "#777777"
+		// ], //These colors come from Todoist and their order matters if you want the colors to match your Todoist project colors.
+		
+		//TODOIST Change how they are doing Project Colors, so now I'm changing it.
+		projectColors: {
+			30:'#b8256f',
+			31:'#db4035',
+			32:'#ff9933',
+			33:'#fad000',
+			34:'#afb83b',
+			35:'#7ecc49',
+			36:'#299438',
+			37:'#6accbc',
+			38:'#158fad',
+			39:'#14aaf5',
+			40:'#96c3eb',
+			41:'#4073ff',
+			42:'#884dff',
+			43:'#af38eb',
+			44:'#eb96eb',
+			45:'#e05194',
+			46:'#ff8d85',
+			47:'#808080',
+			48:'#b8b8b8',
+			49:'#ccac93'
+		},
 
 		//This has been designed to use the Todoist Sync API.
 		apiVersion: "v8",
@@ -366,9 +390,141 @@ Module.register("MMM-Todoist", {
 		});
 		return itemstoSort;
 	},
+	createCell: function(className, innerHTML) {
+		var cell = document.createElement("div");
+		cell.className = "divTableCell " + className;
+		cell.innerHTML = innerHTML;
+		return cell;
+	},
+	addPriorityIndicatorCell: function(item) {
+		var className = "priority ";
+		switch (item.priority) {
+			case 4:
+				className += "priority1";
+				break;
+			case 3:
+				className += "priority2";
+				break;
+			case 2:
+				className += "priority3";
+				break;
+			default:
+				className = "";
+				break;
+		}
+		return this.createCell(className, "&nbsp;");;
+	},
+	addColumnSpacerCell: function() {
+		return this.createCell("spacerCell", "&nbsp;");
+	},
+	addTodoTextCell: function(item) {
+		return this.createCell("title bright alignLeft", 
+			this.shorten(item.content, this.config.maxTitleLength, this.config.wrapEvents));
 
+		// return this.createCell("title bright alignLeft", item.content);
+	},
+	addDueDateCell: function(item) {
+		var className = "bright align-right dueDate ";
+		var innerHTML = "";
+		
+		var oneDay = 24 * 60 * 60 * 1000;
+		var dueDateTime = new Date(item.due.date);
+		var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
+		var now = new Date();
+		var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+		var diffDays = Math.floor((dueDate - today + 7200000) / (oneDay));
+		var diffMonths = (dueDate.getFullYear() * 12 + dueDate.getMonth()) - (now.getFullYear() * 12 + now.getMonth());
+
+		if (diffDays < -1) {
+			innerHTML = dueDate.toLocaleDateString(config.language, {
+												"month": "short"
+											}) + " " + dueDate.getDate();
+			className += "xsmall overdue";
+		} else if (diffDays === -1) {
+			innerHTML = this.translate("YESTERDAY");
+			className += "xsmall overdue";
+		} else if (diffDays === 0) {
+			innerHTML = this.translate("TODAY");
+			if (item.all_day || dueDateTime >= now) {
+				className += "today";
+			} else {
+				className += "overdue";
+			}
+		} else if (diffDays === 1) {
+			innerHTML = this.translate("TOMORROW");
+			className += "xsmall tomorrow";
+		} else if (diffDays < 7) {
+			innerHTML = dueDate.toLocaleDateString(config.language, {
+				"weekday": "short"
+			});
+			className += "xsmall";
+		} else if (diffMonths < 7 || dueDate.getFullYear() == now.getFullYear()) {
+			innerHTML = dueDate.toLocaleDateString(config.language, {
+				"month": "short"
+			}) + " " + dueDate.getDate();
+			className += "xsmall";
+		} else if (item.due.date === "2100-12-31") {
+			innerHTML = "";
+			className += "xsmall";
+		} else {
+			innerHTML = dueDate.toLocaleDateString(config.language, {
+				"month": "short"
+			}) + " " + dueDate.getDate() + " " + dueDate.getFullYear();
+			className += "xsmall";
+		}
+
+		if (innerHTML !== "" && !item.all_day) {
+			function formatTime(d) {
+				function z(n) {
+					return (n < 10 ? "0" : "") + n;
+				}
+				var h = d.getHours();
+				var m = z(d.getMinutes());
+				if (config.timeFormat == 12) {
+					return " " + (h % 12 || 12) + ":" + m + (h < 12 ? " AM" : " PM");
+				} else {
+					return " " + h + ":" + m;
+				}
+			}
+			innerHTML += formatTime(dueDateTime);
+		}
+		// if (dueDateCell.innerHTML != "") {
+			// row.appendChild(dueDateCell);
+		// }
+		return this.createCell(className, innerHTML);
+	},
+	addProjectCell: function(item) {
+		var project = this.tasks.projects.find(p => p.id === item.project_id);
+		var projectcolor = this.config.projectColors[project.color];
+		var innerHTML = project.name + "<span class='projectcolor' style='color: " + projectcolor + "; background-color: " + projectcolor + "'></span>";
+		return this.createCell("xsmall", innerHTML);
+	},
+	addAssigneeAvatorCell: function(item, collaboratorsMap) {	
+		var avatarImg = document.createElement("img");
+		avatarImg.className = "todoAvatarImg";
+
+		var colIndex = collaboratorsMap.get(item.responsible_uid);
+		if (typeof colIndex !== "undefined") {
+			avatarImg.src = "https://dcff1xvirvpfp.cloudfront.net/" + this.tasks.collaborators[colIndex].image_id + "_big.jpg";
+		} else { avatarImg.src = "/modules/MMM-Todoist/1x1px.png"; }
+
+		var cell = this.createCell("", "");
+		cell.appendChild(avatarImg);
+
+		return cell;
+	},
 	getDom: function () {
 
+		// ** DIV Table Structure for Reference **
+		// <div class="divTable">
+		// 	<div class="divTableBody">
+		// 		<div class="divTableRow">
+		// 			<div class="divTableCell">&nbsp;</div>
+		// 		</div>
+		// 	</div>
+		// </div>
+
+	
 		//Add a new div to be able to display the update time alone after all the task
 		var wrapper = document.createElement("div");
 
@@ -379,6 +535,59 @@ Module.register("MMM-Todoist", {
 			return wrapper;
 		}
 
+
+//New CSS based Table
+		var divTable = document.createElement("div");
+		divTable.className = "divTable normal small light";
+
+		var divBody = document.createElement("div");
+		divBody.className = "divTableBody";
+		
+		if (this.tasks === undefined) {
+			return wrapper;
+		}
+
+		// create mapping from user id to collaborator index
+		var collaboratorsMap = new Map();
+
+		for (var value=0; value < this.tasks.collaborators.length; value++) {
+			collaboratorsMap.set(this.tasks.collaborators[value].id, value);
+		}
+
+		//Iterate through Todos
+		this.tasks.items.forEach(item => {
+			var divRow = document.createElement("div");
+			//Add the Row
+			divRow.className = "divTableRow";
+			
+
+			//Columns
+			divRow.appendChild(this.addPriorityIndicatorCell(item));
+			divRow.appendChild(this.addColumnSpacerCell());
+			divRow.appendChild(this.addTodoTextCell(item));
+			divRow.appendChild(this.addDueDateCell(item));
+			if (this.config.showProject) {
+				divRow.appendChild(this.addColumnSpacerCell());
+				divRow.appendChild(this.addProjectCell(item));
+			}
+			if (this.config.displayAvatar) {
+				divRow.appendChild(this.addAssigneeAvatorCell(item, collaboratorsMap));
+			}
+
+			divBody.appendChild(divRow);
+		});
+		
+
+		divTable.appendChild(divBody);
+		wrapper.appendChild(divTable);
+
+
+
+
+
+
+
+//OLD Table based layout
 		var table = document.createElement("table");
 		table.className = "normal small light";
 
@@ -424,6 +633,7 @@ Module.register("MMM-Todoist", {
 			var todoCell = document.createElement("td");
 			todoCell.className = "title bright alignLeft";
 			todoCell.innerHTML = this.shorten(item.content, this.config.maxTitleLength, this.config.wrapEvents);
+			// todoCell.colSpan=3;
 			row.appendChild(todoCell);
 
 			/* cell for due date */
@@ -491,7 +701,10 @@ Module.register("MMM-Todoist", {
 				}
 				dueDateCell.innerHTML += formatTime(dueDateTime);
 			}
-			row.appendChild(dueDateCell);
+			// if (dueDateCell.innerHTML != "") {
+				row.appendChild(dueDateCell);
+			// }
+			
 
 			/* cell for project */
 			if (this.config.showProject) {
