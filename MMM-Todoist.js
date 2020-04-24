@@ -488,9 +488,6 @@ Module.register("MMM-Todoist", {
 			}
 			innerHTML += formatTime(dueDateTime);
 		}
-		// if (dueDateCell.innerHTML != "") {
-			// row.appendChild(dueDateCell);
-		// }
 		return this.createCell(className, innerHTML);
 	},
 	addProjectCell: function(item) {
@@ -514,21 +511,11 @@ Module.register("MMM-Todoist", {
 		return cell;
 	},
 	getDom: function () {
-
-		// ** DIV Table Structure for Reference **
-		// <div class="divTable">
-		// 	<div class="divTableBody">
-		// 		<div class="divTableRow">
-		// 			<div class="divTableCell">&nbsp;</div>
-		// 		</div>
-		// 	</div>
-		// </div>
-
 	
 		//Add a new div to be able to display the update time alone after all the task
 		var wrapper = document.createElement("div");
 
-		//display "loading..." is not loaded
+		//display "loading..." if not loaded
 		if (!this.loaded) {
 			wrapper.innerHTML = "Loading...";
 			wrapper.className = "dimmed light small";
@@ -536,7 +523,7 @@ Module.register("MMM-Todoist", {
 		}
 
 
-//New CSS based Table
+		//New CSS based Table
 		var divTable = document.createElement("div");
 		divTable.className = "divTable normal small light";
 
@@ -577,180 +564,9 @@ Module.register("MMM-Todoist", {
 			divBody.appendChild(divRow);
 		});
 		
-
 		divTable.appendChild(divBody);
 		wrapper.appendChild(divTable);
 
-
-
-
-
-
-
-//OLD Table based layout
-		var table = document.createElement("table");
-		table.className = "normal small light";
-
-		if (this.tasks === undefined) {
-			return table;
-		}
-
-		// create mapping from user id to collaborator index
-		var collaboratorsMap = new Map();
-
-		for (var value=0; value < this.tasks.collaborators.length; value++) {
-			collaboratorsMap.set( this.tasks.collaborators[value].id, value );
-		}
-
-		/* iterate through items, i.e. todo's */
-		for (var i = 0; i < this.tasks.items.length; i++) {
-			var item = this.tasks.items[i];
-			var row = document.createElement("tr");
-			table.appendChild(row);
-
-			/* cell for priority indicator */
-			var priorityCell = document.createElement("td");
-			switch (item.priority) {
-			case 4:
-				priorityCell.className = "priority priority1";
-				break;
-			case 3:
-				priorityCell.className = "priority priority2";
-				break;
-			case 2:
-				priorityCell.className = "priority priority3";
-				break;
-			}
-			priorityCell.innerHTML = "";
-			row.appendChild(priorityCell);
-
-			var spacerCell = document.createElement("td");
-			spacerCell.className = "spacerCell";
-			spacerCell.innerHTML = "";
-			row.appendChild(spacerCell);
-
-			/* cell for todo content */
-			var todoCell = document.createElement("td");
-			todoCell.className = "title bright alignLeft";
-			todoCell.innerHTML = this.shorten(item.content, this.config.maxTitleLength, this.config.wrapEvents);
-			// todoCell.colSpan=3;
-			row.appendChild(todoCell);
-
-			/* cell for due date */
-			var dueDateCell = document.createElement("td");
-			dueDateCell.className = "bright align-right dueDate ";
-
-			var oneDay = 24 * 60 * 60 * 1000;
-			var dueDateTime = new Date(item.due.date);
-			var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
-			var now = new Date();
-			var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-			var diffDays = Math.floor((dueDate - today + 7200000) / (oneDay));
-			var diffMonths = (dueDate.getFullYear() * 12 + dueDate.getMonth()) - (now.getFullYear() * 12 + now.getMonth());
-
-			if (diffDays < -1) {
-				dueDateCell.innerHTML = dueDate.toLocaleDateString(config.language, {
-					"month": "short"
-				}) + " " + dueDate.getDate();
-				dueDateCell.className += "xsmall overdue";
-			} else if (diffDays === -1) {
-				dueDateCell.innerHTML = this.translate("YESTERDAY");
-				dueDateCell.className += "xsmall overdue";
-			} else if (diffDays === 0) {
-				dueDateCell.innerHTML = this.translate("TODAY");
-				if (item.all_day || dueDateTime >= now) {
-					dueDateCell.className += "today";
-				} else {
-					dueDateCell.className += "overdue";
-				}
-			} else if (diffDays === 1) {
-				dueDateCell.innerHTML = this.translate("TOMORROW");
-				dueDateCell.className += "xsmall tomorrow";
-			} else if (diffDays < 7) {
-				dueDateCell.innerHTML = dueDate.toLocaleDateString(config.language, {
-					"weekday": "short"
-				});
-				dueDateCell.className += "xsmall";
-			} else if (diffMonths < 7 || dueDate.getFullYear() == now.getFullYear()) {
-				dueDateCell.innerHTML = dueDate.toLocaleDateString(config.language, {
-					"month": "short"
-				}) + " " + dueDate.getDate();
-				dueDateCell.className += "xsmall";
-			} else if (item.due.date === "2100-12-31") {
-				dueDateCell.innerHTML = "";
-				dueDateCell.className += "xsmall";
-			} else {
-				dueDateCell.innerHTML = dueDate.toLocaleDateString(config.language, {
-					"month": "short"
-				}) + " " + dueDate.getDate() + " " + dueDate.getFullYear();
-				dueDateCell.className += "xsmall";
-			}
-
-			if (dueDateCell.innerHTML !== "" && !item.all_day) {
-				function formatTime(d) {
-					function z(n) {
-						return (n < 10 ? "0" : "") + n;
-					}
-					var h = d.getHours();
-					var m = z(d.getMinutes());
-					if (config.timeFormat == 12) {
-						return " " + (h % 12 || 12) + ":" + m + (h < 12 ? " AM" : " PM");
-					} else {
-						return " " + h + ":" + m;
-					}
-				}
-				dueDateCell.innerHTML += formatTime(dueDateTime);
-			}
-			// if (dueDateCell.innerHTML != "") {
-				row.appendChild(dueDateCell);
-			// }
-			
-
-			/* cell for project */
-			if (this.config.showProject) {
-				var spacerCell2 = document.createElement("td");
-				spacerCell2.className = "spacerCell";
-				spacerCell2.innerHTML = "";
-				row.appendChild(spacerCell2);
-
-				var project = this.tasks.projects.find(p => p.id === item.project_id);
-				var projectcolor = this.config.projectColors[project.color];
-				var projectCell = document.createElement("td");
-				projectCell.className = "xsmall";
-				projectCell.innerHTML = project.name + "<span class='projectcolor' style='color: " + projectcolor + "; background-color: " + projectcolor + "'></span>";
-				row.appendChild(projectCell);
-			}
-
-			/* cell for assignee avatar */
-			if (this.config.displayAvatar) {
-				var avatarCell = document.createElement("td");
-				var avatarImg = document.createElement("img");
-				avatarImg.className = "todoAvatarImg";
-
-				var colIndex = collaboratorsMap.get(item.responsible_uid);
-				if (typeof colIndex !== "undefined") {
-					avatarImg.src = "https://dcff1xvirvpfp.cloudfront.net/" + this.tasks.collaborators[colIndex].image_id + "_big.jpg";
-				} else { avatarImg.src = "/modules/MMM-Todoist/1x1px.png"; }
-
-				avatarCell.appendChild(avatarImg);
-				row.appendChild(avatarCell);
-			}
-
-			// Create fade effect by MichMich (MIT)
-			if (this.config.fade && this.config.fadePoint < 1) {
-				if (this.config.fadePoint < 0) {
-					this.config.fadePoint = 0;
-				}
-				var startingPoint = this.tasks.items.length * this.config.fadePoint;
-				var steps = this.tasks.items.length - startingPoint;
-				if (i >= startingPoint) {
-					var currentStep = i - startingPoint;
-					row.style.opacity = 1 - (1 / steps * currentStep);
-				}
-			}
-			// End Create fade effect by MichMich (MIT)
-		}
-		wrapper.appendChild(table); //quand la table est finie (loop des sensors finie), on l'ajoute au wrapper
 
 		// display the update time at the end, if defined so by the user config
 		if (this.config.displayLastUpdate) {
