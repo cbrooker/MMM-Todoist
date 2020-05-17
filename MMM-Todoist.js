@@ -56,7 +56,7 @@ Module.register("MMM-Todoist", {
 		// 	"#ffcc00", "#74e8d3", "#3bd5fb", "#dc4fad", "#ac193d", "#d24726", "#82ba00", "#03b3b2", "#008299",
 		// 	"#5db2ff", "#0072c6", "#000000", "#777777"
 		// ], //These colors come from Todoist and their order matters if you want the colors to match your Todoist project colors.
-		
+
 		//TODOIST Change how they are doing Project Colors, so now I'm changing it.
 		projectColors: {
 			30:'#b8256f',
@@ -418,15 +418,15 @@ Module.register("MMM-Todoist", {
 		return this.createCell("spacerCell", "&nbsp;");
 	},
 	addTodoTextCell: function(item) {
-		return this.createCell("title bright alignLeft", 
+		return this.createCell("title bright alignLeft",
 			this.shorten(item.content, this.config.maxTitleLength, this.config.wrapEvents));
 
 		// return this.createCell("title bright alignLeft", item.content);
 	},
 	addDueDateCell: function(item) {
-		var className = "bright align-right dueDate ";
+		var className = "xsmall bright align-right dueDate ";
 		var innerHTML = "";
-		
+
 		var oneDay = 24 * 60 * 60 * 1000;
 		var dueDateTime = new Date(item.due.date);
 		var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
@@ -435,14 +435,15 @@ Module.register("MMM-Todoist", {
 		var diffDays = Math.floor((dueDate - today + 7200000) / (oneDay));
 		var diffMonths = (dueDate.getFullYear() * 12 + dueDate.getMonth()) - (now.getFullYear() * 12 + now.getMonth());
 
-		if (diffDays < -1) {
-			innerHTML = dueDate.toLocaleDateString(config.language, {
-												"month": "short"
-											}) + " " + dueDate.getDate();
-			className += "xsmall overdue";
+		if (diffDays < -7) {
+			innerHTML = dueDate.toLocaleDateString(config.language, {"month":"short", "day":"numeric"});
+			className += "overdue";
+		} else if (diffDays >= -7 && diffDays < -1) {
+				innerHTML = dueDate.toLocaleDateString(config.language, {"weekday":"long"});
+				className += "overdue";
 		} else if (diffDays === -1) {
 			innerHTML = this.translate("YESTERDAY");
-			className += "xsmall overdue";
+			className += "overdue";
 		} else if (diffDays === 0) {
 			innerHTML = this.translate("TODAY");
 			if (item.all_day || dueDateTime >= now) {
@@ -452,25 +453,15 @@ Module.register("MMM-Todoist", {
 			}
 		} else if (diffDays === 1) {
 			innerHTML = this.translate("TOMORROW");
-			className += "xsmall tomorrow";
+			className += "tomorrow";
 		} else if (diffDays < 7) {
-			innerHTML = dueDate.toLocaleDateString(config.language, {
-				"weekday": "short"
-			});
-			className += "xsmall";
+			innerHTML = dueDate.toLocaleDateString(config.language, {"weekday": "long"});
 		} else if (diffMonths < 7 || dueDate.getFullYear() == now.getFullYear()) {
-			innerHTML = dueDate.toLocaleDateString(config.language, {
-				"month": "short"
-			}) + " " + dueDate.getDate();
-			className += "xsmall";
+			innerHTML = dueDate.toLocaleDateString(config.language, {"month":"short", "day":"numeric"});
 		} else if (item.due.date === "2100-12-31") {
 			innerHTML = "";
-			className += "xsmall";
 		} else {
-			innerHTML = dueDate.toLocaleDateString(config.language, {
-				"month": "short"
-			}) + " " + dueDate.getDate() + " " + dueDate.getFullYear();
-			className += "xsmall";
+			innerHTML = dueDate.toLocaleDateString(config.language, {"year":"numeric", "month": "short", "day":"numeric"});
 		}
 
 		if (innerHTML !== "" && !item.all_day) {
@@ -496,7 +487,7 @@ Module.register("MMM-Todoist", {
 		var innerHTML = project.name + "<span class='projectcolor' style='color: " + projectcolor + "; background-color: " + projectcolor + "'></span>";
 		return this.createCell("xsmall", innerHTML);
 	},
-	addAssigneeAvatorCell: function(item, collaboratorsMap) {	
+	addAssigneeAvatorCell: function(item, collaboratorsMap) {
 		var avatarImg = document.createElement("img");
 		avatarImg.className = "todoAvatarImg";
 
@@ -511,7 +502,7 @@ Module.register("MMM-Todoist", {
 		return cell;
 	},
 	getDom: function () {
-	
+
 		//Add a new div to be able to display the update time alone after all the task
 		var wrapper = document.createElement("div");
 
@@ -529,7 +520,7 @@ Module.register("MMM-Todoist", {
 
 		var divBody = document.createElement("div");
 		divBody.className = "divTableBody";
-		
+
 		if (this.tasks === undefined) {
 			return wrapper;
 		}
@@ -546,7 +537,7 @@ Module.register("MMM-Todoist", {
 			var divRow = document.createElement("div");
 			//Add the Row
 			divRow.className = "divTableRow";
-			
+
 
 			//Columns
 			divRow.appendChild(this.addPriorityIndicatorCell(item));
@@ -563,7 +554,7 @@ Module.register("MMM-Todoist", {
 
 			divBody.appendChild(divRow);
 		});
-		
+
 		divTable.appendChild(divBody);
 		wrapper.appendChild(divTable);
 

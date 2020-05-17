@@ -24,15 +24,18 @@
 }
 
 .overdue {
-    text-decoration: underline #ac0000;
+    color: #D1453B; /* original Todoist color */
+    font-weight: bold;
 }
 
 .today {
-    text-decoration: underline #03a05c;
+    color: #058527; /* original Todoist color */
+    font-weight: bold;
 }
 
 .tomorrow {
-    text-decoration: underline #166cec;
+    color: #B7741E; /* original Todoist color */
+    font-weight: bold;
 }
 
 .projectcolor {
@@ -54,10 +57,12 @@
 .todoAvatarImg {
     border-radius: 50%;
     /* filter: grayscale(100%); */
-    height: 27px;
+    height: 30px;
     display: block;
-    margin-left: 10px;
-    margin-right: auto;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 .divTable{
@@ -74,6 +79,7 @@
 .divTableCell, .divTableHead {
 	/* border: 1px solid #999999; */
 	display: table-cell;
+  vertical-align: middle;
 	/* padding: 3px 10px; */
 }
 .divTableHeading {
