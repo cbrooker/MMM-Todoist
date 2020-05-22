@@ -52,6 +52,20 @@ The following properties can be configured:
 			</td>
 		</tr>
 		<tr>
+			<td><code>blacklistProjects</code></td>
+			<td>
+				When this option is enabled, <code>projects</code> becomes a <i>blacklist.</i>
+				Any project that is <b>not</b> in <code>projects</code> will be used.<br>
+				<br><b>Possible values:</b> <code>boolean</code>
+				<br><b>Default value:</b> <code>false</code>
+				<br><b>Example:</b> <code>true</code>
+				<br>
+				<br>
+				NB: If used in combination with <code>labels</code>, tasks that are in a blacklisted
+				project but match a label will still be shown!
+			</td>
+		</tr>
+		<tr>
 			<td><code>projects</code></td>
 			<td>
 				Array of ProjectIDs you want to display. <br>
