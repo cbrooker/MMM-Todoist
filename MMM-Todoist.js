@@ -34,8 +34,9 @@ Module.register("MMM-Todoist", {
 
 	defaults: {
 		maximumEntries: 10,
-		projects: ["inbox"],
-    	labels: [""],
+		projects: [],
+		blacklistProjects: false,
+	    	labels: [""],
 		updateInterval: 10 * 60 * 1000, // every 10 minutes,
 		fade: true,
 		fadePoint: 0.25,
@@ -245,7 +246,7 @@ Module.register("MMM-Todoist", {
 	filterTodoistData: function (tasks) {
 		var self = this;
 		var items = [];
-    	var labelIds = [];
+		var labelIds = [];
 
 		if (tasks == undefined) {
 			return;
@@ -255,6 +256,23 @@ Module.register("MMM-Todoist", {
 		}
 		if (tasks.items == undefined) {
 			return;
+		}
+
+		if (this.config.blacklistProjects) {
+			// take all projects in payload, and remove the ones specified by user
+			// i.e., convert user's "whitelist" into a "blacklist"
+			this.config.projects = [];
+			tasks.projects.forEach(project => {
+				if(this.userList.includes(project.id)) {
+					return; // blacklisted
+				}
+				this.config.projects.push(project.id);
+			});
+			if(self.config.debug) {
+				console.log("MMM-Todoist: original list of projects was blacklisted.\n" +
+					"Only considering the following projects:");
+				console.log(this.config.projects);
+			}
 		}
 
 		// Loop through labels fetched from API and find corresponding label IDs for task filtering
