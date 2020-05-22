@@ -126,9 +126,13 @@ Module.register("MMM-Todoist", {
 			}
 		}
 
+		// keep track of user's projects list (used to build the "whitelist")
+		this.userList = typeof this.config.projects !== "undefined" ?
+			JSON.parse(JSON.stringify(this.config.projects)) : [];
+
 		this.sendSocketNotification("FETCH_TODOIST", this.config);
 
-		//add ID to the setInterval functionto be able to stop it later on
+		//add ID to the setInterval function to be able to stop it later on
 		this.updateIntervalID = setInterval(function () {
 			self.sendSocketNotification("FETCH_TODOIST", self.config);
 		}, this.config.updateInterval);
