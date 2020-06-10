@@ -534,6 +534,10 @@ Module.register("MMM-Todoist", {
 	},
 	getDom: function () {
 	
+		if (this.config.hideWhenEmpty && this.tasks.items.length===0) {
+			return null;
+		}
+	
 		//Add a new div to be able to display the update time alone after all the task
 		var wrapper = document.createElement("div");
 
