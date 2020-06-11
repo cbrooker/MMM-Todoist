@@ -17,6 +17,7 @@ modules: [
 		position: 'top_right',	// This can be any of the regions. Best results in left or right regions.
 		header: 'Todoist', // This is optional
 		config: { // See 'Configuration options' for more information.
+			hideWhenEmpty: false,
 			accessToken: 'accessToken from Todoist',
 			maximumEntries: 60,
 			updateInterval: 10*60*1000, // Update every 10 minutes
@@ -197,6 +198,13 @@ The following properties can be configured:
 				<br><b>Default value:</b> <code>false</code>
 			</td>
 		</tr>		
+		<tr>
+			<td><code>hideWhenEmpty</code></td>
+			<td>Hide widget when all lists are empty (including header).<br>
+				<br><b>Possible values:</b> <code>boolean</code>
+				<br><b>Default value:</b> <code>false</code>
+			</td>
+		</tr>
 		
 	</tbody>
 </table>
