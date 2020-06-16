@@ -349,8 +349,8 @@ Module.register("MMM-Todoist", {
 				item.due["date"] = "2100-12-31";
 				item.all_day = true;
 			}
-			//Not used right now
-			item.ISOString = new Date(item.due.date);
+			// Used to sort by date.
+			item.date = self.parseDueDate(item.due.date);
 
 			// as v8 API does not have 'all_day' field anymore then check due.date for presence of time
 			// if due.date has a time then set item.all_day to false else all_day is true
@@ -408,17 +408,13 @@ Module.register("MMM-Todoist", {
 	},
 	sortByDueDateAsc: function (itemstoSort) {
 		itemstoSort.sort(function (a, b) {
-			var dateA = new Date(a.ISOString),
-				dateB = new Date(b.ISOString);
-			return dateA - dateB;
+			return a.date - b.date;
 		});
 		return itemstoSort;
 	},
 	sortByDueDateDesc: function (itemstoSort) {
 		itemstoSort.sort(function (a, b) {
-			var dateA = new Date(a.ISOString),
-				dateB = new Date(b.ISOString);
-			return dateB - dateA;
+			return b.date - a.date;
 		});
 		return itemstoSort;
 	},
