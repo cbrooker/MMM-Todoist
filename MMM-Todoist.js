@@ -295,11 +295,11 @@ Module.register("MMM-Todoist", {
 				}
 
 				var oneDay = 24 * 60 * 60 * 1000;
-				var dueDateTime = new Date(item.due.date);
+				var dueDateTime = self.parseDueDate(item.due.date);
 				var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
 				var now = new Date();
 				var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-				var diffDays = Math.floor((dueDate - today + 7200000) / (oneDay));
+				var diffDays = Math.floor((dueDate - today) / (oneDay));
 				return diffDays <= self.config.displayTasksWithinDays;
 			});
 		}
@@ -387,6 +387,16 @@ Module.register("MMM-Todoist", {
 		};
 
 	},
+	/*
+	 * The Todoist API returns task due dates as strings in these two formats: YYYY-MM-DD and YYYY-MM-DDThh:mm:ss
+	 * This depends on whether a task only has a due day or a due day and time. You cannot pass this date string into
+	 * "new Date()" - it is inconsistent. In one format, the date string is considered to be in UTC, the other in the
+	 * local timezone. The parseDueDate function keeps Dates consistent by keeping them all relative to the local timezone.
+	 */
+	parseDueDate: function (date) {
+		let [year, month, day, hour = 0, minute = 0, second = 0] = date.split(/\D/).map(Number);
+		return new Date(year, month - 1, day, hour, minute, second);
+	},
 	sortByTodoist: function (itemstoSort) {
 		itemstoSort.sort(function (a, b) {
 			// 2019-12-31 bugfix by thyed, property is child_order, not item_order
@@ -450,7 +460,7 @@ Module.register("MMM-Todoist", {
 		var innerHTML = "";
 		
 		var oneDay = 24 * 60 * 60 * 1000;
-		var dueDateTime = new Date(item.due.date);
+		var dueDateTime = this.parseDueDate(item.due.date);
 		var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
 		var now = new Date();
 		var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
