@@ -460,7 +460,7 @@ Module.register("MMM-Todoist", {
 		var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
 		var now = new Date();
 		var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-		var diffDays = Math.floor((dueDate - today + 7200000) / (oneDay));
+		var diffDays = Math.floor((dueDate - today) / (oneDay));
 		var diffMonths = (dueDate.getFullYear() * 12 + dueDate.getMonth()) - (now.getFullYear() * 12 + now.getMonth());
 
 		if (diffDays < -1) {
