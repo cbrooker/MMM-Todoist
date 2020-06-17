@@ -295,11 +295,11 @@ Module.register("MMM-Todoist", {
 				}
 
 				var oneDay = 24 * 60 * 60 * 1000;
-				var dueDateTime = new Date(item.due.date);
+				var dueDateTime = self.parseDueDate(item.due.date);
 				var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
 				var now = new Date();
 				var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-				var diffDays = Math.floor((dueDate - today + 7200000) / (oneDay));
+				var diffDays = Math.floor((dueDate - today) / (oneDay));
 				return diffDays <= self.config.displayTasksWithinDays;
 			});
 		}
@@ -349,8 +349,8 @@ Module.register("MMM-Todoist", {
 				item.due["date"] = "2100-12-31";
 				item.all_day = true;
 			}
-			//Not used right now
-			item.ISOString = new Date(item.due.date);
+			// Used to sort by date.
+			item.date = self.parseDueDate(item.due.date);
 
 			// as v8 API does not have 'all_day' field anymore then check due.date for presence of time
 			// if due.date has a time then set item.all_day to false else all_day is true
@@ -387,6 +387,16 @@ Module.register("MMM-Todoist", {
 		};
 
 	},
+	/*
+	 * The Todoist API returns task due dates as strings in these two formats: YYYY-MM-DD and YYYY-MM-DDThh:mm:ss
+	 * This depends on whether a task only has a due day or a due day and time. You cannot pass this date string into
+	 * "new Date()" - it is inconsistent. In one format, the date string is considered to be in UTC, the other in the
+	 * local timezone. The parseDueDate function keeps Dates consistent by keeping them all relative to the local timezone.
+	 */
+	parseDueDate: function (date) {
+		let [year, month, day, hour = 0, minute = 0, second = 0] = date.split(/\D/).map(Number);
+		return new Date(year, month - 1, day, hour, minute, second);
+	},
 	sortByTodoist: function (itemstoSort) {
 		itemstoSort.sort(function (a, b) {
 			// 2019-12-31 bugfix by thyed, property is child_order, not item_order
@@ -398,17 +408,13 @@ Module.register("MMM-Todoist", {
 	},
 	sortByDueDateAsc: function (itemstoSort) {
 		itemstoSort.sort(function (a, b) {
-			var dateA = new Date(a.ISOString),
-				dateB = new Date(b.ISOString);
-			return dateA - dateB;
+			return a.date - b.date;
 		});
 		return itemstoSort;
 	},
 	sortByDueDateDesc: function (itemstoSort) {
 		itemstoSort.sort(function (a, b) {
-			var dateA = new Date(a.ISOString),
-				dateB = new Date(b.ISOString);
-			return dateB - dateA;
+			return b.date - a.date;
 		});
 		return itemstoSort;
 	},
@@ -450,11 +456,11 @@ Module.register("MMM-Todoist", {
 		var innerHTML = "";
 		
 		var oneDay = 24 * 60 * 60 * 1000;
-		var dueDateTime = new Date(item.due.date);
+		var dueDateTime = this.parseDueDate(item.due.date);
 		var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
 		var now = new Date();
 		var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-		var diffDays = Math.floor((dueDate - today + 7200000) / (oneDay));
+		var diffDays = Math.floor((dueDate - today) / (oneDay));
 		var diffMonths = (dueDate.getFullYear() * 12 + dueDate.getMonth()) - (now.getFullYear() * 12 + now.getMonth());
 
 		if (diffDays < -1) {
