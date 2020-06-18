@@ -391,10 +391,18 @@ Module.register("MMM-Todoist", {
 	 * The Todoist API returns task due dates as strings in these two formats: YYYY-MM-DD and YYYY-MM-DDThh:mm:ss
 	 * This depends on whether a task only has a due day or a due day and time. You cannot pass this date string into
 	 * "new Date()" - it is inconsistent. In one format, the date string is considered to be in UTC, the other in the
-	 * local timezone. The parseDueDate function keeps Dates consistent by keeping them all relative to the local timezone.
+	 * local timezone. Additionally, if the task's due date has a timezone set, it is given in UTC (zulu format),
+	 * otherwise it is local time. The parseDueDate function keeps Dates consistent by interpreting them all relative
+	 * to the same timezone.
 	 */
 	parseDueDate: function (date) {
 		let [year, month, day, hour = 0, minute = 0, second = 0] = date.split(/\D/).map(Number);
+
+		// If the task's due date has a timezone set (as opposed to the default floating timezone), it's given in UTC time.
+		if (date[date.length -1] === "Z") {
+			return new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+		}
+
 		return new Date(year, month - 1, day, hour, minute, second);
 	},
 	sortByTodoist: function (itemstoSort) {
