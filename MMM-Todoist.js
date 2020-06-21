@@ -537,7 +537,7 @@ Module.register("MMM-Todoist", {
 		avatarImg.className = "todoAvatarImg";
 
 		var colIndex = collaboratorsMap.get(item.responsible_uid);
-		if (typeof colIndex !== "undefined") {
+		if (typeof colIndex !== "undefined" && this.tasks.collaborators[colIndex].image_id!=null) {
 			avatarImg.src = "https://dcff1xvirvpfp.cloudfront.net/" + this.tasks.collaborators[colIndex].image_id + "_big.jpg";
 		} else { avatarImg.src = "/modules/MMM-Todoist/1x1px.png"; }
 
