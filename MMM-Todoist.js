@@ -529,7 +529,7 @@ Module.register("MMM-Todoist", {
 	addProjectCell: function(item) {
 		var project = this.tasks.projects.find(p => p.id === item.project_id);
 		var projectcolor = this.config.projectColors[project.color];
-		var innerHTML = project.name + "<span class='projectcolor' style='color: " + projectcolor + "; background-color: " + projectcolor + "'></span>";
+		var innerHTML = "<span class='projectcolor' style='color: " + projectcolor + "; background-color: " + projectcolor + "'></span>" + project.name;
 		return this.createCell("xsmall", innerHTML);
 	},
 	addAssigneeAvatorCell: function(item, collaboratorsMap) {	

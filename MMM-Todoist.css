@@ -37,7 +37,7 @@
 
 .projectcolor {
     padding: 0 !important;
-    margin-left: 4px !important;
+    margin-right: 4px !important;
     display: inline-block;
     width: 12px;
     height: 12px;
@@ -75,6 +75,7 @@
 	/* border: 1px solid #999999; */
 	display: table-cell;
 	/* padding: 3px 10px; */
+	vertical-align: middle;
 }
 .divTableHeading {
 	background-color: #EEE;
