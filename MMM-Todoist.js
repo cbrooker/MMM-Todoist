@@ -366,6 +366,9 @@ Module.register("MMM-Todoist", {
 		case "todoist":
 			sorteditems = self.sortByTodoist(items);
 			break;
+		case 'priority':
+			sorteditems = self.sortByPriority(items);
+			break;
 		case "dueDateAsc":
 			sorteditems = self.sortByDueDateAsc(items);
 			break;
@@ -426,6 +429,12 @@ Module.register("MMM-Todoist", {
 		});
 		return itemstoSort;
 	},
+	sortByPriority: function (itemstoSort) {
+		itemstoSort.sort(function (a, b) {
+			return b.priority - a.priority;
+		});
+		return itemstoSort;
+	},
 	createCell: function(className, innerHTML) {
 		var cell = document.createElement("div");
 		cell.className = "divTableCell " + className;
@@ -454,8 +463,13 @@ Module.register("MMM-Todoist", {
 		return this.createCell("spacerCell", "&nbsp;");
 	},
 	addTodoTextCell: function(item) {
+		var temp = document.createElement('div');
+		temp.innerHTML = item.contentHtml;
+
+		var para = temp.getElementsByTagName('p');
+
 		return this.createCell("title bright alignLeft", 
-			this.shorten(item.content, this.config.maxTitleLength, this.config.wrapEvents));
+			this.shorten(para[0].innerHTML, this.config.maxTitleLength, this.config.wrapEvents));
 
 		// return this.createCell("title bright alignLeft", item.content);
 	},

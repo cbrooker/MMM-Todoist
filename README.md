@@ -137,6 +137,7 @@ The following properties can be configured:
 			<td>This will determine the sorting method used when displaying your Todos.<br>
 				<br><b>Possible values:</b> <br />
 				<code>"todoist"</code> <span>- Sort based on the order in Todoist.</span> </br >
+				<code>"priority"</code> <span>- Sort based on the priority, in Descending order. (Highest priority first)</span> </br >
 				<code>"dueDateAsc"</code> <span>- Sort based on the Due Date of the Todo Ascending. (Oldest date first)</span> </br>
 				<code>"dueDateDesc"</code> <span>- Sort based on the Due Date of the Todo Descending. (Newest date first)</span></br>
 				<br><b>Default value:</b> <code>"todoist"</code>
