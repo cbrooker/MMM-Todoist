@@ -372,6 +372,9 @@ Module.register("MMM-Todoist", {
 		case "dueDateDesc":
 			sorteditems = self.sortByDueDateDesc(items);
 			break;
+		case "dueDateDescPriority":
+			sorteditems = self.sortByDueDateDescPriority(items);
+			break;
 		default:
 			sorteditems = self.sortByTodoist(items);
 			break;
@@ -426,6 +429,16 @@ Module.register("MMM-Todoist", {
 		});
 		return itemstoSort;
 	},
+	sortByDueDateDescPriority: function (itemstoSort) {
+		itemstoSort.sort(function (a, b) {
+			if (a.date > b.date) return 1;
+			if (a.date < b.date) return -1;
+
+			if (a.priority < b.priority) return 1;
+			if (a.priority > b.priority) return -1;
+		});
+		return itemstoSort;
+    	},
 	createCell: function(className, innerHTML) {
 		var cell = document.createElement("div");
 		cell.className = "divTableCell " + className;
