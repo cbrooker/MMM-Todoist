@@ -87,7 +87,7 @@ Module.register("MMM-Todoist", {
 		apiBase: "https://todoist.com/API",
 		todoistEndpoint: "sync",
 
-		todoistResourceType: "[\"items\", \"projects\", \"collaborators\", \"user\", \"labels\"]",
+		todoistResourceType: ["items", "projects", "collaborators", "user", "labels"],
 
 		debug: false
 	},
