@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/cbrooker/MMM-Todoist#readme",
   "dependencies": {
-    "request": "latest"
+    "request": "latest",
+    "showdown": "latest"
   }
 }

@@ -10,6 +10,9 @@
 
 const NodeHelper = require("node_helper");
 const request = require("request");
+const showdown = require("showdown");
+
+const markdown = new showdown.Converter();
 
 module.exports = NodeHelper.create({
 	start: function() {
@@ -52,6 +55,10 @@ module.exports = NodeHelper.create({
 			}
 			if (response.statusCode === 200) {
 				var taskJson = JSON.parse(body);
+				taskJson.items.forEach((item)=>{
+					item.contentHtml = markdown.makeHtml(item.content);
+				});
+
 				taskJson.accessToken = acessCode;
 				self.sendSocketNotification("TASKS", taskJson);
 			}
