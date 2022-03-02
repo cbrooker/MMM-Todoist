@@ -40,6 +40,7 @@ Module.register("MMM-Todoist", {
 		updateInterval: 10 * 60 * 1000, // every 10 minutes,
 		fade: true,
 		fadePoint: 0.25,
+		fadeMinimumOpacity: 0.25,
 		sortType: "todoist",
 
 		//New config from AgP42
@@ -634,6 +635,8 @@ Module.register("MMM-Todoist", {
 		divTable.appendChild(divBody);
 		wrapper.appendChild(divTable);
 
+		// create the gradient
+		if (this.config.fade && this.config.fadePoint < 1) divTable.querySelectorAll('.divTableRow').forEach((row, i, rows) => row.style.opacity = Math.max(0, Math.min(1 - ((((i + 1) * (1 / (rows.length))) - this.config.fadePoint) / (1 - this.config.fadePoint)) * (1 - this.config.fadeMinimumOpacity), 1)));
 
 		// display the update time at the end, if defined so by the user config
 		if (this.config.displayLastUpdate) {

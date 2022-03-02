@@ -126,6 +126,13 @@ The following properties can be configured:
 			</td>
 		</tr>
 		<tr>
+			<td><code>fadeMinimumOpacity</code></td>
+			<td>Opacity of the last item if fade is enabled.<br>
+				<br><b>Possible values:</b> <code>0</code> (last item is completely transparent) - <code>1</code> (no fade)
+				<br><b>Default value:</b> <code>0.25</code>
+			</td>
+		</tr>
+		<tr>
 			<td><code>showProject</code></td>
 			<td>If true this will display the Project to the right of the DueDates as it does on Todost.<br>
 				<br><b>Possible values:</b> <code>boolean</code>
