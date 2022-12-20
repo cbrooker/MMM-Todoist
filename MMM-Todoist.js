@@ -84,7 +84,7 @@ Module.register("MMM-Todoist", {
 		},
 
 		//This has been designed to use the Todoist Sync API.
-		apiVersion: "v8",
+		apiVersion: "v9",
 		apiBase: "https://todoist.com/API",
 		todoistEndpoint: "sync",
 
