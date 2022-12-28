@@ -35,10 +35,10 @@ module.exports = NodeHelper.create({
 			method: "POST",
 			headers: {
 				"content-type": "application/x-www-form-urlencoded",
-				"cache-control": "no-cache"
+				"cache-control": "no-cache",
+				"Authorization": "Bearer " + acessCode
 			},
 			form: {
-				token: self.config.accessToken,
 				sync_token: "*",
 				resource_types: self.config.todoistResourceType
 			}
