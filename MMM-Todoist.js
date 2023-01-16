@@ -526,20 +526,20 @@ Module.register("MMM-Todoist", {
 			innerHTML = dueDate.toLocaleDateString(config.language, {
 												"month": "short"
 											}) + " " + dueDate.getDate();
-			className += "xsmall overdue";
+			className += "xsmall todoDueOverdue";
 		} else if (diffDays === -1) {
 			innerHTML = this.translate("YESTERDAY");
-			className += "xsmall overdue";
+			className += "xsmall todoDueOverdue";
 		} else if (diffDays === 0) {
 			innerHTML = this.translate("TODAY");
 			if (item.all_day || dueDateTime >= now) {
-				className += "today";
+				className += "todoDueToday";
 			} else {
-				className += "overdue";
+				className += "todoDueOverdue";
 			}
 		} else if (diffDays === 1) {
 			innerHTML = this.translate("TOMORROW");
-			className += "xsmall tomorrow";
+			className += "xsmall todoDueTomorrow";
 		} else if (diffDays < 7) {
 			innerHTML = dueDate.toLocaleDateString(config.language, {
 				"weekday": "short"
