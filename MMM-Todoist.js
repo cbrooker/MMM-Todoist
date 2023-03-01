@@ -275,7 +275,7 @@ Module.register("MMM-Todoist", {
 				console.log(this.config.projects);
 			}
 		}
-
+		/* Not needed for labels, but kept for reuse elsewhere
 		// Loop through labels fetched from API and find corresponding label IDs for task filtering
 		// Could be re-used for project names -> project IDs.
 		if (self.config.labels.length>0 && tasks.labels != undefined) {
@@ -288,7 +288,7 @@ Module.register("MMM-Todoist", {
 				}
 			}
 		}
-
+		*/
 		if (self.config.displayTasksWithinDays > -1 || !self.config.displayTasksWithoutDue) {
 			tasks.items = tasks.items.filter(function (item) {
 				if (item.due === null) {
@@ -311,17 +311,17 @@ Module.register("MMM-Todoist", {
 			if (item.parent_id!=null && !self.config.displaySubtasks) { return; }
 
 			// Filter using label if a label is configured
-			if (labelIds.length>0 && item.labels.length > 0) {
-				// Check all the labels assigned to the task. Add to items if match with configured label
-				for (let label of item.labels) {
-					for (let labelNumber of labelIds) {
-						if (label == labelNumber) {
-							items.push(item);
-							return;
-						}
-					}
-				}
-			}
+			if (self.config.labels.length > 0 && item.labels.length > 0) {
+        			// Check all the labels assigned to the task. Add to items if match with configured label
+        			for (let label of item.labels) {
+          				for (let labelName of self.config.labels) {
+            					if (label == labelName) { //the string returned from SyncAPI matches the strong in config
+              						items.push(item);
+              						return;
+            					}
+          				}
+        			}
+      			}
 
 			// Filter using projets if projects are configured
 			if (self.config.projects.length>0){
