@@ -53,7 +53,7 @@ The following properties can be configured:
 				<ul>
 					<li>the access token created during the oAuth process associated with your app in the <a href="https://developer.todoist.com/appconsole.html">App Management consol</a></li>
 					<li>the "test token" generated in the <a href="https://developer.todoist.com/appconsole.html">App Management consol</a> without going through the steps of the oAuth token (For the web site value requested, you can use "http://example.com" if you don't have a website)</li>
-					<li>the "API token" found in your account's <a href="https://todoist.com/app/settings/integrations/developer">Integration > Deeloper settings</a></li>
+					<li>the "API token" found in your account's <a href="https://todoist.com/app/settings/integrations/developer">Integration > Developer settings</a></li>
 				</ul>
 			</td>
 		</tr>
