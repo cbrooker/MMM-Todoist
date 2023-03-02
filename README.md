@@ -51,9 +51,9 @@ The following properties can be configured:
 				<br><b>Default value:</b> <code>none</code>
 				<br><b>Note:</b> You can use one of three values here.
 				<ul>
-					<li>the access token created during the oAuth process associated with your app in the App Management page</li>
-					<li>the "test token" generated in the App Management page withou going through the steps of the oAuth token (For the web site value requested, you can use "http://example.com" if you don't have a website)</li>
-					<li>the "API token" found in your account's Integration settings</li>
+					<li>the access token created during the oAuth process associated with your app in the <a href="https://developer.todoist.com/appconsole.html">App Management consol</a></li>
+					<li>the "test token" generated in the <a href="https://developer.todoist.com/appconsole.html">App Management consol</a> without going through the steps of the oAuth token (For the web site value requested, you can use "http://example.com" if you don't have a website)</li>
+					<li>the "API token" found in your account's <a href="https://todoist.com/app/settings/integrations/developer">Integration > Deeloper settings</a></li>
 				</ul>
 			</td>
 		</tr>
