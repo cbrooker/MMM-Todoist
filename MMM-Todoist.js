@@ -499,9 +499,14 @@ Module.register("MMM-Todoist", {
 		temp.innerHTML = item.contentHtml;
 
 		var para = temp.getElementsByTagName('p');
-
+		var taskText = para[0].innerHTML;
+		// if sorting by todoist, indent subtasks under their parents
+		if (this.config.sortType === "todoist" && item.parent_id) {
+			// this item is a subtask so indent it
+			taskText = '- ' + taskText;
+		}
 		return this.createCell("title bright alignLeft", 
-			this.shorten(para[0].innerHTML, this.config.maxTitleLength, this.config.wrapEvents));
+			this.shorten(taskText, this.config.maxTitleLength, this.config.wrapEvents));
 
 		// return this.createCell("title bright alignLeft", item.content);
 	},
