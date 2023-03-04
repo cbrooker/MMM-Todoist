@@ -414,10 +414,28 @@ Module.register("MMM-Todoist", {
 	},
 	sortByTodoist: function (itemstoSort) {
 		itemstoSort.sort(function (a, b) {
-			// 2019-12-31 bugfix by thyed, property is child_order, not item_order
-			var itemA = a.child_order,
-				itemB = b.child_order;
-			return itemA - itemB;
+			if (!a.parent_id && !b.parent_id) {
+				// neither have parent_id so both are parent tasks, sort by their id
+				return a.id - b.id;
+			} else if (a.parent_id === b.parent_id) {
+				// both are children of the same parent task, sort by child order
+				return a.child_order - b.child_order;
+			} else if (a.parent_id === b.id) {
+				// a is a child of b, so it goes after b
+				return 1;
+			} else if (b.parent_id === a.id) {
+				// b is a child of a, so it goes after a
+				return -1;
+			} else if (!a.parent_id) {
+				// a is a parent task, b is a child (but not of a), so compare a to b's parent
+				return a.id - b.parent_id;
+			} else if (!b.parent_id) {
+				// b is a parent task, a is a child (but not of b), so compare b to a's parent
+				return a.parent_id - b.id;
+			} else {
+				// both are child tasks, but with different parents so sort by their parents
+				return a.parent_id - b.parent_id;
+			}
 		});
 		return itemstoSort;
 	},
