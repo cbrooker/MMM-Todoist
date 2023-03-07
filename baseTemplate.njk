@@ -1,0 +1,23 @@
+{#    displayOrder: [
+      "content",
+      "due",
+      "priority",
+      "labels",
+      "assignee",
+      "checked"
+    ],
+    displayPriorityAsIcon: true,
+    displayDueAsCountdown: false
+#}
+{% if loaded %}
+<div class="container-main">
+    <ul>
+        {% for item in self.tasks.items %}
+            {% for col in self.config.displayOrder %}
+                <li>{{item[col]}}</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+
+

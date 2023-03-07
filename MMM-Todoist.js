@@ -88,9 +88,23 @@ Module.register("MMM-Todoist", {
     todoistEndpoint: "sync",
 
     todoistResourceType:
-      '["items", "projects", "collaborators", "user", "labels"]',
+      '["items", "projects", "collaborators", "user", "labels"]', //TODO add "filters", "reminders", "sections",
 
-    debug: false
+    debug: false,
+
+    //Options to display for each task
+    displayOrder: [
+      "content",
+      "due",
+      "countdown",
+      "priority",
+      "labels",
+      "assignee",
+      "avatar",
+      "checked"
+    ],
+    displayPriorityAsIcon: true,
+    displayDueAsCountdown: false
   },
 
   // Define required scripts.
@@ -427,6 +441,14 @@ Module.register("MMM-Todoist", {
 
     //Slice by max Entries
     items = items.slice(0, this.config.maximumEntries);
+
+    //If displayAsCountdown is true, convert all dates to days until due
+    //TODO: write countdown converter
+
+    //TODO: write converter from responsible_uid to collaborator name
+
+    //if displayPriorityAsIcon is true, convert priority number to icon
+    //TODO: write priority icon converter
 
     this.tasks = {
       items: items,
