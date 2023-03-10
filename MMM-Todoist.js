@@ -108,6 +108,14 @@ Module.register("MMM-Todoist", {
   },
 
   // Define required scripts.
+  getTemplate: function () {
+    return "baseTemplate.njk";
+  },
+  getTemplateData: function () {
+    Log.info("SENDING TEMPLATE DATA");
+    return this.config;
+  },
+
   getStyles: function () {
     return ["MMM-Todoist.css"];
   },
@@ -148,6 +156,7 @@ Module.register("MMM-Todoist", {
         ? JSON.parse(JSON.stringify(this.config.projects))
         : [];
 
+    Log.info("FETCHING TODOIST DATA");
     this.sendSocketNotification("FETCH_TODOIST", this.config);
 
     //add ID to the setInterval function to be able to stop it later on
@@ -261,7 +270,8 @@ Module.register("MMM-Todoist", {
   // ******** Data sent from the Backend helper. This is the data from the Todoist API ************
   socketNotificationReceived: function (notification, payload) {
     if (notification === "TASKS") {
-      this.filterTodoistData(payload);
+      Log.info("FILTERING PAYLOAD");
+      this.config.tasks = this.filterTodoistData(payload);
 
       if (this.config.displayLastUpdate) {
         this.lastUpdate = Date.now() / 1000; //save the timestamp of the last update to be able to display it
@@ -276,6 +286,7 @@ Module.register("MMM-Todoist", {
       }
 
       this.loaded = true;
+      Log.info("UPDATING DOM");
       this.updateDom(1000);
     } else if (notification === "FETCH_ERROR") {
       Log.error("Todoist Error. Could not fetch todos: " + payload.error);
@@ -286,6 +297,8 @@ Module.register("MMM-Todoist", {
     var self = this;
     var items = [];
     var labelIds = [];
+
+    Log.info("DOING FILTERING NOW");
 
     if (tasks == undefined) {
       return;
@@ -383,7 +396,7 @@ Module.register("MMM-Todoist", {
       }
     });
 
-    //**** FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs */
+    // FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs //
     if (self.config.debug) {
       console.log(
         "%c *** PROJECT -- ID ***",
@@ -396,7 +409,6 @@ Module.register("MMM-Todoist", {
         );
       });
     }
-    //****** */
 
     //Used for ordering by date
     items.forEach(function (item) {
@@ -417,7 +429,7 @@ Module.register("MMM-Todoist", {
       }
     });
 
-    //***** Sorting code if you want to add new methods. */
+    // Sorting code if you want to add new methods. //
     switch (self.config.sortType) {
       case "todoist":
         sorteditems = self.sortByTodoist(items);
@@ -455,6 +467,8 @@ Module.register("MMM-Todoist", {
       projects: tasks.projects,
       collaborators: tasks.collaborators
     };
+    Log.info("FILTERING COMPLETE--UPDATING CONFIG");
+    return this.tasks;
   },
   /*
    * The Todoist API returns task due dates as strings in these two formats: YYYY-MM-DD and YYYY-MM-DDThh:mm:ss
@@ -675,8 +689,8 @@ Module.register("MMM-Todoist", {
     cell.appendChild(avatarImg);
 
     return cell;
-  },
-  getDom: function () {
+  }
+  /*   getDom: function () {
     if (this.config.hideWhenEmpty && this.tasks.items.length === 0) {
       return null;
     }
@@ -764,7 +778,7 @@ Module.register("MMM-Todoist", {
       wrapper.appendChild(updateinfo);
     }
 
-    //**** FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs - (People who can't see console) */
+    // FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs - (People who can't see console) //
     if (this.config.debug) {
       var projectsids = document.createElement("div");
       projectsids.className = "xsmall light align-left";
@@ -775,8 +789,7 @@ Module.register("MMM-Todoist", {
       });
       wrapper.appendChild(projectsids);
     }
-    //****** */
 
     return wrapper;
-  }
+  } */
 });

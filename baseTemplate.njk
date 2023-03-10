@@ -9,8 +9,9 @@
     displayPriorityAsIcon: true,
     displayDueAsCountdown: false
 #}
-{% if loaded %}
+
 <div class="container-main">
+    This template is displaying this text.
     <ul>
         {% for item in self.tasks.items %}
             {% for col in self.config.displayOrder %}
@@ -19,5 +20,6 @@
         {% endfor %}
     </ul>
 </div>
+
 
 
