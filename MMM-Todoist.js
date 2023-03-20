@@ -95,7 +95,7 @@ Module.register("MMM-Todoist", {
     //Options to display for each task
     displayOrder: [
       "content",
-      "due",
+      "duedate",
       "countdown",
       "priority",
       "labels",
@@ -104,7 +104,8 @@ Module.register("MMM-Todoist", {
       "checked"
     ],
     displayPriorityAsIcon: true,
-    displayDueAsCountdown: false
+    displayDueAsCountdown: false,
+    tasks: false
   },
 
   // Define required scripts.
@@ -113,6 +114,7 @@ Module.register("MMM-Todoist", {
   },
   getTemplateData: function () {
     Log.info("SENDING TEMPLATE DATA");
+    Log.info(this.config);
     return this.config;
   },
 
@@ -410,11 +412,12 @@ Module.register("MMM-Todoist", {
       });
     }
 
-    //Used for ordering by date
+    //convert item information to display formats
     items.forEach(function (item) {
+      //Used for ordering by date
       if (item.due === null) {
         item.due = {};
-        item.due["date"] = "2100-12-31";
+        item.due["date"] = "2100-12-31"; //FAKE DUE DATE WHEN NONE SUPPLIED
         item.all_day = true;
       }
       // Used to sort by date.
@@ -427,6 +430,54 @@ Module.register("MMM-Todoist", {
       } else {
         item.all_day = true;
       }
+
+      //TEMP converting due date object to string
+      //TODO: add config option for date string to show
+      if (item.due["date"] == "2100-12-31") {
+        //check for fake due date
+        item.duedate = "---";
+      } else {
+        item.duedate = moment(self.parseDueDate(item.due.date)).format(
+          "ddd, MMM Do"
+        );
+      }
+
+      //If displayAsCountdown is true, convert all dates to days until due
+      //TODO: write countdown converter
+      if (self.config.displayOrder.includes("countdown")) {
+        var oneDay = 24 * 60 * 60 * 1000;
+        var dueDateTime = self.parseDueDate(item.due.date);
+        var dueDate = new Date(
+          dueDateTime.getFullYear(),
+          dueDateTime.getMonth(),
+          dueDateTime.getDate()
+        );
+        var now = new Date();
+        var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        var diffDays = Math.floor((dueDate - today) / oneDay);
+        if (item.due["date"] == "2100-12-31") {
+          //check for fake due date
+          item.countdown = "---";
+        } else {
+          item.countdown = diffDays;
+        }
+      }
+      //TODO: write converter from responsible_uid to collaborator name
+      let collaborator = tasks.collaborators.find(
+        ({ id }) => id === item.responsible_uid
+      );
+      if (collaborator === undefined) {
+        item.assignee = "---";
+      } else {
+        item.assignee = collaborator.full_name;
+        item.avatarURL =
+          "https://dcff1xvirvpfp.cloudfront.net/" +
+          collaborator.image_id +
+          "_small.jpg";
+      }
+
+      //if displayPriorityAsIcon is true, convert priority number to icon
+      //TODO: write priority icon converter
     });
 
     // Sorting code if you want to add new methods. //
@@ -453,14 +504,6 @@ Module.register("MMM-Todoist", {
 
     //Slice by max Entries
     items = items.slice(0, this.config.maximumEntries);
-
-    //If displayAsCountdown is true, convert all dates to days until due
-    //TODO: write countdown converter
-
-    //TODO: write converter from responsible_uid to collaborator name
-
-    //if displayPriorityAsIcon is true, convert priority number to icon
-    //TODO: write priority icon converter
 
     this.tasks = {
       items: items,

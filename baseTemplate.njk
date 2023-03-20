@@ -10,15 +10,34 @@
     displayDueAsCountdown: false
 #}
 
-<div class="container-main">
-    This template is displaying this text.
-    <ul>
-        {% for item in self.tasks.items %}
-            {% for col in self.config.displayOrder %}
-                <li>{{item[col]}}</li>
+<div class="tasks-wrapper small">
+    <table>
+        <thead>
+            {% for header in displayOrder %}
+            <th id="header-{{header}}">{{header}}</th>
             {% endfor %}
+        </thead>
+        <tbody>
+        {% for task in tasks.items %}
+        <tr>
+            {% for col in displayOrder %}
+                <td class="col-{{col}}">
+                {% if col == "labels" %}
+                    {%for label in task.labels %}
+                        {# break label string into individual labels #}
+                        <span class="task-label-bubble">{{label}}</span>
+                    {% endfor %} 
+                {% elseif col == "avatar" %}
+                <img src="{{task.avatarURL}}" />
+                {% else %}
+                    {{task[col]}}
+                {% endif %}
+                </td>
+            {% endfor %}
+        </tr>
         {% endfor %}
-    </ul>
+        </tbody>
+        </table>
 </div>
 
 
