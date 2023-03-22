@@ -82,6 +82,30 @@ Module.register("MMM-Todoist", {
       49: "#ccac93"
     },
 
+    //colorMap taken from https://developer.todoist.com/guides/#colors
+    colorMap: [
+      { id: 30, name: "berry_red", hex: "#b8256f" },
+      { id: 31, name: "red", hex: "#db4035" },
+      { id: 31, name: "orange", hex: "#ff9933" },
+      { id: 33, name: "yellow", hex: "#fad000" },
+      { id: 34, name: "olive_green", hex: "#afb83b" },
+      { id: 35, name: "lime_green", hex: "#7ecc49" },
+      { id: 36, name: "green", hex: "#299438" },
+      { id: 37, name: "mint_green", hex: "#6accbc" },
+      { id: 38, name: "teal", hex: "#158fad" },
+      { id: 39, name: "sky_blue", hex: "#14aaf5" },
+      { id: 40, name: "light_blue", hex: "#96c3eb" },
+      { id: 41, name: "blue", hex: "#4073ff" },
+      { id: 42, name: "grape", hex: "#884dff" },
+      { id: 43, name: "violet", hex: "#af38eb" },
+      { id: 44, name: "lavender", hex: "#eb96eb" },
+      { id: 45, name: "magenta", hex: "#e05194" },
+      { id: 46, name: "salmon", hex: "#ff8d85" },
+      { id: 47, name: "charcoal", hex: "#808080" },
+      { id: 48, name: "grey", hex: "#b8b8b8" },
+      { id: 49, name: "taupe", hex: "#ccac93" }
+    ],
+
     //This has been designed to use the Todoist Sync API.
     apiVersion: "v9",
     apiBase: "https://todoist.com/API",
@@ -101,10 +125,18 @@ Module.register("MMM-Todoist", {
       "labels",
       "assignee",
       "avatar",
-      "checked"
+      "project"
     ],
-    displayPriorityAsIcon: true,
-    displayDueAsCountdown: false,
+    priorityColors: {
+      1: "#333333",
+      2: "#246fe0",
+      3: "#eb8909",
+      4: "#d1453b"
+    },
+    displayProjectAs: "both", //"name" excludes color dot icon, "color" excludes the project name (anything else = "both")
+    duedateFormat: "ddd, MMM Do", //see moment.js strong formatting
+    displayColumnHeadings: "icons", //"text", "icons", "none" --hiding column text saves a little space in some columns
+    displayTaskInProjectColor: false, ///content column text is displayed in project color
     tasks: false
   },
 
@@ -272,7 +304,6 @@ Module.register("MMM-Todoist", {
   // ******** Data sent from the Backend helper. This is the data from the Todoist API ************
   socketNotificationReceived: function (notification, payload) {
     if (notification === "TASKS") {
-      Log.info("FILTERING PAYLOAD");
       this.config.tasks = this.filterTodoistData(payload);
 
       if (this.config.displayLastUpdate) {
@@ -288,7 +319,6 @@ Module.register("MMM-Todoist", {
       }
 
       this.loaded = true;
-      Log.info("UPDATING DOM");
       this.updateDom(1000);
     } else if (notification === "FETCH_ERROR") {
       Log.error("Todoist Error. Could not fetch todos: " + payload.error);
@@ -299,8 +329,6 @@ Module.register("MMM-Todoist", {
     var self = this;
     var items = [];
     var labelIds = [];
-
-    Log.info("DOING FILTERING NOW");
 
     if (tasks == undefined) {
       return;
@@ -387,7 +415,7 @@ Module.register("MMM-Todoist", {
         }
       }
 
-      // Filter using projets if projects are configured
+      // Filter using projects if projects are configured
       if (self.config.projects.length > 0) {
         self.config.projects.forEach(function (project) {
           if (item.project_id == project) {
@@ -431,19 +459,36 @@ Module.register("MMM-Todoist", {
         item.all_day = true;
       }
 
-      //TEMP converting due date object to string
-      //TODO: add config option for date string to show
+      //converting due date object to string
       if (item.due["date"] == "2100-12-31") {
         //check for fake due date
         item.duedate = "---";
       } else {
         item.duedate = moment(self.parseDueDate(item.due.date)).format(
-          "ddd, MMM Do"
+          self.config.duedateFormat
         );
       }
 
-      //If displayAsCountdown is true, convert all dates to days until due
-      //TODO: write countdown converter
+      //inserting project info into task item
+      if (self.config.displayOrder.includes("project")) {
+        let proj = tasks.projects.find(({ id }) => id === item.project_id);
+        if (proj === undefined) {
+          item.project = {
+            name: "---",
+            color: "#808080"
+          };
+        } else {
+          let projColor = self.config.colorMap.find(
+            ({ name }) => name === proj.color
+          );
+          item.project = {
+            name: proj.name,
+            color: projColor.hex
+          };
+        }
+      }
+
+      //convert all dates to days until due for countdown
       if (self.config.displayOrder.includes("countdown")) {
         var oneDay = 24 * 60 * 60 * 1000;
         var dueDateTime = self.parseDueDate(item.due.date);
@@ -462,22 +507,22 @@ Module.register("MMM-Todoist", {
           item.countdown = diffDays;
         }
       }
-      //TODO: write converter from responsible_uid to collaborator name
-      let collaborator = tasks.collaborators.find(
-        ({ id }) => id === item.responsible_uid
-      );
-      if (collaborator === undefined) {
-        item.assignee = "---";
-      } else {
-        item.assignee = collaborator.full_name;
-        item.avatarURL =
-          "https://dcff1xvirvpfp.cloudfront.net/" +
-          collaborator.image_id +
-          "_small.jpg";
-      }
 
-      //if displayPriorityAsIcon is true, convert priority number to icon
-      //TODO: write priority icon converter
+      //convert assignee to avatar url
+      if (self.config.displayOrder.includes("avatar")) {
+        let collaborator = tasks.collaborators.find(
+          ({ id }) => id === item.responsible_uid
+        );
+        if (collaborator === undefined) {
+          item.assignee = "---";
+        } else {
+          item.assignee = collaborator.full_name;
+          item.avatarURL =
+            "https://dcff1xvirvpfp.cloudfront.net/" +
+            collaborator.image_id +
+            "_small.jpg";
+        }
+      }
     });
 
     // Sorting code if you want to add new methods. //
@@ -510,7 +555,6 @@ Module.register("MMM-Todoist", {
       projects: tasks.projects,
       collaborators: tasks.collaborators
     };
-    Log.info("FILTERING COMPLETE--UPDATING CONFIG");
     return this.tasks;
   },
   /*
@@ -570,6 +614,8 @@ Module.register("MMM-Todoist", {
     });
     return itemstoSort;
   },
+
+  //BELOW IS KEPT ONLY TEMPORARY-----------------------------------------------------------------------------------
   createCell: function (className, innerHTML) {
     var cell = document.createElement("div");
     cell.className = "divTableCell " + className;
@@ -733,106 +779,4 @@ Module.register("MMM-Todoist", {
 
     return cell;
   }
-  /*   getDom: function () {
-    if (this.config.hideWhenEmpty && this.tasks.items.length === 0) {
-      return null;
-    }
-
-    //Add a new div to be able to display the update time alone after all the task
-    var wrapper = document.createElement("div");
-
-    //display "loading..." if not loaded
-    if (!this.loaded) {
-      wrapper.innerHTML = "Loading...";
-      wrapper.className = "dimmed light small";
-      return wrapper;
-    }
-
-    //New CSS based Table
-    var divTable = document.createElement("div");
-    divTable.className = "divTable normal small light";
-
-    var divBody = document.createElement("div");
-    divBody.className = "divTableBody";
-
-    if (this.tasks === undefined) {
-      return wrapper;
-    }
-
-    // create mapping from user id to collaborator index
-    var collaboratorsMap = new Map();
-
-    for (var value = 0; value < this.tasks.collaborators.length; value++) {
-      collaboratorsMap.set(this.tasks.collaborators[value].id, value);
-    }
-
-    //Iterate through Todos
-    this.tasks.items.forEach((item) => {
-      var divRow = document.createElement("div");
-      //Add the Row
-      divRow.className = "divTableRow";
-
-      //Columns
-      divRow.appendChild(this.addPriorityIndicatorCell(item));
-      divRow.appendChild(this.addColumnSpacerCell());
-      divRow.appendChild(this.addTodoTextCell(item));
-      divRow.appendChild(this.addDueDateCell(item));
-      if (this.config.showProject) {
-        divRow.appendChild(this.addColumnSpacerCell());
-        divRow.appendChild(this.addProjectCell(item));
-      }
-      if (this.config.displayAvatar) {
-        divRow.appendChild(this.addAssigneeAvatorCell(item, collaboratorsMap));
-      }
-
-      divBody.appendChild(divRow);
-    });
-
-    divTable.appendChild(divBody);
-    wrapper.appendChild(divTable);
-
-    // create the gradient
-    if (this.config.fade && this.config.fadePoint < 1)
-      divTable
-        .querySelectorAll(".divTableRow")
-        .forEach(
-          (row, i, rows) =>
-            (row.style.opacity = Math.max(
-              0,
-              Math.min(
-                1 -
-                  (((i + 1) * (1 / rows.length) - this.config.fadePoint) /
-                    (1 - this.config.fadePoint)) *
-                    (1 - this.config.fadeMinimumOpacity),
-                1
-              )
-            ))
-        );
-
-    // display the update time at the end, if defined so by the user config
-    if (this.config.displayLastUpdate) {
-      var updateinfo = document.createElement("div");
-      updateinfo.className = "xsmall light align-left";
-      updateinfo.innerHTML =
-        "Update : " +
-        moment
-          .unix(this.lastUpdate)
-          .format(this.config.displayLastUpdateFormat);
-      wrapper.appendChild(updateinfo);
-    }
-
-    // FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs - (People who can't see console) //
-    if (this.config.debug) {
-      var projectsids = document.createElement("div");
-      projectsids.className = "xsmall light align-left";
-      projectsids.innerHTML = "<span>*** PROJECT -- ID ***</span><br />";
-      this.tasks.projects.forEach((project) => {
-        projectsids.innerHTML +=
-          "<span>" + project.name + " -- " + project.id + "</span><br />";
-      });
-      wrapper.appendChild(projectsids);
-    }
-
-    return wrapper;
-  } */
 });

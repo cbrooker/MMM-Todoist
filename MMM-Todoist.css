@@ -1,113 +1,77 @@
-.priority {
-  width: 3px;
-  border-right: 3px;
-}
-
-.priority1 {
-  background-color: #d1453b;
-}
-
-.priority2 {
-  background-color: #eb8909;
-}
-
-.priority3 {
-  background-color: #246fe0;
-}
-
-.alignLeft {
-  text-align: left;
-}
-
-.spacerCell {
-  width: 3px;
-}
-
-.overdue {
-  text-decoration: underline #ac0000;
-}
-
-.today {
-  text-decoration: underline #03a05c;
-}
-
-.tomorrow {
-  text-decoration: underline #166cec;
-}
-
-.projectcolor {
-  padding: 0 !important;
-  margin-right: 4px !important;
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  border-radius: 12px;
-  vertical-align: top;
-  margin-top: 3px;
-}
-
-/* .dueDate {
-    min-width: 100px;
-} */
-
-.todoAvatarImg {
-  border-radius: 50%;
-  /* filter: grayscale(100%); */
-  height: 27px;
-  display: block;
-  margin-left: 10px;
-  margin-right: auto;
-}
-
-.divTable {
-  display: table;
+.task-table {
   width: 100%;
-}
-.divTableRow {
-  display: table-row;
-}
-.divTableHeading {
-  background-color: #eee;
-  display: table-header-group;
-}
-.divTableCell,
-.divTableHead {
-  /* border: 1px solid #999999; */
-  display: table-cell;
-  /* padding: 3px 10px; */
-  vertical-align: middle;
-}
-.divTableHeading {
-  background-color: #eee;
-  display: table-header-group;
-  font-weight: bold;
-}
-.divTableFoot {
-  background-color: #eee;
-  display: table-footer-group;
-  font-weight: bold;
-}
-.divTableBody {
-  display: table-row-group;
-}
-.todoTextCell {
-  width: 400px;
-  overflow: hidden;
-}
-.tasks-wrapper {
-  width: 100%;
+  text-align: center;
   border-collapse: collapse;
+}
+
+.task-table thead th {
+  text-align: center;
+}
+
+.col-content {
   text-align: left;
 }
-.tasks-wrapper th,
-.tasks-wrapper td {
-  padding: 20px;
+
+.task-table td {
+  padding: 0 5px 0 5px;
 }
-.tasks-wrapper tbody tr {
-  border-bottom: 2px solid #dddddd;
+
+.header-icon-countdown::before {
+  font: var(--fa-font-solid);
+  content: "\f254";
 }
+
+.header-icon-content::before {
+  font: var(--fa-font-solid);
+  content: "\f04b";
+}
+
+.header-icon-duedate::before {
+  font: var(--fa-font-solid);
+  content: "\f274";
+}
+
+.header-icon-priority::before {
+  font: var(--fa-font-solid);
+  content: "\f06a";
+}
+
+.header-icon-assignee::before {
+  font: var(--fa-font-solid);
+  content: "\f007";
+}
+
+.header-icon-avatar::before {
+  font: var(--fa-font-solid);
+  content: "\f007";
+}
+
+.header-icon-labels::before {
+  font: var(--fa-font-solid);
+  content: "\f02b";
+}
+
+.header-icon-project::before {
+  font: var(--fa-font-solid);
+  content: "\f03a";
+}
+
 .task-label-bubble {
   background-color: #333333;
   border-radius: 15px;
   padding: 2px 6px 2px 6px;
+}
+.task-project-bubble {
+  text-align: center;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 10px;
+  padding: 0 6px 0 6px;
+}
+
+/*font awesome requires this to make icons render reliably */
+.icon::before {
+  display: inline-block;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
 }
