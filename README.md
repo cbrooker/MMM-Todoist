@@ -46,10 +46,15 @@ The following properties can be configured:
 	<tbody>
 		<tr>
 			<td><code>accessToken</code></td>
-			<td>Your Todoist access token, you can get it <a href="https://developer.todoist.com/appconsole.html">here</a>.<br>
+			<td>Your Todoist access token<br>
 				<br><b>Possible values:</b> <code>string</code>
 				<br><b>Default value:</b> <code>none</code>
-				<br><b>Note:</b> It is possible to use the "Test token" and so not to follow the steps of oAuth token. For the web site value requested, you can use "http://example.com" if you don't have a website. 
+				<br><b>Note:</b> You can use one of three values here.
+				<ul>
+					<li>the access token created during the oAuth process associated with your app in the <a href="https://developer.todoist.com/appconsole.html">App Management consol</a></li>
+					<li>the "test token" generated in the <a href="https://developer.todoist.com/appconsole.html">App Management consol</a> without going through the steps of the oAuth token (For the web site value requested, you can use "http://example.com" if you don't have a website)</li>
+					<li>the "API token" found in your account's <a href="https://todoist.com/app/settings/integrations/developer">Integration > Developer settings</a></li>
+				</ul>
 			</td>
 		</tr>
 		<tr>
