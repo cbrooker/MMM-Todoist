@@ -4,11 +4,18 @@
  * Module: MMM-Todoist
  *
  * By Chris Brooker
+ * Forked by Amos Glenn
  *
  * MIT Licensed.
  */
 
 /*
+  * FORKED BY AMOS GLENN March 20, 2023
+  * -replaced dom construction in javascript with njk template
+  * -added display column for due date countdown
+  * -added config option for column display order
+  * -added template data to config
+  * 
  * Update by mabahj 24/11/2019
  * - Added support for labels in addtion to projects
  * Update by AgP42 the 18/07/2018
