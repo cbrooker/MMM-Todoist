@@ -4,18 +4,12 @@
  * Module: MMM-Todoist
  *
  * By Chris Brooker
- * Forked by Amos Glenn
  *
  * MIT Licensed.
  */
 
 /*
-  * FORKED BY AMOS GLENN March 20, 2023
-  * -replaced dom construction in javascript with njk template
-  * -added display column for due date countdown
-  * -added config option for column display order
-  * -added template data to config
-  * 
+
  * Update by mabahj 24/11/2019
  * - Added support for labels in addtion to projects
  * Update by AgP42 the 18/07/2018
@@ -40,9 +34,9 @@ var UserPresence = true; //true by default, so no impact for user without a PIR 
 Module.register("MMM-Todoist", {
   defaults: {
     maximumEntries: 10,
-    projects: [],
+    projects: [], //include all task from these projects regardless of label
     blacklistProjects: false,
-    labels: [""],
+    labels: [""], //tasks with these labels will be displayed regardless of project
     updateInterval: 10 * 60 * 1000, // every 10 minutes,
     fade: true,
     fadePoint: 0.25,
@@ -52,44 +46,15 @@ Module.register("MMM-Todoist", {
     //New config from AgP42
     displayLastUpdate: false, //add or not a line after the tasks with the last server update time
     displayLastUpdateFormat: "dd - HH:mm:ss", //format to display the last update. See Moment.js documentation for all display possibilities
-    maxTitleLength: 25, //10 to 50. Value to cut the line if wrapEvents: true
+    maxTitleLength: 50, //10 to 50. Value to cut the line if wrapEvents: true
     wrapEvents: false, // wrap events to multiple lines breaking at maxTitleLength
     displayTasksWithoutDue: true, // Set to false to not print tasks without a due date
     displayTasksWithinDays: -1, // If >= 0, do not print tasks with a due date more than this number of days into the future (e.g., 0 prints today and overdue)
     // 2019-12-31 by thyed
     displaySubtasks: true, // set to false to exclude subtasks
-    displayAvatar: false,
-    showProject: true,
-    // projectColors: ["#95ef63", "#ff8581", "#ffc471", "#f9ec75", "#a8c8e4", "#d2b8a3", "#e2a8e4", "#cccccc", "#fb886e",
-    // 	"#ffcc00", "#74e8d3", "#3bd5fb", "#dc4fad", "#ac193d", "#d24726", "#82ba00", "#03b3b2", "#008299",
-    // 	"#5db2ff", "#0072c6", "#000000", "#777777"
-    // ], //These colors come from Todoist and their order matters if you want the colors to match your Todoist project colors.
-
-    //TODOIST Change how they are doing Project Colors, so now I'm changing it.
-    projectColors: {
-      30: "#b8256f",
-      31: "#db4035",
-      32: "#ff9933",
-      33: "#fad000",
-      34: "#afb83b",
-      35: "#7ecc49",
-      36: "#299438",
-      37: "#6accbc",
-      38: "#158fad",
-      39: "#14aaf5",
-      40: "#96c3eb",
-      41: "#4073ff",
-      42: "#884dff",
-      43: "#af38eb",
-      44: "#eb96eb",
-      45: "#e05194",
-      46: "#ff8d85",
-      47: "#808080",
-      48: "#b8b8b8",
-      49: "#ccac93"
-    },
 
     //colorMap taken from https://developer.todoist.com/guides/#colors
+    //names needed for project colors
     colorMap: [
       { id: 30, name: "berry_red", hex: "#b8256f" },
       { id: 31, name: "red", hex: "#db4035" },
@@ -119,11 +84,11 @@ Module.register("MMM-Todoist", {
     todoistEndpoint: "sync",
 
     todoistResourceType:
-      '["items", "projects", "collaborators", "user", "labels"]', //TODO add "filters", "reminders", "sections",
+      '["items", "projects", "collaborators", "user", "labels"]',
 
-    debug: false,
+    debug: true,
 
-    //Options to display for each task
+    //display these columns in this order; all are optional
     displayOrder: [
       "content",
       "duedate",
@@ -134,17 +99,16 @@ Module.register("MMM-Todoist", {
       "avatar",
       "project"
     ],
+    //taken from Todoist
     priorityColors: {
       1: "#333333",
       2: "#246fe0",
       3: "#eb8909",
       4: "#d1453b"
     },
-    displayProjectAs: "both", //"name" excludes color dot icon, "color" excludes the project name (anything else = "both")
-    duedateFormat: "ddd, MMM Do", //see moment.js strong formatting
-    displayColumnHeadings: "icons", //"text", "icons", "none" --hiding column text saves a little space in some columns
-    displayTaskInProjectColor: false, ///content column text is displayed in project color
-    tasks: false
+    displayProjectAs: "both", //"name" excludes color border surrounding project name, "color" excludes the project name (anything else = "both" project name and project color border around name)
+    displayColumnHeadings: "icons", //"text", "icons", "none" --using column text makes table significantly wider
+    tasks: false //not user adjustable, this is where the template data is stored
   },
 
   // Define required scripts.
@@ -152,8 +116,6 @@ Module.register("MMM-Todoist", {
     return "baseTemplate.njk";
   },
   getTemplateData: function () {
-    Log.info("SENDING TEMPLATE DATA");
-    Log.info(this.config);
     return this.config;
   },
 
@@ -197,7 +159,6 @@ Module.register("MMM-Todoist", {
         ? JSON.parse(JSON.stringify(this.config.projects))
         : [];
 
-    Log.info("FETCHING TODOIST DATA");
     this.sendSocketNotification("FETCH_TODOIST", this.config);
 
     //add ID to the setInterval function to be able to stop it later on
@@ -255,62 +216,13 @@ Module.register("MMM-Todoist", {
     }
   },
 
-  // Code from MichMich from default module Calendar : to manage task displayed on several lines
-  /**
-   * Shortens a string if it's longer than maxLength and add a ellipsis to the end
-   *
-   * @param {string} string Text string to shorten
-   * @param {number} maxLength The max length of the string
-   * @param {boolean} wrapEvents Wrap the text after the line has reached maxLength
-   * @returns {string} The shortened string
-   */
-  shorten: function (string, maxLength, wrapEvents) {
-    if (typeof string !== "string") {
-      return "";
-    }
-
-    if (wrapEvents === true) {
-      var temp = "";
-      var currentLine = "";
-      var words = string.split(" ");
-
-      for (var i = 0; i < words.length; i++) {
-        var word = words[i];
-        if (
-          currentLine.length + word.length <
-          (typeof maxLength === "number" ? maxLength : 25) - 1
-        ) {
-          // max - 1 to account for a space
-          currentLine += word + " ";
-        } else {
-          if (currentLine.length > 0) {
-            temp += currentLine + "<br>" + word + " ";
-          } else {
-            temp += word + "<br>";
-          }
-          currentLine = "";
-        }
-      }
-
-      return (temp + currentLine).trim();
-    } else {
-      if (
-        maxLength &&
-        typeof maxLength === "number" &&
-        string.length > maxLength
-      ) {
-        return string.trim().slice(0, maxLength) + "&hellip;";
-      } else {
-        return string.trim();
-      }
-    }
-  },
-  //end modif AgP
-
   // Override socket notification handler.
   // ******** Data sent from the Backend helper. This is the data from the Todoist API ************
   socketNotificationReceived: function (notification, payload) {
     if (notification === "TASKS") {
+      if (this.config.debug) {
+        Log.info(payload);
+      }
       this.config.tasks = this.filterTodoistData(payload);
 
       if (this.config.displayLastUpdate) {
@@ -366,19 +278,7 @@ Module.register("MMM-Todoist", {
       }
     }
 
-    // Loop through labels fetched from API and find corresponding label IDs for task filtering
-    // Could be re-used for project names -> project IDs.
-    /* if (self.config.labels.length > 0 && tasks.labels != undefined) {
-      for (let apiLabel of tasks.labels) {
-        for (let configLabelName of self.config.labels) {
-          if (apiLabel.name == configLabelName) {
-            labelIds.push(apiLabel.id);
-            break;
-          }
-        }
-      }
-    } */
-
+    //include all tasks with due dates (if set in config) OR with due dates within config number of days
     if (
       self.config.displayTasksWithinDays > -1 ||
       !self.config.displayTasksWithoutDue
@@ -402,14 +302,14 @@ Module.register("MMM-Todoist", {
       });
     }
 
-    //Filter the Todos by the criteria specified in the Config
+    //filter tasks to include in template data by the criteria specified in the Config
     tasks.items.forEach(function (item) {
-      // Ignore sub-tasks
+      // do not include any subtasks
       if (item.parent_id != null && !self.config.displaySubtasks) {
         return;
       }
 
-      // Filter using label if a label is configured
+      // Filter to include all tasks with labels listed in config (if any labels are listed)
       if (self.config.labels.length > 0 && item.labels.length > 0) {
         // Check all the labels assigned to the task. Add to items if match with configured label
         for (let label of item.labels) {
@@ -422,16 +322,15 @@ Module.register("MMM-Todoist", {
         }
       }
 
-      // Filter using projects if projects are configured
+      // Filter to include tasks with projects listed in config (if any projects are listed)
       if (self.config.projects.length > 0) {
         self.config.projects.forEach(function (project) {
           if (item.project_id == project) {
             items.push(item);
-            return;
           }
         });
       }
-    });
+    }); //end of filters
 
     // FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs //
     if (self.config.debug) {
@@ -471,14 +370,12 @@ Module.register("MMM-Todoist", {
         //check for fake due date
         item.duedate = "---";
       } else {
-        item.duedate = moment(self.parseDueDate(item.due.date)).format(
-          self.config.duedateFormat
-        );
+        item.duedate = self.addDueDate(item);
       }
 
-      //inserting project info into task item
+      //inserting project info into task item for template
       if (self.config.displayOrder.includes("project")) {
-        let proj = tasks.projects.find(({ id }) => id === item.project_id);
+        let proj = tasks.projects.find(({ pid }) => pid === item.project_id);
         if (proj === undefined) {
           item.project = {
             name: "---",
@@ -495,39 +392,41 @@ Module.register("MMM-Todoist", {
         }
       }
 
-      //convert all dates to days until due for countdown
+      //convert all due dates into days-until-due for countdown
       if (self.config.displayOrder.includes("countdown")) {
-        var oneDay = 24 * 60 * 60 * 1000;
-        var dueDateTime = self.parseDueDate(item.due.date);
-        var dueDate = new Date(
-          dueDateTime.getFullYear(),
-          dueDateTime.getMonth(),
-          dueDateTime.getDate()
-        );
-        var now = new Date();
-        var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        var diffDays = Math.floor((dueDate - today) / oneDay);
         if (item.due["date"] == "2100-12-31") {
           //check for fake due date
           item.countdown = "---";
         } else {
-          item.countdown = diffDays;
+          let itemDueDate = moment(self.parseDueDate(item.due.date));
+          item.countdown = itemDueDate.diff(moment(), "days") + 1; //adding to include the day something is due
         }
       }
 
-      //convert assignee to avatar url
-      if (self.config.displayOrder.includes("avatar")) {
+      //insert assignee and avatar url
+      if (
+        self.config.displayOrder.includes("assignee") ||
+        self.config.displayOrder.includes("avatar")
+      ) {
         let collaborator = tasks.collaborators.find(
           ({ id }) => id === item.responsible_uid
         );
         if (collaborator === undefined) {
           item.assignee = "---";
+          item.avatarURL =
+            "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 15'%3E%3Ccircle cx='7.5' cy='7.5' r='7.1' style='fill: none; stroke: %23828282; stroke-width: .8px;'/%3E%3Ccircle cx='7.5' cy='5.63' r='3.08' style='fill: none; stroke: %23828282; stroke-width: .8px;'/%3E%3Cpath d='M2.33,12.36c1.02-2.86,4.16-4.35,7.01-3.34,1.56,.55,2.78,1.78,3.34,3.34' style='fill: none; stroke: %23828282; stroke-width: .8px;'/%3E%3C/svg%3E";
         } else {
           item.assignee = collaborator.full_name;
-          item.avatarURL =
-            "https://dcff1xvirvpfp.cloudfront.net/" +
-            collaborator.image_id +
-            "_small.jpg";
+          if (collaborator.image_id) {
+            /* Todoist provides a url for each user's avatar */
+            item.avatarURL =
+              "https://dcff1xvirvpfp.cloudfront.net/" +
+              collaborator.image_id +
+              "_small.jpg";
+          } else {
+            item.avatarURL =
+              "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 15'%3E%3Ccircle cx='7.5' cy='7.5' r='7.1' style='fill: none; stroke: %23828282; stroke-width: .8px;'/%3E%3Ccircle cx='7.5' cy='5.63' r='3.08' style='fill: none; stroke: %23828282; stroke-width: .8px;'/%3E%3Cpath d='M2.33,12.36c1.02-2.86,4.16-4.35,7.01-3.34,1.56,.55,2.78,1.78,3.34,3.34' style='fill: none; stroke: %23828282; stroke-width: .8px;'/%3E%3C/svg%3E";
+          }
         }
       }
     });
@@ -557,6 +456,7 @@ Module.register("MMM-Todoist", {
     //Slice by max Entries
     items = items.slice(0, this.config.maximumEntries);
 
+    //collate filtered and converted task information
     this.tasks = {
       items: items,
       projects: tasks.projects,
@@ -622,53 +522,8 @@ Module.register("MMM-Todoist", {
     return itemstoSort;
   },
 
-  //BELOW IS KEPT ONLY TEMPORARY-----------------------------------------------------------------------------------
-  createCell: function (className, innerHTML) {
-    var cell = document.createElement("div");
-    cell.className = "divTableCell " + className;
-    cell.innerHTML = innerHTML;
-    return cell;
-  },
-  addPriorityIndicatorCell: function (item) {
-    var className = "priority ";
-    switch (item.priority) {
-      case 4:
-        className += "priority1";
-        break;
-      case 3:
-        className += "priority2";
-        break;
-      case 2:
-        className += "priority3";
-        break;
-      default:
-        className = "";
-        break;
-    }
-    return this.createCell(className, "&nbsp;");
-  },
-  addColumnSpacerCell: function () {
-    return this.createCell("spacerCell", "&nbsp;");
-  },
-  addTodoTextCell: function (item) {
-    var temp = document.createElement("div");
-    temp.innerHTML = item.contentHtml;
-
-    var para = temp.getElementsByTagName("p");
-
-    return this.createCell(
-      "title bright alignLeft",
-      this.shorten(
-        para[0].innerHTML,
-        this.config.maxTitleLength,
-        this.config.wrapEvents
-      )
-    );
-
-    // return this.createCell("title bright alignLeft", item.content);
-  },
-  addDueDateCell: function (item) {
-    var className = "bright align-right dueDate ";
+  addDueDate: function (item) {
+    item.isDue = "later"; //var className = "bright align-right dueDate ";
     var innerHTML = "";
 
     var oneDay = 24 * 60 * 60 * 1000;
@@ -693,25 +548,25 @@ Module.register("MMM-Todoist", {
         }) +
         " " +
         dueDate.getDate();
-      className += "xsmall overdue";
+      item.isDue = "overdue"; //className += "xsmall overdue";
     } else if (diffDays === -1) {
       innerHTML = this.translate("YESTERDAY");
-      className += "xsmall overdue";
+      item.isDue = "overdue"; //className += "xsmall overdue";
     } else if (diffDays === 0) {
       innerHTML = this.translate("TODAY");
       if (item.all_day || dueDateTime >= now) {
-        className += "today";
+        item.isDue = "today"; //className += "today";
       } else {
-        className += "overdue";
+        item.isDue = "overdue"; //className += "overdue";
       }
     } else if (diffDays === 1) {
       innerHTML = this.translate("TOMORROW");
-      className += "xsmall tomorrow";
+      item.isDue = "tomorrow"; //className += "xsmall tomorrow";
     } else if (diffDays < 7) {
       innerHTML = dueDate.toLocaleDateString(config.language, {
         weekday: "short"
       });
-      className += "xsmall";
+      item.isDue = "soon"; //className += "xsmall";
     } else if (diffMonths < 7 || dueDate.getFullYear() == now.getFullYear()) {
       innerHTML =
         dueDate.toLocaleDateString(config.language, {
@@ -719,10 +574,10 @@ Module.register("MMM-Todoist", {
         }) +
         " " +
         dueDate.getDate();
-      className += "xsmall";
+      //className += "xsmall";
     } else if (item.due.date === "2100-12-31") {
       innerHTML = "";
-      className += "xsmall";
+      //className += "xsmall";
     } else {
       innerHTML =
         dueDate.toLocaleDateString(config.language, {
@@ -732,9 +587,8 @@ Module.register("MMM-Todoist", {
         dueDate.getDate() +
         " " +
         dueDate.getFullYear();
-      className += "xsmall";
+      //className += "xsmall";
     }
-
     if (innerHTML !== "" && !item.all_day) {
       function formatTime(d) {
         function z(n) {
@@ -750,40 +604,6 @@ Module.register("MMM-Todoist", {
       }
       innerHTML += formatTime(dueDateTime);
     }
-    return this.createCell(className, innerHTML);
-  },
-  addProjectCell: function (item) {
-    var project = this.tasks.projects.find((p) => p.id === item.project_id);
-    var projectcolor = this.config.projectColors[project.color];
-    var innerHTML =
-      "<span class='projectcolor' style='color: " +
-      projectcolor +
-      "; background-color: " +
-      projectcolor +
-      "'></span>" +
-      project.name;
-    return this.createCell("xsmall", innerHTML);
-  },
-  addAssigneeAvatorCell: function (item, collaboratorsMap) {
-    var avatarImg = document.createElement("img");
-    avatarImg.className = "todoAvatarImg";
-
-    var colIndex = collaboratorsMap.get(item.responsible_uid);
-    if (
-      typeof colIndex !== "undefined" &&
-      this.tasks.collaborators[colIndex].image_id != null
-    ) {
-      avatarImg.src =
-        "https://dcff1xvirvpfp.cloudfront.net/" +
-        this.tasks.collaborators[colIndex].image_id +
-        "_big.jpg";
-    } else {
-      avatarImg.src = "/modules/MMM-Todoist/1x1px.png";
-    }
-
-    var cell = this.createCell("", "");
-    cell.appendChild(avatarImg);
-
-    return cell;
+    return innerHTML; //this.createCell(className, innerHTML);
   }
 });
