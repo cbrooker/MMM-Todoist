@@ -113,7 +113,7 @@ The following properties can be configured:
 			</td>
 		</tr>
 		<tr>
-			<td><code>interval</code></td>
+			<td><code>updateInterval</code></td>
 			<td>How often the module should load new todos. Be careful, this is in ms, NOT seconds! So, too low a number will lock you out for repeated server attempts!<br>
 				<br><b>Possible values:</b> <code>int</code> in <code>milliseconds</code>
 				<br><b>Default value:</b> <code>10*60*1000</code>
