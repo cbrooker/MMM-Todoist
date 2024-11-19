@@ -94,3 +94,26 @@
     width: 400px;
     overflow: hidden;
 }
+
+.bring-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.bring-list-item-add {
+    display: flex;
+    flex-direction: column;
+    width: 98px;
+    height: 100px;
+    margin: 2px;
+    font-size: 20px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    padding: 50px 0px 0px 0px;
+    border: 1px solid black;
+    border-radius: 5px;
+    background-color: grey;
+    justify-content: left;
+}

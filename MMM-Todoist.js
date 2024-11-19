@@ -58,7 +58,7 @@ Module.register("MMM-Todoist", {
 		// 	"#ffcc00", "#74e8d3", "#3bd5fb", "#dc4fad", "#ac193d", "#d24726", "#82ba00", "#03b3b2", "#008299",
 		// 	"#5db2ff", "#0072c6", "#000000", "#777777"
 		// ], //These colors come from Todoist and their order matters if you want the colors to match your Todoist project colors.
-		
+	
 		//TODOIST Change how they are doing Project Colors, so now I'm changing it.
 		projectColors: {
 			30:'#b8256f',
@@ -83,11 +83,14 @@ Module.register("MMM-Todoist", {
 			49:'#ccac93'
 		},
 
-		//This has been designed to use the Todoist Sync API.
+		// list input parameters
+		useKeyboard: false,
+		inputTasks: [],
+
+		// Non-configurable parameters
 		apiVersion: "v9",
 		apiBase: "https://todoist.com/API",
 		todoistEndpoint: "sync",
-
 		todoistResourceType: "[\"items\", \"projects\", \"collaborators\", \"user\", \"labels\"]",
 
 		debug: false
@@ -157,6 +160,12 @@ Module.register("MMM-Todoist", {
 			//Log.log("Fct notificationReceived USER_PRESENCE - payload = " + payload);
 			UserPresence = payload;
 			this.GestionUpdateIntervalToDoIst();
+		}
+
+		if (notification == "KEYBOARD_INPUT" && payload.key === "MMM-Todoist") {
+			//this.addItemToList(payload.data, payload.message);
+			var ndata = {"config" : this.config, "addData" : payload}; 
+			this.sendSocketNotification("ADDITEM_TODOIST", ndata);
 		}
 	},
 
@@ -237,6 +246,9 @@ Module.register("MMM-Todoist", {
 				Log.log("ToDoIst update OK, project : " + this.config.projects + " at : " + moment.unix(this.lastUpdate).format(this.config.displayLastUpdateFormat)); //AgP
 			}
 
+			this.loaded = true;
+			this.updateDom(1000);
+		} else if (notification === "ADDITEM") {
 			this.loaded = true;
 			this.updateDom(1000);
 		} else if (notification === "FETCH_ERROR") {
@@ -597,6 +609,48 @@ Module.register("MMM-Todoist", {
 
 		return cell;
 	},
+
+	buildTaskTable: function () {
+		//New CSS based Table
+		var divTable = document.createElement("div");
+		divTable.className = "divTable normal small light";
+
+		var divBody = document.createElement("div");
+		divBody.className = "divTableBody";
+
+		// create mapping from user id to collaborator index
+		var collaboratorsMap = new Map();
+
+		for (var value=0; value < this.tasks.collaborators.length; value++) {
+			collaboratorsMap.set(this.tasks.collaborators[value].id, value);
+		}
+
+		//Iterate through Todos
+		this.tasks.items.forEach(item => {
+			var divRow = document.createElement("div");
+			//Add the Row
+			divRow.className = "divTableRow";
+
+			//Columns
+			divRow.appendChild(this.addPriorityIndicatorCell(item));
+			divRow.appendChild(this.addColumnSpacerCell());
+			divRow.appendChild(this.addTodoTextCell(item));
+			divRow.appendChild(this.addDueDateCell(item));
+			if (this.config.showProject) {
+				divRow.appendChild(this.addColumnSpacerCell());
+				divRow.appendChild(this.addProjectCell(item));
+			}
+			if (this.config.displayAvatar) {
+				divRow.appendChild(this.addAssigneeAvatorCell(item, collaboratorsMap));
+			}
+
+			divBody.appendChild(divRow);
+		});		
+		divTable.appendChild(divBody);
+
+		return divTable;
+	},
+
 	getDom: function () {
 	
 		if (this.config.hideWhenEmpty && this.tasks.items.length===0) {
@@ -613,50 +667,39 @@ Module.register("MMM-Todoist", {
 			return wrapper;
 		}
 
-
-		//New CSS based Table
-		var divTable = document.createElement("div");
-		divTable.className = "divTable normal small light";
-
-		var divBody = document.createElement("div");
-		divBody.className = "divTableBody";
-		
 		if (this.tasks === undefined) {
 			return wrapper;
 		}
 
-		// create mapping from user id to collaborator index
-		var collaboratorsMap = new Map();
+		taskTable = this.buildTaskTable();
+		wrapper.appendChild(taskTable);
 
-		for (var value=0; value < this.tasks.collaborators.length; value++) {
-			collaboratorsMap.set(this.tasks.collaborators[value].id, value);
+		var self = this;
+		if (this.config.useKeyboard) {
+			const bringList = document.createElement("div");
+			bringList.className = "bring-list";
+
+			// For each "inputTask", add a button
+			//this.config.inputTasks.forEach(function (item, index) {
+
+			const bringListAdds = [];
+			for (var idx = 0; idx < this.config.inputTasks.length; idx++) {
+				var item = this.config.inputTasks[idx];
+				bringListAdds[idx] = document.createElement("div");
+				bringListAdds[idx].className = "bring-list-item-add";
+				bringListAdds[idx].id = item[0] + "-" + item[1];
+				bringListAdds[idx].innerHTML = item[1];
+				bringListAdds[idx].addEventListener("click", event => {
+					this.sendNotification("KEYBOARD", {
+						key: "MMM-Todoist",
+						style: "default",
+						data: {"id" : event.target.id }
+					});
+				});
+				bringList.appendChild(bringListAdds[idx]);
+			}
+			wrapper.appendChild(bringList);
 		}
-
-		//Iterate through Todos
-		this.tasks.items.forEach(item => {
-			var divRow = document.createElement("div");
-			//Add the Row
-			divRow.className = "divTableRow";
-			
-
-			//Columns
-			divRow.appendChild(this.addPriorityIndicatorCell(item));
-			divRow.appendChild(this.addColumnSpacerCell());
-			divRow.appendChild(this.addTodoTextCell(item));
-			divRow.appendChild(this.addDueDateCell(item));
-			if (this.config.showProject) {
-				divRow.appendChild(this.addColumnSpacerCell());
-				divRow.appendChild(this.addProjectCell(item));
-			}
-			if (this.config.displayAvatar) {
-				divRow.appendChild(this.addAssigneeAvatorCell(item, collaboratorsMap));
-			}
-
-			divBody.appendChild(divRow);
-		});
-		
-		divTable.appendChild(divBody);
-		wrapper.appendChild(divTable);
 
 		// create the gradient
 		if (this.config.fade && this.config.fadePoint < 1) divTable.querySelectorAll('.divTableRow').forEach((row, i, rows) => row.style.opacity = Math.max(0, Math.min(1 - ((((i + 1) * (1 / (rows.length))) - this.config.fadePoint) / (1 - this.config.fadePoint)) * (1 - this.config.fadeMinimumOpacity), 1)));
