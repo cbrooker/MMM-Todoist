@@ -238,6 +238,28 @@ The following properties can be configured:
 
 ## InputTask Configuration options
 
+InputTasks are buttons that will appear below the task list, enabling user input to add tasks to projects, or add sub-tasks to tasks. If any inputTask is specified, an additional [+] button be automatically added that allows tasks to be added to the inbox. For each specified inputTask, a *project_id* and *task* name is required. The *project_id* specifies the project under which a task will be added. The *task* specifies the parent task under which new tasks will be created (like a list). If the parent task does not exist (as a task under the *project_id* and due "today"), it will be created.
+
+### Example usage
+
+For a given config that includes the following:
+
+````javascript
+modules: [
+	{
+		...
+			inputTasks: [
+					{"project" : 166564794, "task" : "Groceries", "symbol" : "cart-shopping"},
+				 	{"project" : 166564794, "task" : "Hardware Store", "symbol" : "screwdriver-wrench", "color" : "white", "bg-color" : "darkorange"}
+				]
+    }
+	}
+]
+````
+
+Three buttons will appear (as in the screenshot below), one for a *Groceries* with a shopping cart icon, one for *Hardware Store* with a tools icon, and one for new inbox items with a [+] icon. When you click on any button (i.e. *Groceries*) the visual keyboard (MMM-Keyboard) will show up on the screen. After you input text and hit send, that text will be the name of a new sub-task under *Groceries* in the *project_id* project. If *Groceries* did not already exist, it will be created. Everything is created with a due date of *today* by default.
+
+
 The following properties can be configured for each inputTask:
 
 <table width="100%">
