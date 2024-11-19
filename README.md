@@ -334,7 +334,7 @@ Options enabled: orderBy:dueDateAsc, showProjects: false
 ![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/7.png)  
 
 Options enabled: inputTasks
-![My image]()
+![My image](todoist_btns.png)
 
 ## Attribution
 

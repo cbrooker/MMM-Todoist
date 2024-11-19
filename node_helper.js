@@ -4,7 +4,7 @@ const { unsubscribe } = require("diagnostics_channel");
 /* Magic Mirror
  * Module: MMM-Todoist
  *
- * By Chris Brooker
+ * By Chris Brooker, James Brock
  *
  * MIT Licensed.
  */
@@ -28,11 +28,11 @@ module.exports = NodeHelper.create({
 		if (notification === "ADDITEM_TODOIST") {
 			this.config = payload.config;
 			this.addData = payload.addData;
-			this.addItemToList();
+			this.fetchTodos(this.addItemToList);
 		}
 	},
 
-	fetchTodos : function() {
+	fetchTodos : function(callback) {
 		var self = this;
 		//request.debug = true;
 		var acessCode = self.config.accessToken;
@@ -66,7 +66,12 @@ module.exports = NodeHelper.create({
 				});
 
 				taskJson.accessToken = acessCode;
-				self.sendSocketNotification("TASKS", taskJson);
+
+				if (callback) {
+					callback(self, taskJson);
+				} else {
+					self.sendSocketNotification("TASKS", taskJson);
+				}
 			}
 			else{
 				console.log("Todoist api request status="+response.statusCode);
@@ -87,11 +92,8 @@ module.exports = NodeHelper.create({
 						let month = new Intl.DateTimeFormat('en', { month: '2-digit' }).format(date);
 						let day = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(date);
 						let today = `${year}-${month}-${day}`;
-						//console.log("Comparing Dates " + duedate + " : " + today);
 						if (duedate === today) {
-							//console.log("Comparing Names " + item.content + " : " + reqTask);
 							if (item.content === reqTask) {
-								console.log("ITEM FOUND: " + JSON.stringify(item));
 								itemid = item.id;
 							}
 						}
@@ -100,10 +102,6 @@ module.exports = NodeHelper.create({
 			}
 		});
 		return itemid;
-	},
-
-  returnIDMapping: function(tmpid, itemid) {
-		return [tmpid, itemid];
 	},
 
 	// TBD
@@ -115,9 +113,6 @@ module.exports = NodeHelper.create({
 		var uuid = crypto.randomBytes(16).toString('hex');
 		var tmpid = crypto.randomBytes(16).toString('hex');
 		var itemid = null;
-		console.log("UUID:" + uuid);
-		console.log("TMPID: " + tmpid);
-		console.log("PARENT: " + parent);
 		request({
 			url: self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint + "/",
 			method: "POST",
@@ -150,9 +145,6 @@ module.exports = NodeHelper.create({
 			}
 			if (response.statusCode === 200) {
 				var taskJson = JSON.parse(body);
-				console.log(JSON.stringify(taskJson));
-				console.log(JSON.stringify(taskJson["temp_id_mapping"]));
-				console.log(JSON.stringify(taskJson["temp_id_mapping"][tmpid]));
 				itemid = taskJson["temp_id_mapping"][JSON.stringify(tmpid)];
 			}
 		});
@@ -168,8 +160,12 @@ module.exports = NodeHelper.create({
 		var uuid = crypto.randomBytes(16).toString('hex');
 		var tmpid = crypto.randomBytes(16).toString('hex');
 		var itemid = null;
-		console.log("UUID:" + uuid);
-		console.log("TMPID: " + tmpid);
+
+		var proj_str = "";
+		if ((proj != "inbox")) {
+			proj_str = "\"project_id\": \"" + proj + "\",";
+		}
+
 		request({
 			url: self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint + "/",
 			method: "POST",
@@ -184,9 +180,8 @@ module.exports = NodeHelper.create({
 							\"temp_id\": \"" + tmpid + "\", \
 							\"uuid\": \"" + uuid + "\", \
 							\"args\": { \
-									\"content\": \"" + task + "\", \
-									\"project_id\": \"" + proj + "\", \
-									\"due\": {\"string\":\"today\"} \
+									\"content\": \"" + task + "\"," + proj_str +
+									"\"due\": {\"string\":\"today\"} \
 							}}]"
 			}
 		},
@@ -202,11 +197,7 @@ module.exports = NodeHelper.create({
 			}
 			if (response.statusCode === 200) {
 				var taskJson = JSON.parse(body);
-				console.log(JSON.stringify(taskJson));
-				console.log(JSON.stringify(taskJson["temp_id_mapping"]));
-				console.log(JSON.stringify(taskJson["temp_id_mapping"][tmpid]));
 				itemid = taskJson["temp_id_mapping"][tmpid];
-				console.log(itemid);
 				if (callback) {
 					callback(self, proj, self.addData.message, itemid);
 				}
@@ -214,86 +205,39 @@ module.exports = NodeHelper.create({
 		});
 	},
 
-	addItemToList: function() {
-		var self = this;
-		var acessCode = self.config.accessToken;
-		request({
-			url: self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint + "/",
-			method: "POST",
-			headers: {
-				"content-type": "application/x-www-form-urlencoded",
-				"cache-control": "no-cache",
-				"Authorization": "Bearer " + acessCode
-			},
-			form: {
-				sync_token: "*",
-				resource_types: self.config.todoistResourceType
-			}
-		},
-		function(error, response, body) {
-			if (error) {
-				self.sendSocketNotification("FETCH_ERROR", {
-					error: error
-				});
-				return console.error(" ERROR - MMM-Todoist: " + error);
-			}
-			if(self.config.debug){
-				console.log(body);
-			}
-			if (response.statusCode === 200) {
-				var taskJson = JSON.parse(body);
-				taskJson.items.forEach((item)=>{
-					item.contentHtml = markdown.makeHtml(item.content);
-				});
-				taskJson.accessToken = acessCode;
+	addItemToList: function(self, taskJson) {
+		if (taskJson == undefined) {
+			return;
+		}
+		if (taskJson.accessToken != self.config.accessToken) {
+			return;
+		}
+		if (taskJson.items == undefined) {
+			return;
+		}
 
-				if (taskJson == undefined) {
-					return;
-				}
-				if (taskJson.accessToken != self.config.accessToken) {
-					return;
-				}
-				if (taskJson.items == undefined) {
-					return;
-				}
+		const crypto = require('crypto');
+		var reqProj = self.addData.data["id"].split("-")[0];
+		var reqTask = self.addData.data["id"].split("-")[1];
 
-				console.log("ADD ITEM Command: ");
-				console.log(self.addData.data["id"]);
-				console.log(self.addData.data["id"].split("-"));
-				console.log(self.addData.data["id"].split("-")[0]);
-				console.log(self.addData.data["id"].split("-")[1]);
-				console.log(self.addData.message);
-				console.log("END ADD ITEM Command");
+		// If we're making a new item, make it
+		if (reqTask == "NEW") {
+			self.addNewItemToList(reqProj, self.addData.message);
+		} else { // add a sub-item to an item
+			var tmpid = null;
+			var itemid = null;
+			itemid = self.findItem(taskJson, reqProj, reqTask);
 
-				const crypto = require('crypto');
-				var reqProj = self.addData.data["id"].split("-")[0];
-				var reqTask = self.addData.data["id"].split("-")[1];
-
-				// If we're making a new item, make it
-				if (reqTask == "NEW") {
-					self.addNewItemToList(reqProj, self.addData.message);
-				} else { // add a sub-item to an item
-					var tmpid = null;
-					var itemid = null;
-					itemid = self.findItem(taskJson, reqProj, reqTask);
-
-					// If parent item not found, add it
-					if (itemid == null) {
-						console.log("ITEM NOT FOUND");
-						// Create self.addData.data["task"] as new item (get itemid)
-						self.addNewItemToList(reqProj, reqTask, self.addNewSubItemToList);
-					} else {
-						// ADD self.addData.message as sub-item to itemid
-						console.log("ITEM ID: " + itemid);
-						self.addNewSubItemToList(self, reqProj, self.addData.message, itemid);
-					}
-				}
-
-				self.sendSocketNotification("ADDITEM", itemid);
+			// If parent item not found, add it
+			if (itemid == null) {
+				// Create self.addData.data["task"] as new item (get itemid)
+				self.addNewItemToList(reqProj, reqTask, self.addNewSubItemToList);
 			} else {
-				console.log("Todoist api request status="+response.statusCode);
+				// ADD self.addData.message as sub-item to itemid
+				self.addNewSubItemToList(self, reqProj, self.addData.message, itemid);
 			}
+		}
 
-		});
+		self.sendSocketNotification("ADDITEM", itemid);
 	}
 });

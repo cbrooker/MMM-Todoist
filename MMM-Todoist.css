@@ -95,25 +95,24 @@
     overflow: hidden;
 }
 
-.bring-list {
+.add-list {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
 }
 
-.bring-list-item-add {
+.add-list-item-add {
     display: flex;
     flex-direction: column;
-    width: 98px;
-    height: 100px;
-    margin: 2px;
-    font-size: 20px;
+    width: 90px;
+    height: 80px;
+    margin: 20px;
+    font-size: 70px;
     font-weight: bold;
     color: white;
     text-align: center;
-    padding: 50px 0px 0px 0px;
+    padding: 20px 10px 10px 10px;
     border: 1px solid black;
-    border-radius: 5px;
+    border-radius: 10px;
     background-color: grey;
-    justify-content: left;
 }

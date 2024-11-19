@@ -9,6 +9,8 @@
  */
 
 /*
+ * Update by dirtylimerix 24/11/2024
+ * - Added support for adding to lists and new tasks
  * Update by mabahj 24/11/2019
  * - Added support for labels in addtion to projects
  * Update by AgP42 the 18/07/2018
@@ -84,7 +86,6 @@ Module.register("MMM-Todoist", {
 		},
 
 		// list input parameters
-		useKeyboard: false,
 		inputTasks: [],
 
 		// Non-configurable parameters
@@ -651,6 +652,57 @@ Module.register("MMM-Todoist", {
 		return divTable;
 	},
 
+	buildInputList: function() {
+		const addList = document.createElement("div");
+		addList.className = "add-list";
+		if (this.config.inputTasks.length > 0) {
+			// For each "inputTask", add a button according to the config parameters
+			for (var idx = 0; idx < this.config.inputTasks.length; idx++) {
+				var item = this.config.inputTasks[idx];
+				var addListBtn = document.createElement("div");
+				var symbol = "plus"
+				if (item["symbol"]) {
+					symbol = item["symbol"];
+				}
+				addListBtn.className = "add-list-item-add fas fa-" + symbol;
+				addListBtn.id = item["project"] + "-" + item["task"];
+				if (item["color"]) {
+					addListBtn.style.color = item["color"];
+				}
+				if (item["bg-color"]) {
+					addListBtn.style.backgroundColor = item["bg-color"];
+				}
+				addListBtn.addEventListener("click", event => {
+					this.sendNotification("KEYBOARD", {
+						key: "MMM-Todoist",
+						style: "default",
+						data: {"id" : event.target.id }
+					});
+				});
+				addList.appendChild(addListBtn);	
+			}
+
+			// If using input tasks, create a button for new inbox items
+			if (this.config.inputTasks.length > 0) {
+				var addNewBtn = document.createElement("div");
+				addNewBtn.className = "add-list-item-add fas fa-square-plus";
+				//addNewBtn.id = "inbox-NEW";
+				addNewBtn.id = "2334830530-NEW";
+				addNewBtn.style.color = "white";
+				addNewBtn.style.backgroundColor = "darkgrey";
+				addNewBtn.addEventListener("click", event => {
+					this.sendNotification("KEYBOARD", {
+						key: "MMM-Todoist",
+						style: "default",
+						data: {"id" : event.target.id }
+					});
+				});
+				addList.appendChild(addNewBtn);
+			}
+		}
+		return addList;
+	},
+
 	getDom: function () {
 	
 		if (this.config.hideWhenEmpty && this.tasks.items.length===0) {
@@ -671,35 +723,12 @@ Module.register("MMM-Todoist", {
 			return wrapper;
 		}
 
+		// Build the Todoist task table and add it
 		taskTable = this.buildTaskTable();
 		wrapper.appendChild(taskTable);
-
-		var self = this;
-		if (this.config.useKeyboard) {
-			const bringList = document.createElement("div");
-			bringList.className = "bring-list";
-
-			// For each "inputTask", add a button
-			//this.config.inputTasks.forEach(function (item, index) {
-
-			const bringListAdds = [];
-			for (var idx = 0; idx < this.config.inputTasks.length; idx++) {
-				var item = this.config.inputTasks[idx];
-				bringListAdds[idx] = document.createElement("div");
-				bringListAdds[idx].className = "bring-list-item-add";
-				bringListAdds[idx].id = item[0] + "-" + item[1];
-				bringListAdds[idx].innerHTML = item[1];
-				bringListAdds[idx].addEventListener("click", event => {
-					this.sendNotification("KEYBOARD", {
-						key: "MMM-Todoist",
-						style: "default",
-						data: {"id" : event.target.id }
-					});
-				});
-				bringList.appendChild(bringListAdds[idx]);
-			}
-			wrapper.appendChild(bringList);
-		}
+		// Build the input task button list (if enabled) and add it
+		addList = this.buildInputList();
+		wrapper.appendChild(addList);
 
 		// create the gradient
 		if (this.config.fade && this.config.fadePoint < 1) divTable.querySelectorAll('.divTableRow').forEach((row, i, rows) => row.style.opacity = Math.max(0, Math.min(1 - ((((i + 1) * (1 / (rows.length))) - this.config.fadePoint) / (1 - this.config.fadePoint)) * (1 - this.config.fadeMinimumOpacity), 1)));
