@@ -27,8 +27,12 @@ modules: [
 			fade: false,      
 			// projects and/or labels is mandatory:
 			projects: [ 166564794 ], 
-			labels: [ "MagicMirror", "Important" ] // Tasks for any projects with these labels will be shown.
-      }
+			labels: [ "MagicMirror", "Important" ], // Tasks for any projects with these labels will be shown.
+			inputTasks: [
+					{"project" : 166564794, "task" : "Groceries", "symbol" : "cart-shopping"},
+				 	{"project" : 166564794, "task" : "Hardware Store", "symbol" : "screwdriver-wrench", "color" : "white", "bg-color" : "darkorange"}
+				]
+    }
 	}
 ]
 ````
@@ -36,7 +40,6 @@ modules: [
 ## Configuration options
 
 The following properties can be configured:
-
 
 <table width="100%">
 	<!-- why, markdown... -->
@@ -222,9 +225,101 @@ The following properties can be configured:
 				<br><b>Default value:</b> <code>false</code>
 			</td>
 		</tr>
-		
+		<tr>
+			<td><code>inputTasks</code></td>
+			<td>Add buttons for adding tasks and subtasks to lists below task list. Depends on MMM-Keyboard module being installed.<br>
+				<br><b>Possible values:</b> <code>An array, see inputTask configuration below.</code>
+				<br><b>Default value:</b> <code>[]</code>
+			</td>
+		</tr>
 	</tbody>
 </table>
+
+
+## InputTask Configuration options
+
+InputTasks are buttons that will appear below the task list, enabling user input to add tasks to projects, or add sub-tasks to tasks. If any inputTask is specified, an additional [+] button be automatically added that allows tasks to be added to the inbox. For each specified inputTask, a *project_id* and *task* name is required. The *project_id* specifies the project under which a task will be added. The *task* specifies the parent task under which new tasks will be created (like a list). If the parent task does not exist (as a task under the *project_id* and due "today"), it will be created.
+
+### Example usage
+
+For a given config that includes the following:
+
+````javascript
+modules: [
+	{
+		...
+			inputTasks: [
+					{"project" : 166564794, "task" : "Groceries", "symbol" : "cart-shopping"},
+				 	{"project" : 166564794, "task" : "Hardware Store", "symbol" : "screwdriver-wrench", "color" : "white", "bg-color" : "darkorange"}
+				]
+    }
+	}
+]
+````
+
+Three buttons will appear (as in the screenshot below), one for a *Groceries* with a shopping cart icon, one for *Hardware Store* with a tools icon, and one for new inbox items with a [+] icon. When you click on any button (i.e. *Groceries*) the visual keyboard (MMM-Keyboard) will show up on the screen. After you input text and hit send, that text will be the name of a new sub-task under *Groceries* in the *project_id* project. If *Groceries* did not already exist, it will be created. Everything is created with a due date of *today* by default.
+
+
+The following properties can be configured for each inputTask:
+
+<table width="100%">
+	<thead>
+		<tr>
+			<th width="15%">Option</th>
+			<th width="100%">Description</th>
+		</tr>
+	<thead>
+	<tbody>
+		<tr>
+			<td><code>project</code></td>
+			<td>(required) Project to which this task will belong.<br>
+				<br><b>Possible values:</b> <code>any project id</code>
+				<br><b>Default value:</b> <code>none</code>
+				<br><b>Example:</b> <code>166564792</code>
+				<br>
+				<b>Getting the Todoist ProjectID:</b><br>
+				1) Go to Todoist (Log in if you aren't)<br>
+				2) Click on a Project in the left menu<br>
+				3) Your browser URL will change to something like<br> <code>"https://todoist.com/app?lang=en&v=818#project%2F166564897"</code><br><br>
+				Everything after %2F is the Project ID. In this case "166564792"<br><br>
+				<hr />
+				Alternatively, if you add <b>debug=true</b> in your config.js the Projects and ProjectsIDs will be displayed on MagicMirror as well as in the Browser console.<br><br>
+				<b>This value and/or the labels entry must be specified</b>. If both projects and labels are specified, then tasks from both will be shown.
+			</td>
+		</tr>
+		<tr>
+			<td><code>task</code></td>
+			<td>(required) Name of the task under which new subtasks will be placed<br>
+				<br><b>Possible values:</b> <code>string</code>
+				<br><b>Default value:</b> <code>none</code>
+				<br><b>Note:</b> You can use one of three values here.
+			</td>
+		</tr>
+		<tr>
+			<td><code>symbol</code></td>
+			<td>(optional) Name of the FontAwesome icon to use for an icon on the button.<br>
+				<br><b>Possible values:</b> <code>string</code>
+				<br><b>Default value:</b> <code>"plus"</code>
+				<br><b>Note:</b> You can use any of the free Font Awesome icon values found here https://fontawesome.com/v6/search?o=r&m=free.
+			</td>
+		</tr>
+		<tr>
+			<td><code>color</code></td>
+			<td>(optional) CSS color to use for the foreground button icon.<br>
+				<br><b>Possible values:</b> <code>string</code>
+				<br><b>Default value:</b> <code>"grey"</code>
+			</td>
+		</tr>
+		<tr>
+			<td><code>bg-color</code></td>
+			<td>(optional) CSS color to use for the background of the button.<br>
+				<br><b>Possible values:</b> <code>string</code>
+				<br><b>Default value:</b> <code>"white"</code>
+			</td>
+		</tr>
+	</tbody>
+</table>
+
 
 ## Dependencies
 - [request](https://www.npmjs.com/package/request) (installed via `npm install`)
@@ -260,6 +355,8 @@ Options enabled: orderBy:dueDateAsc, showProjects: true
 Options enabled: orderBy:dueDateAsc, showProjects: false
 ![My image](http://cbrooker.github.io/MMM-Todoist/Screenshots/7.png)  
 
+Options enabled: inputTasks
+![My image](todoist_btns.png)
 
 ## Attribution
 
