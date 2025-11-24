@@ -94,6 +94,15 @@ Module configuration is passed through MagicMirror's `config/config.js`. Key con
 - `displaySubtasks`: Show/hide subtasks (default: true)
 - `displayAvatar`: Show collaborator avatars (default: false)
 - `inputTasks`: Array of button configurations for adding tasks via MMM-Keyboard (default: [])
+- `showInboxButton`: Show default [+] button for inbox tasks when inputTasks are configured (default: true)
+
+**Filter Logic:**
+- Filters use **AND logic**: Tasks must match ALL configured filter types
+- If `projects` is configured, tasks must be in those projects
+- If `sections` is configured, tasks must be in those sections
+- If `labels` is configured, tasks must have at least one of those labels
+- Example: With projects=[A,B] and sections=[X,Y], only tasks in projects (A OR B) AND sections (X OR Y) are shown
+- If no filters are configured, all tasks are displayed
 
 ## Todoist API
 

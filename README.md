@@ -129,7 +129,7 @@ The following properties can be configured:
 				<br>
 				<b>Getting the Todoist Section ID:</b><br>
 				If you add <b>debug=true</b> in your config.js, the Sections and Section IDs will be displayed on MagicMirror as well as in the Browser console.<br><br>
-				<b>Note:</b> Section filtering works in combination with project filtering. If sections are specified, only tasks from those sections (within the configured projects) will be shown.
+			<b>Important:</b> Filters use <b>AND logic</b>. When multiple filter types are configured (projects, sections, labels), tasks must match ALL configured filter types to be displayed. For example, if both projects and sections are specified, only tasks that are in the configured projects AND in the configured sections will be shown.
 			</td>
 		</tr>
 		<tr>
@@ -256,13 +256,20 @@ The following properties can be configured:
 				<br><b>Default value:</b> <code>[]</code>
 			</td>
 		</tr>
+		<tr>
+			<td><code>showInboxButton</code></td>
+			<td>Show the default [+] button for creating standalone tasks in the inbox. Only applies when inputTasks are configured.<br>
+				<br><b>Possible values:</b> <code>boolean</code>
+				<br><b>Default value:</b> <code>true</code>
+			</td>
+		</tr>
 	</tbody>
 </table>
 
 
 ## InputTask Configuration options
 
-InputTasks are buttons that will appear below the task list, enabling user input to add tasks to projects, or add sub-tasks to tasks. If any inputTask is specified, an additional [+] button be automatically added that allows tasks to be added to the inbox. For each specified inputTask, a *project_id* and *task* name is required. The *project_id* specifies the project under which a task will be added. The *task* specifies the parent task under which new tasks will be created (like a list). If the parent task does not exist (as a task under the *project_id* and due "today"), it will be created.
+InputTasks are buttons that will appear below the task list, enabling user input to add tasks to projects, or add sub-tasks to tasks. If any inputTask is specified, an additional [+] button will be automatically added (unless `showInboxButton: false`) that allows tasks to be added to the inbox. For each specified inputTask, a *project_id* and *task* name is required. The *project_id* specifies the project under which a task will be added. The *task* specifies the parent task under which new tasks will be created (like a list). If the parent task does not exist (as a task under the *project_id* and due "today"), it will be created.
 
 ### Example usage
 

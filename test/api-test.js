@@ -35,6 +35,8 @@ const config = {
 	projects: process.env.TEST_PROJECT_IDS ? process.env.TEST_PROJECT_IDS.split(',').map(id => id.trim()) : [],
 	sections: process.env.TEST_SECTION_IDS ? process.env.TEST_SECTION_IDS.split(',').map(id => id.trim()) : [],
 	labels: process.env.TEST_LABELS ? process.env.TEST_LABELS.split(',').map(l => l.trim()) : [],
+	displayTasksWithinDays: process.env.DISPLAY_TASKS_WITHIN_DAYS ? parseInt(process.env.DISPLAY_TASKS_WITHIN_DAYS) : -1,
+	displayTasksWithoutDue: process.env.DISPLAY_TASKS_WITHOUT_DUE !== 'false', // default true
 	debug: process.env.DEBUG === 'true',
 	apiVersion: 'v9',
 	apiBase: 'https://todoist.com/API',
@@ -100,6 +102,18 @@ function validateConfig() {
 		logInfo(`Testing with labels: ${config.labels.join(', ')}`);
 	} else {
 		logInfo('No label filter');
+	}
+
+	// Display due date filter settings
+	if (config.displayTasksWithinDays > -1) {
+		logInfo(`Due date filter: tasks within ${config.displayTasksWithinDays} days`);
+	} else {
+		logInfo('Due date filter: all tasks (no date limit)');
+	}
+	if (config.displayTasksWithoutDue) {
+		logInfo('Including tasks without due dates');
+	} else {
+		logInfo('Excluding tasks without due dates');
 	}
 }
 
@@ -186,6 +200,18 @@ function displayProjects(data) {
 	}
 }
 
+// Parse due date (same logic as MMM-Todoist.js)
+function parseDueDate(date) {
+	let [year, month, day, hour = 0, minute = 0, second = 0] = date.split(/\D/).map(Number);
+
+	// If the task's due date has a timezone set, it's given in UTC time
+	if (date[date.length - 1] === "Z") {
+		return new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+	}
+
+	return new Date(year, month - 1, day, hour, minute, second);
+}
+
 // Display sections
 function displaySections(data) {
 	logSection('Sections');
@@ -239,6 +265,35 @@ function testFiltering(data) {
 	}
 
 	let filteredTasks = [...data.items];
+
+	// Due date filtering (applied first, before other filters)
+	if (config.displayTasksWithinDays > -1 || !config.displayTasksWithoutDue) {
+		const beforeCount = filteredTasks.length;
+		filteredTasks = filteredTasks.filter(item => {
+			if (item.due === null) {
+				return config.displayTasksWithoutDue;
+			}
+
+			// If displayTasksWithinDays is -1, show all tasks with due dates
+			if (config.displayTasksWithinDays === -1) {
+				return true;
+			}
+
+			const oneDay = 24 * 60 * 60 * 1000;
+			const dueDateTime = parseDueDate(item.due.date);
+			const dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
+			const now = new Date();
+			const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+			const diffDays = Math.floor((dueDate - today) / (oneDay));
+			return diffDays <= config.displayTasksWithinDays;
+		});
+		const dueDaysText = config.displayTasksWithinDays === -1 ? 'all' : `within ${config.displayTasksWithinDays} days`;
+		const withoutDueText = config.displayTasksWithoutDue ? ' + tasks without due dates' : '';
+		log(`  Due date filter (${dueDaysText}${withoutDueText}): ${colors.bright}${beforeCount}${colors.reset} → ${colors.green}${filteredTasks.length}${colors.reset} tasks`);
+	}
+
+	// Filters use AND logic: tasks must pass ALL configured filter types
+	// Each filter narrows down the results from the previous filter
 
 	// Project filtering
 	if (config.projects.length > 0) {

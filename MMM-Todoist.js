@@ -88,6 +88,7 @@ Module.register("MMM-Todoist", {
 
 		// list input parameters
 		inputTasks: [],
+		showInboxButton: true, // show default [+] button for creating standalone tasks in inbox
 
 		// Non-configurable parameters
 		apiVersion: "v9",
@@ -321,42 +322,46 @@ Module.register("MMM-Todoist", {
 
 		//Filter the Todos by the criteria specified in the Config
 		tasks.items.forEach(function (item) {
-			// Ignore sub-tasks
-			if (item.parent_id!=null && !self.config.displaySubtasks) { return; }
+		// Ignore sub-tasks
+		if (item.parent_id != null && !self.config.displaySubtasks) { return; }
 
-			// Filter using label if a label is configured
-			if (self.config.labels.length > 0 && item.labels.length > 0) {
-        			// Check all the labels assigned to the task. Add to items if match with configured label
-        			for (let label of item.labels) {
-          				for (let labelName of self.config.labels) {
-            					if (label == labelName) { //the string returned from SyncAPI matches the strong in config
-              						items.push(item);
-              						return;
-            					}
-          				}
-        			}
-      			}
+		// Check if item passes ALL active filters (AND logic)
+		let passesFilters = true;
 
-			// Filter using projets if projects are configured
-			if (self.config.projects.length>0){
-			  self.config.projects.forEach(function (project) {
-			  		if (item.project_id == project) {
-						items.push(item);
-						return;
+		// Label filter (if configured)
+		if (self.config.labels.length > 0) {
+			if (item.labels.length === 0) {
+				passesFilters = false;
+			} else {
+				let hasMatchingLabel = false;
+				for (let label of item.labels) {
+					for (let labelName of self.config.labels) {
+						if (label === labelName) {
+							hasMatchingLabel = true;
+							break;
+						}
 					}
-			  });
+					if (hasMatchingLabel) break;
+				}
+				passesFilters = hasMatchingLabel;
 			}
+		}
 
-			// Filter using sections if sections are configured
-			if (self.config.sections.length > 0) {
-				self.config.sections.forEach(function (section) {
-					if (item.section_id === section) {
-						items.push(item);
-						return;
-					}
-				});
-			}
-		});
+		// Project filter (if configured)
+		if (self.config.projects.length > 0) {
+			passesFilters = passesFilters && self.config.projects.includes(item.project_id);
+		}
+
+		// Section filter (if configured)
+		if (self.config.sections.length > 0) {
+			passesFilters = passesFilters && self.config.sections.includes(item.section_id);
+		}
+
+		// Add item only if it passes ALL active filters
+		if (passesFilters) {
+			items.push(item);
+		}
+	});
 
 		//**** FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs AND SECTION IDs */
 		if (self.config.debug) {
@@ -705,7 +710,7 @@ Module.register("MMM-Todoist", {
 			}
 
 			// If using input tasks, create a button for new inbox items
-			if (this.config.inputTasks.length > 0) {
+			if (this.config.showInboxButton) {
 				var addNewBtn = document.createElement("div");
 				addNewBtn.className = "add-list-item-add fas fa-square-plus";
 				addNewBtn.id = "inbox-NEW";
