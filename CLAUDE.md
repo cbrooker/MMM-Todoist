@@ -164,3 +164,65 @@ InputTask buttons can optionally specify a `section` parameter:
 - Subtask indentation (when `sortType: "todoist"`) uses "- " prefix
 - The `all_day` flag is inferred from date format (presence of time component)
 - Update interval is managed per-module instance (multiple instances can have different intervals)
+
+## Local Testing
+
+The module includes a comprehensive local testing setup that allows you to test changes before deploying to a live MagicMirror installation.
+
+### Setup
+
+1. **Copy the environment template:**
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Add your Todoist access token to `.env`:**
+   - Get your token from: https://todoist.com/app/settings/integrations/developer
+   - Add it to `.env` as: `TODOIST_ACCESS_TOKEN=your_token_here`
+
+3. **Optional: Configure test filters in `.env`:**
+   - `TEST_PROJECT_IDS`: Comma-separated project IDs to test
+   - `TEST_SECTION_IDS`: Comma-separated section IDs to test
+   - `TEST_LABELS`: Comma-separated label names to test
+   - `DEBUG=true`: Enable debug output
+
+### Running Tests
+
+```bash
+npm test
+```
+
+### What the Test Does
+
+The API test script (`test/api-test.js`):
+1. Validates your `.env` configuration
+2. Fetches data from the Todoist API (tasks, projects, sections, labels)
+3. Displays comprehensive statistics
+4. Lists all projects with IDs (for easy configuration)
+5. Lists all sections grouped by project with IDs
+6. Tests the filtering logic with your configured filters
+7. Shows sample filtered tasks with project, section, due date, and priority
+
+### Test Output
+
+The test provides colorized console output showing:
+- ✓ Success messages in green
+- ✗ Errors in red
+- ℹ Info messages in blue
+- ⚠ Warnings in yellow
+- Filtered vs unfiltered task counts
+- Sample tasks matching your filters
+
+### Use Cases
+
+- **Before deploying:** Verify API access and data fetching works
+- **Testing filters:** See exactly which tasks will be displayed with your config
+- **Finding IDs:** Get project and section IDs without enabling debug mode on your mirror
+- **Debugging:** Identify API issues or filtering problems before deployment
+
+### Files
+
+- `.env`: Your local configuration (not committed to git)
+- `.env.example`: Template showing required variables
+- `test/api-test.js`: Test script
+- `.gitignore`: Ensures `.env` is not committed

@@ -10,6 +10,16 @@ The requests to the server will be paused is the module is not displayed (use of
 1. Navigate into your MagicMirror's `modules` folder and execute `git clone https://github.com/cbrooker/MMM-Todoist.git`. A new folder will appear navigate into it.
 2. Execute `npm install` to install the node dependencies.
 
+## Local Testing (Optional)
+
+Before deploying to your live MagicMirror, you can test the module locally:
+
+1. Copy `.env.example` to `.env` and add your Todoist access token
+2. Run `npm test` to test API connectivity and view your tasks/projects/sections
+3. Configure test filters in `.env` to see exactly what will be displayed
+
+See the "Local Testing" section in CLAUDE.md for detailed instructions.
+
 ## Using the module
 
 To use this module, add it to the modules array in the `config/config.js` file:
