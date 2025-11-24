@@ -347,10 +347,23 @@ Module.register("MMM-Todoist", {
 		// DEBUG: Log task count after due date filter
 		console.log("MMM-Todoist DEBUG: After due date filter:", tasks.items.length, "tasks remaining");
 
+		// DEBUG: Log filter configuration
+		console.log("MMM-Todoist DEBUG: Filter Configuration");
+		console.log("  Labels config:", self.config.labels, "Type:", typeof self.config.labels, "Length:", self.config.labels ? self.config.labels.length : "undefined");
+		console.log("  displaySubtasks:", self.config.displaySubtasks);
+
 		//Filter the Todos by the criteria specified in the Config
+		let subtaskCount = 0;
+		let labelFilterCount = 0;
+		let projectFilterCount = 0;
+		let sectionFilterCount = 0;
+
 		tasks.items.forEach(function (item) {
 		// Ignore sub-tasks
-		if (item.parent_id != null && !self.config.displaySubtasks) { return; }
+		if (item.parent_id != null && !self.config.displaySubtasks) {
+			subtaskCount++;
+			return;
+		}
 
 		// Check if item passes ALL active filters (AND logic)
 		let passesFilters = true;
@@ -359,6 +372,8 @@ Module.register("MMM-Todoist", {
 		if (self.config.labels.length > 0) {
 			if (item.labels.length === 0) {
 				passesFilters = false;
+				labelFilterCount++;
+				console.log("  Task filtered out by label (no labels):", item.content);
 			} else {
 				let hasMatchingLabel = false;
 				for (let label of item.labels) {
@@ -370,24 +385,38 @@ Module.register("MMM-Todoist", {
 					}
 					if (hasMatchingLabel) break;
 				}
+				if (!hasMatchingLabel) {
+					labelFilterCount++;
+					console.log("  Task filtered out by label (no match):", item.content);
+					console.log("    Task labels:", item.labels);
+					console.log("    Config labels:", self.config.labels);
+				}
 				passesFilters = hasMatchingLabel;
 			}
 		}
 
 		// Project filter (if configured)
 		if (self.config.projects.length > 0) {
-			passesFilters = passesFilters && self.config.projects.includes(item.project_id);
+			let passesProject = self.config.projects.includes(item.project_id);
+			if (!passesProject) {
+				projectFilterCount++;
+				console.log("  Task filtered out by project:", item.content);
+				console.log("    Task project_id:", item.project_id);
+				console.log("    Config projects:", self.config.projects);
+			}
+			passesFilters = passesFilters && passesProject;
 		}
 
 		// Section filter (if configured)
 		if (self.config.sections.length > 0) {
-			passesFilters = passesFilters && self.config.sections.includes(item.section_id);
-			// DEBUG: Log each task's section comparison
-			if (!self.config.sections.includes(item.section_id)) {
+			let passesSection = self.config.sections.includes(item.section_id);
+			if (!passesSection) {
+				sectionFilterCount++;
 				console.log("  Task filtered out by section:", item.content);
 				console.log("    Task section_id:", item.section_id, "Type:", typeof item.section_id);
 				console.log("    Config sections:", self.config.sections);
 			}
+			passesFilters = passesFilters && passesSection;
 		}
 
 		// Add item only if it passes ALL active filters
@@ -396,8 +425,13 @@ Module.register("MMM-Todoist", {
 		}
 	});
 
-		// DEBUG: Log final filtered count
-		console.log("MMM-Todoist DEBUG: After project/section/label filter:", items.length, "tasks remaining");
+		// DEBUG: Log final filtered count with breakdown
+		console.log("MMM-Todoist DEBUG: Filter Results Summary");
+		console.log("  Tasks filtered out by subtask:", subtaskCount);
+		console.log("  Tasks filtered out by label:", labelFilterCount);
+		console.log("  Tasks filtered out by project:", projectFilterCount);
+		console.log("  Tasks filtered out by section:", sectionFilterCount);
+		console.log("  FINAL tasks remaining:", items.length);
 
 		//**** FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs AND SECTION IDs */
 		if (self.config.debug) {
