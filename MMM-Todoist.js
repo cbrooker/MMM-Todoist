@@ -350,7 +350,7 @@ Module.register("MMM-Todoist", {
 			// Filter using sections if sections are configured
 			if (self.config.sections.length > 0) {
 				self.config.sections.forEach(function (section) {
-					if (item.section_id == section) {
+					if (item.section_id === section) {
 						items.push(item);
 						return;
 					}
@@ -364,10 +364,12 @@ Module.register("MMM-Todoist", {
 			tasks.projects.forEach(project => {
 				console.log("%c" + project.name + " -- " + project.id, "background: #222; color: #bada55");
 			});
-			console.log("%c *** SECTION -- ID ***", "background: #222; color: #ff6347");
-			tasks.sections.forEach(section => {
-				console.log("%c" + section.name + " -- " + section.id, "background: #222; color: #ff6347");
-			});
+			if (tasks.sections) {
+				console.log("%c *** SECTION -- ID ***", "background: #222; color: #ff6347");
+				tasks.sections.forEach(section => {
+					console.log("%c" + section.name + " -- " + section.id, "background: #222; color: #ff6347");
+				});
+			}
 		};
 		//****** */
 
