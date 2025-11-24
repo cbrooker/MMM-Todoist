@@ -10,6 +10,16 @@ The requests to the server will be paused is the module is not displayed (use of
 1. Navigate into your MagicMirror's `modules` folder and execute `git clone https://github.com/cbrooker/MMM-Todoist.git`. A new folder will appear navigate into it.
 2. Execute `npm install` to install the node dependencies.
 
+## Local Testing (Optional)
+
+Before deploying to your live MagicMirror, you can test the module locally:
+
+1. Copy `.env.example` to `.env` and add your Todoist access token
+2. Run `npm test` to test API connectivity and view your tasks/projects/sections
+3. Configure test filters in `.env` to see exactly what will be displayed
+
+See the "Local Testing" section in CLAUDE.md for detailed instructions.
+
 ## Using the module
 
 To use this module, add it to the modules array in the `config/config.js` file:
@@ -106,6 +116,20 @@ The following properties can be configured:
 				<br>
 				<br>
 				<b>This value and/or the projects entry must be specified</b>. If both projects and labels are specified, then tasks from both will be shown.
+			</td>
+		</tr>
+			<tr>
+			<td><code>sections</code></td>
+			<td>
+				Array of section IDs you want to display. Sections are organizational units within projects that group related tasks.<br>
+				<br><b>Possible values:</b> <code>array</code>
+				<br><b>Default value:</b> <code>[ ]</code>
+				<br><b>Example:</b> <code>[123456789, 987654321]</code>
+				<br>
+				<br>
+				<b>Getting the Todoist Section ID:</b><br>
+				If you add <b>debug=true</b> in your config.js, the Sections and Section IDs will be displayed on MagicMirror as well as in the Browser console.<br><br>
+				<b>Note:</b> Section filtering works in combination with project filtering. If sections are specified, only tasks from those sections (within the configured projects) will be shown.
 			</td>
 		</tr>
 		<tr>
@@ -250,14 +274,24 @@ modules: [
 		...
 			inputTasks: [
 					{"project" : 166564794, "task" : "Groceries", "symbol" : "cart-shopping"},
-				 	{"project" : 166564794, "task" : "Hardware Store", "symbol" : "screwdriver-wrench", "color" : "white", "bg-color" : "darkorange"}
+				 	{"project" : 166564794, "task" : "Hardware Store", "symbol" : "screwdriver-wrench", "color" : "white", "bg-color" : "darkorange"},
+					{"project" : 166564794, "task" : "NEW", "section" : 123456789, "symbol" : "plus", "color" : "green"}
 				]
     }
 	}
 ]
 ````
 
-Three buttons will appear (as in the screenshot below), one for a *Groceries* with a shopping cart icon, one for *Hardware Store* with a tools icon, and one for new inbox items with a [+] icon. When you click on any button (i.e. *Groceries*) the visual keyboard (MMM-Keyboard) will show up on the screen. After you input text and hit send, that text will be the name of a new sub-task under *Groceries* in the *project_id* project. If *Groceries* did not already exist, it will be created. Everything is created with a due date of *today* by default.
+Four buttons will appear (as in the screenshot below):
+- *Groceries* with a shopping cart icon - creates subtasks under a "Groceries" parent task
+- *Hardware Store* with a tools icon - creates subtasks under a "Hardware Store" parent task
+- A green [+] icon - creates standalone tasks in section 123456789
+- A default [+] icon - creates standalone tasks in the inbox
+
+When you click on any button, the visual keyboard (MMM-Keyboard) will show up on the screen. After you input text and hit send:
+- For *Groceries* or *Hardware Store*: The text becomes a sub-task under that parent task. If the parent doesn't exist, it will be created with due date "today".
+- For the section button (with `"task": "NEW"`): The text becomes a standalone task in the specified section.
+- For the inbox button: The text becomes a standalone task in your inbox.
 
 
 The following properties can be configured for each inputTask:
@@ -289,10 +323,15 @@ The following properties can be configured for each inputTask:
 		</tr>
 		<tr>
 			<td><code>task</code></td>
-			<td>(required) Name of the task under which new subtasks will be placed<br>
+			<td>(required) Determines the behavior of the button:<br>
+				<ul>
+					<li>Use <code>"NEW"</code> to create standalone tasks in the project</li>
+					<li>Use any other string (e.g., <code>"Groceries"</code>) to create subtasks under a parent task with that name</li>
+				</ul>
 				<br><b>Possible values:</b> <code>string</code>
 				<br><b>Default value:</b> <code>none</code>
-				<br><b>Note:</b> You can use one of three values here.
+				<br><b>Example:</b> <code>"NEW"</code> or <code>"Groceries"</code>
+				<br><b>Note:</b> If using a parent task name, the parent will be created automatically if it doesn't exist (with due date "today").
 			</td>
 		</tr>
 		<tr>
@@ -315,6 +354,18 @@ The following properties can be configured for each inputTask:
 			<td>(optional) CSS color to use for the background of the button.<br>
 				<br><b>Possible values:</b> <code>string</code>
 				<br><b>Default value:</b> <code>"white"</code>
+			</td>
+		</tr>
+		<tr>
+			<td><code>section</code></td>
+			<td>(optional) Section ID where new tasks will be created. Sections are organizational units within projects.<br>
+				<br><b>Possible values:</b> <code>any section id</code>
+				<br><b>Default value:</b> <code>none</code>
+				<br><b>Example:</b> <code>123456789</code>
+				<br>
+				<b>Getting the Todoist Section ID:</b><br>
+				If you add <b>debug=true</b> in your config.js, the Sections and Section IDs will be displayed on MagicMirror as well as in the Browser console.<br><br>
+				<b>Note:</b> If specified, new tasks will be created in this section within the specified project. Works with both standalone tasks (<code>"NEW"</code>) and subtasks.
 			</td>
 		</tr>
 	</tbody>

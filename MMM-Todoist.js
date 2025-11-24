@@ -39,6 +39,7 @@ Module.register("MMM-Todoist", {
 		projects: [],
 		blacklistProjects: false,
 	    	labels: [""],
+		sections: [],
 		updateInterval: 10 * 60 * 1000, // every 10 minutes,
 		fade: true,
 		fadePoint: 0.25,
@@ -92,7 +93,7 @@ Module.register("MMM-Todoist", {
 		apiVersion: "v9",
 		apiBase: "https://todoist.com/API",
 		todoistEndpoint: "sync",
-		todoistResourceType: "[\"items\", \"projects\", \"collaborators\", \"user\", \"labels\"]",
+		todoistResourceType: "[\"items\", \"projects\", \"collaborators\", \"user\", \"labels\", \"sections\"]",
 
 		debug: false
 	},
@@ -345,14 +346,30 @@ Module.register("MMM-Todoist", {
 					}
 			  });
 			}
+
+			// Filter using sections if sections are configured
+			if (self.config.sections.length > 0) {
+				self.config.sections.forEach(function (section) {
+					if (item.section_id === section) {
+						items.push(item);
+						return;
+					}
+				});
+			}
 		});
 
-		//**** FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs */
+		//**** FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs AND SECTION IDs */
 		if (self.config.debug) {
 			console.log("%c *** PROJECT -- ID ***", "background: #222; color: #bada55");
 			tasks.projects.forEach(project => {
 				console.log("%c" + project.name + " -- " + project.id, "background: #222; color: #bada55");
 			});
+			if (tasks.sections) {
+				console.log("%c *** SECTION -- ID ***", "background: #222; color: #ff6347");
+				tasks.sections.forEach(section => {
+					console.log("%c" + section.name + " -- " + section.id, "background: #222; color: #ff6347");
+				});
+			}
 		};
 		//****** */
 
@@ -403,7 +420,8 @@ Module.register("MMM-Todoist", {
 		this.tasks = {
 			"items": items,
 			"projects": tasks.projects,
-			"collaborators": tasks.collaborators
+			"collaborators": tasks.collaborators,
+			"sections": tasks.sections
 		};
 
 	},
@@ -665,7 +683,11 @@ Module.register("MMM-Todoist", {
 					symbol = item["symbol"];
 				}
 				addListBtn.className = "add-list-item-add fas fa-" + symbol;
+				// Build button ID: project-task or project-task-section
 				addListBtn.id = item["project"] + "-" + item["task"];
+				if (item["section"]) {
+					addListBtn.id += "-" + item["section"];
+				}
 				if (item["color"]) {
 					addListBtn.style.color = item["color"];
 				}

@@ -19,8 +19,12 @@
     "url": "https://github.com/cbrooker/MMM-Todoist/issues"
   },
   "homepage": "https://github.com/cbrooker/MMM-Todoist#readme",
+  "scripts": {
+    "test": "node test/api-test.js"
+  },
   "dependencies": {
     "audit": "^0.0.6",
+    "dotenv": "^16.6.1",
     "request": "latest",
     "showdown": "^2.0.1"
   }

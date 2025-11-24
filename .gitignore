@@ -34,3 +34,9 @@ node_modules
 
 # Tarballs
 *.tgz
+
+# Environment variables
+.env
+
+# Test output
+test/output/
