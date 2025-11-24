@@ -126,6 +126,11 @@ Module.register("MMM-Todoist", {
 		this.title = "Loading...";
 		this.loaded = false;
 
+		// Modal state tracking for deferred DOM updates
+		this.isModalOpen = false;
+		this.pendingTasksData = null;
+		this.hasPendingUpdate = false;
+
 		if (this.config.accessToken === "") {
 			Log.error("MMM-Todoist: AccessToken not set!");
 			return;
@@ -246,15 +251,17 @@ Module.register("MMM-Todoist", {
 	// ******** Data sent from the Backend helper. This is the data from the Todoist API ************
 	socketNotificationReceived: function (notification, payload) {
 		if (notification === "TASKS") {
-			this.filterTodoistData(payload);
-
-			if (this.config.displayLastUpdate) {
-				this.lastUpdate = Date.now() / 1000; //save the timestamp of the last update to be able to display it
-				Log.log("ToDoIst update OK, project : " + this.config.projects + " at : " + moment.unix(this.lastUpdate).format(this.config.displayLastUpdateFormat)); //AgP
+			// If modal is open, store data for later and skip DOM update
+			if (this.isModalOpen) {
+				this.pendingTasksData = payload;
+				this.hasPendingUpdate = true;
+				if (this.config.debug) {
+					Log.log("MMM-Todoist: Modal open, deferring DOM update");
+				}
+				return;
 			}
 
-			this.loaded = true;
-			this.updateDom(1000);
+			this.applyTasksData(payload);
 		} else if (notification === "ADDITEM") {
 			// Immediately fetch fresh data to show the newly created task
 			this.sendSocketNotification("FETCH_TODOIST", this.config);
@@ -274,6 +281,22 @@ Module.register("MMM-Todoist", {
 				completeBtn.textContent = this.translate("MARK_COMPLETE");
 			}
 		}
+	},
+
+	/**
+	 * Applies new tasks data to the module, updating state and DOM.
+	 * @param {Object} tasksData - The tasks data from the API
+	 */
+	applyTasksData: function (tasksData) {
+		this.filterTodoistData(tasksData);
+
+		if (this.config.displayLastUpdate) {
+			this.lastUpdate = Date.now() / 1000; //save the timestamp of the last update to be able to display it
+			Log.log("ToDoIst update OK, project : " + this.config.projects + " at : " + moment.unix(this.lastUpdate).format(this.config.displayLastUpdateFormat)); //AgP
+		}
+
+		this.loaded = true;
+		this.updateDom(1000);
 	},
 
 	filterTodoistData: function (tasks) {
@@ -854,6 +877,9 @@ Module.register("MMM-Todoist", {
 	handleTaskClick: function(event, item) {
 		event.stopPropagation();
 
+		// Mark modal as open to prevent DOM updates
+		this.isModalOpen = true;
+
 		// Store current task for completion
 		this.currentTaskId = item.id;
 		this.currentTaskItem = item;
@@ -947,6 +973,21 @@ Module.register("MMM-Todoist", {
 		}
 		this.currentTaskId = null;
 		this.currentTaskItem = null;
+
+		// Mark modal as closed
+		this.isModalOpen = false;
+
+		// Apply any pending updates that were deferred while modal was open
+		if (this.hasPendingUpdate) {
+			if (this.config.debug) {
+				Log.log("MMM-Todoist: Modal closed, applying pending update");
+			}
+			this.applyTasksData(this.pendingTasksData);
+
+			// Clear pending data
+			this.pendingTasksData = null;
+			this.hasPendingUpdate = false;
+		}
 	},
 
 	/**
