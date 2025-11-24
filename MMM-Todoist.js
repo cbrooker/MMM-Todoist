@@ -287,6 +287,16 @@ Module.register("MMM-Todoist", {
 			this.userList = this.userList.map(id => String(id));
 		}
 
+		// DEBUG: Log ID types and values to diagnose filtering issues
+		console.log("MMM-Todoist DEBUG: ID Normalization");
+		console.log("  Config projects:", self.config.projects, "Type:", typeof self.config.projects[0]);
+		console.log("  Config sections:", self.config.sections, "Type:", typeof self.config.sections[0]);
+		console.log("  Total tasks before filters:", tasks.items.length);
+		if (tasks.items.length > 0) {
+			console.log("  Sample task project_id:", tasks.items[0].project_id, "Type:", typeof tasks.items[0].project_id);
+			console.log("  Sample task section_id:", tasks.items[0].section_id, "Type:", typeof tasks.items[0].section_id);
+		}
+
 		if (this.config.blacklistProjects) {
 			// take all projects in payload, and remove the ones specified by user
 			// i.e., convert user's "whitelist" into a "blacklist"
@@ -334,6 +344,9 @@ Module.register("MMM-Todoist", {
 			});
 		}
 
+		// DEBUG: Log task count after due date filter
+		console.log("MMM-Todoist DEBUG: After due date filter:", tasks.items.length, "tasks remaining");
+
 		//Filter the Todos by the criteria specified in the Config
 		tasks.items.forEach(function (item) {
 		// Ignore sub-tasks
@@ -369,6 +382,12 @@ Module.register("MMM-Todoist", {
 		// Section filter (if configured)
 		if (self.config.sections.length > 0) {
 			passesFilters = passesFilters && self.config.sections.includes(item.section_id);
+			// DEBUG: Log each task's section comparison
+			if (!self.config.sections.includes(item.section_id)) {
+				console.log("  Task filtered out by section:", item.content);
+				console.log("    Task section_id:", item.section_id, "Type:", typeof item.section_id);
+				console.log("    Config sections:", self.config.sections);
+			}
 		}
 
 		// Add item only if it passes ALL active filters
@@ -376,6 +395,9 @@ Module.register("MMM-Todoist", {
 			items.push(item);
 		}
 	});
+
+		// DEBUG: Log final filtered count
+		console.log("MMM-Todoist DEBUG: After project/section/label filter:", items.length, "tasks remaining");
 
 		//**** FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs AND SECTION IDs */
 		if (self.config.debug) {
