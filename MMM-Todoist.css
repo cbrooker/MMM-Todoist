@@ -23,15 +23,15 @@
     width: 3px;
 }
 
-.overdue {
+.todoDueOverdue {
     text-decoration: underline #ac0000;
 }
 
-.today {
+.todoDueToday {
     text-decoration: underline #03a05c;
 }
 
-.tomorrow {
+.todoDueTomorrow {
     text-decoration: underline #166cec;
 }
 
@@ -93,4 +93,27 @@
 .todoTextCell {
     width: 400px;
     overflow: hidden;
+}
+
+.add-list {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.add-list-item-add {
+    display: flex;
+    flex-direction: column;
+    width: 50px;
+    height: 50px;
+    margin: 10px;
+    font-size: 40px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    padding: 20px 10px 10px 10px;
+    border: 1px solid black;
+    border-radius: 10px;
+    background-color: grey;
 }
