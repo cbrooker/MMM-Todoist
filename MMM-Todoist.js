@@ -686,8 +686,7 @@ Module.register("MMM-Todoist", {
 			if (this.config.inputTasks.length > 0) {
 				var addNewBtn = document.createElement("div");
 				addNewBtn.className = "add-list-item-add fas fa-square-plus";
-				//addNewBtn.id = "inbox-NEW";
-				addNewBtn.id = "2334830530-NEW";
+				addNewBtn.id = "inbox-NEW";
 				addNewBtn.style.color = "white";
 				addNewBtn.style.backgroundColor = "darkgrey";
 				addNewBtn.addEventListener("click", event => {
@@ -724,10 +723,10 @@ Module.register("MMM-Todoist", {
 		}
 
 		// Build the Todoist task table and add it
-		taskTable = this.buildTaskTable();
+		const taskTable = this.buildTaskTable();
 		wrapper.appendChild(taskTable);
 		// Build the input task button list (if enabled) and add it
-		addList = this.buildInputList();
+		const addList = this.buildInputList();
 		wrapper.appendChild(addList);
 
 		// create the gradient

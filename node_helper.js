@@ -1,6 +1,5 @@
 "use strict";
 
-const { unsubscribe } = require("diagnostics_channel");
 /* Magic Mirror
  * Module: MMM-Todoist
  *
@@ -35,14 +34,14 @@ module.exports = NodeHelper.create({
 	fetchTodos : function(callback) {
 		var self = this;
 		//request.debug = true;
-		var acessCode = self.config.accessToken;
+		var accessCode = self.config.accessToken;
 		request({
 			url: self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint + "/",
 			method: "POST",
 			headers: {
 				"content-type": "application/x-www-form-urlencoded",
 				"cache-control": "no-cache",
-				"Authorization": "Bearer " + acessCode
+				"Authorization": "Bearer " + accessCode
 			},
 			form: {
 				sync_token: "*",
@@ -65,7 +64,7 @@ module.exports = NodeHelper.create({
 					item.contentHtml = markdown.makeHtml(item.content);
 				});
 
-				taskJson.accessToken = acessCode;
+				taskJson.accessToken = accessCode;
 
 				if (callback) {
 					callback(self, taskJson);
@@ -83,7 +82,7 @@ module.exports = NodeHelper.create({
 	findItem: function(taskJson, reqProj, reqTask) {
 		var itemid = null;
 		taskJson.items.filter(function (item) {
-			if (item.project_id == reqProj) {
+			if (item.project_id === reqProj) {
 				if (item.day_order === -1) {
 					if (item.due) {
 						let duedate = item.due["date"];
@@ -106,7 +105,7 @@ module.exports = NodeHelper.create({
 
 	// TBD
 	addNewSubItemToList: function(self, proj, task, parent) {
-		var acessCode = self.config.accessToken;
+		var accessCode = self.config.accessToken;
 
 		const crypto = require('crypto');
 		// Create self.addData.message as new item
@@ -119,7 +118,7 @@ module.exports = NodeHelper.create({
 			headers: {
 				"content-type": "application/x-www-form-urlencoded",
 				"cache-control": "no-cache",
-				"Authorization": "Bearer " + acessCode
+				"Authorization": "Bearer " + accessCode
 			},
 			form: {
 				commands:"[{ \
@@ -153,7 +152,7 @@ module.exports = NodeHelper.create({
 	// TBD
 	addNewItemToList: function(proj, task, callback = null) {
 		var self = this;
-		var acessCode = self.config.accessToken;
+		var accessCode = self.config.accessToken;
 
 		const crypto = require('crypto');
 		// Create self.addData.message as new item
@@ -162,7 +161,7 @@ module.exports = NodeHelper.create({
 		var itemid = null;
 
 		var proj_str = "";
-		if ((proj != "inbox")) {
+		if ((proj !== "inbox")) {
 			proj_str = "\"project_id\": \"" + proj + "\",";
 		}
 
@@ -172,7 +171,7 @@ module.exports = NodeHelper.create({
 			headers: {
 				"content-type": "application/x-www-form-urlencoded",
 				"cache-control": "no-cache",
-				"Authorization": "Bearer " + acessCode
+				"Authorization": "Bearer " + accessCode
 			},
 			form: {
 				commands:"[{ \
@@ -221,7 +220,7 @@ module.exports = NodeHelper.create({
 		var reqTask = self.addData.data["id"].split("-")[1];
 
 		// If we're making a new item, make it
-		if (reqTask == "NEW") {
+		if (reqTask === "NEW") {
 			self.addNewItemToList(reqProj, self.addData.message);
 		} else { // add a sub-item to an item
 			var tmpid = null;
