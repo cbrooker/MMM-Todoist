@@ -104,7 +104,7 @@ module.exports = NodeHelper.create({
 	},
 
 	// TBD
-	addNewSubItemToList: function(self, proj, task, parent) {
+	addNewSubItemToList: function(self, proj, task, parent, section = null) {
 		var accessCode = self.config.accessToken;
 
 		const crypto = require('crypto');
@@ -112,6 +112,13 @@ module.exports = NodeHelper.create({
 		var uuid = crypto.randomBytes(16).toString('hex');
 		var tmpid = crypto.randomBytes(16).toString('hex');
 		var itemid = null;
+
+		// Build section parameter if provided
+		var section_str = "";
+		if (section) {
+			section_str = ", \"section_id\": \"" + section + "\"";
+		}
+
 		request({
 			url: self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint + "/",
 			method: "POST",
@@ -128,7 +135,7 @@ module.exports = NodeHelper.create({
 							\"args\": { \
 									\"content\": \"" + task + "\", \
 									\"project_id\": \"" + proj + "\", \
-									\"parent_id\": \"" + parent + "\" \
+									\"parent_id\": \"" + parent + "\"" + section_str + " \
 							}}]"
 			}
 		},
@@ -150,7 +157,7 @@ module.exports = NodeHelper.create({
 	},
 
 	// TBD
-	addNewItemToList: function(proj, task, callback = null) {
+	addNewItemToList: function(proj, task, callback = null, section = null) {
 		var self = this;
 		var accessCode = self.config.accessToken;
 
@@ -163,6 +170,11 @@ module.exports = NodeHelper.create({
 		var proj_str = "";
 		if ((proj !== "inbox")) {
 			proj_str = "\"project_id\": \"" + proj + "\",";
+		}
+
+		var section_str = "";
+		if (section) {
+			section_str = "\"section_id\": \"" + section + "\",";
 		}
 
 		request({
@@ -179,7 +191,7 @@ module.exports = NodeHelper.create({
 							\"temp_id\": \"" + tmpid + "\", \
 							\"uuid\": \"" + uuid + "\", \
 							\"args\": { \
-									\"content\": \"" + task + "\"," + proj_str +
+									\"content\": \"" + task + "\"," + proj_str + section_str +
 									"\"due\": {\"string\":\"today\"} \
 							}}]"
 			}
@@ -198,7 +210,7 @@ module.exports = NodeHelper.create({
 				var taskJson = JSON.parse(body);
 				itemid = taskJson["temp_id_mapping"][tmpid];
 				if (callback) {
-					callback(self, proj, self.addData.message, itemid);
+					callback(self, proj, self.addData.message, itemid, section);
 				}
 			}
 		});
@@ -216,12 +228,14 @@ module.exports = NodeHelper.create({
 		}
 
 		const crypto = require('crypto');
-		var reqProj = self.addData.data["id"].split("-")[0];
-		var reqTask = self.addData.data["id"].split("-")[1];
+		var idParts = self.addData.data["id"].split("-");
+		var reqProj = idParts[0];
+		var reqTask = idParts[1];
+		var reqSection = idParts[2] || null; // Optional section ID
 
 		// If we're making a new item, make it
 		if (reqTask === "NEW") {
-			self.addNewItemToList(reqProj, self.addData.message);
+			self.addNewItemToList(reqProj, self.addData.message, null, reqSection);
 		} else { // add a sub-item to an item
 			var tmpid = null;
 			var itemid = null;
@@ -230,10 +244,10 @@ module.exports = NodeHelper.create({
 			// If parent item not found, add it
 			if (itemid == null) {
 				// Create self.addData.data["task"] as new item (get itemid)
-				self.addNewItemToList(reqProj, reqTask, self.addNewSubItemToList);
+				self.addNewItemToList(reqProj, reqTask, self.addNewSubItemToList, reqSection);
 			} else {
 				// ADD self.addData.message as sub-item to itemid
-				self.addNewSubItemToList(self, reqProj, self.addData.message, itemid);
+				self.addNewSubItemToList(self, reqProj, self.addData.message, itemid, reqSection);
 			}
 		}
 
