@@ -38,7 +38,7 @@ Module.register("MMM-Todoist", {
 		maximumEntries: 10,
 		projects: [],
 		blacklistProjects: false,
-	    	labels: [""],
+	    	labels: [],
 		sections: [],
 		updateInterval: 10 * 60 * 1000, // every 10 minutes,
 		fade: true,
@@ -288,13 +288,15 @@ Module.register("MMM-Todoist", {
 		}
 
 		// DEBUG: Log ID types and values to diagnose filtering issues
-		console.log("MMM-Todoist DEBUG: ID Normalization");
-		console.log("  Config projects:", self.config.projects, "Type:", typeof self.config.projects[0]);
-		console.log("  Config sections:", self.config.sections, "Type:", typeof self.config.sections[0]);
-		console.log("  Total tasks before filters:", tasks.items.length);
-		if (tasks.items.length > 0) {
-			console.log("  Sample task project_id:", tasks.items[0].project_id, "Type:", typeof tasks.items[0].project_id);
-			console.log("  Sample task section_id:", tasks.items[0].section_id, "Type:", typeof tasks.items[0].section_id);
+		if (self.config.debug) {
+			console.log("MMM-Todoist DEBUG: ID Normalization");
+			console.log("  Config projects:", self.config.projects, "Type:", typeof self.config.projects[0]);
+			console.log("  Config sections:", self.config.sections, "Type:", typeof self.config.sections[0]);
+			console.log("  Total tasks before filters:", tasks.items.length);
+			if (tasks.items.length > 0) {
+				console.log("  Sample task project_id:", tasks.items[0].project_id, "Type:", typeof tasks.items[0].project_id);
+				console.log("  Sample task section_id:", tasks.items[0].section_id, "Type:", typeof tasks.items[0].section_id);
+			}
 		}
 
 		if (this.config.blacklistProjects) {
@@ -345,12 +347,14 @@ Module.register("MMM-Todoist", {
 		}
 
 		// DEBUG: Log task count after due date filter
-		console.log("MMM-Todoist DEBUG: After due date filter:", tasks.items.length, "tasks remaining");
+		if (self.config.debug) {
+			console.log("MMM-Todoist DEBUG: After due date filter:", tasks.items.length, "tasks remaining");
 
-		// DEBUG: Log filter configuration
-		console.log("MMM-Todoist DEBUG: Filter Configuration");
-		console.log("  Labels config:", self.config.labels, "Type:", typeof self.config.labels, "Length:", self.config.labels ? self.config.labels.length : "undefined");
-		console.log("  displaySubtasks:", self.config.displaySubtasks);
+			// Log filter configuration
+			console.log("MMM-Todoist DEBUG: Filter Configuration");
+			console.log("  Labels config:", self.config.labels, "Type:", typeof self.config.labels, "Length:", self.config.labels ? self.config.labels.length : "undefined");
+			console.log("  displaySubtasks:", self.config.displaySubtasks);
+		}
 
 		//Filter the Todos by the criteria specified in the Config
 		let subtaskCount = 0;
@@ -373,7 +377,9 @@ Module.register("MMM-Todoist", {
 			if (item.labels.length === 0) {
 				passesFilters = false;
 				labelFilterCount++;
-				console.log("  Task filtered out by label (no labels):", item.content);
+				if (self.config.debug) {
+					console.log("  Task filtered out by label (no labels):", item.content);
+				}
 			} else {
 				let hasMatchingLabel = false;
 				for (let label of item.labels) {
@@ -387,9 +393,11 @@ Module.register("MMM-Todoist", {
 				}
 				if (!hasMatchingLabel) {
 					labelFilterCount++;
-					console.log("  Task filtered out by label (no match):", item.content);
-					console.log("    Task labels:", item.labels);
-					console.log("    Config labels:", self.config.labels);
+					if (self.config.debug) {
+						console.log("  Task filtered out by label (no match):", item.content);
+						console.log("    Task labels:", item.labels);
+						console.log("    Config labels:", self.config.labels);
+					}
 				}
 				passesFilters = hasMatchingLabel;
 			}
@@ -400,9 +408,11 @@ Module.register("MMM-Todoist", {
 			let passesProject = self.config.projects.includes(item.project_id);
 			if (!passesProject) {
 				projectFilterCount++;
-				console.log("  Task filtered out by project:", item.content);
-				console.log("    Task project_id:", item.project_id);
-				console.log("    Config projects:", self.config.projects);
+				if (self.config.debug) {
+					console.log("  Task filtered out by project:", item.content);
+					console.log("    Task project_id:", item.project_id);
+					console.log("    Config projects:", self.config.projects);
+				}
 			}
 			passesFilters = passesFilters && passesProject;
 		}
@@ -412,9 +422,11 @@ Module.register("MMM-Todoist", {
 			let passesSection = self.config.sections.includes(item.section_id);
 			if (!passesSection) {
 				sectionFilterCount++;
-				console.log("  Task filtered out by section:", item.content);
-				console.log("    Task section_id:", item.section_id, "Type:", typeof item.section_id);
-				console.log("    Config sections:", self.config.sections);
+				if (self.config.debug) {
+					console.log("  Task filtered out by section:", item.content);
+					console.log("    Task section_id:", item.section_id, "Type:", typeof item.section_id);
+					console.log("    Config sections:", self.config.sections);
+				}
 			}
 			passesFilters = passesFilters && passesSection;
 		}
@@ -426,12 +438,14 @@ Module.register("MMM-Todoist", {
 	});
 
 		// DEBUG: Log final filtered count with breakdown
-		console.log("MMM-Todoist DEBUG: Filter Results Summary");
-		console.log("  Tasks filtered out by subtask:", subtaskCount);
-		console.log("  Tasks filtered out by label:", labelFilterCount);
-		console.log("  Tasks filtered out by project:", projectFilterCount);
-		console.log("  Tasks filtered out by section:", sectionFilterCount);
-		console.log("  FINAL tasks remaining:", items.length);
+		if (self.config.debug) {
+			console.log("MMM-Todoist DEBUG: Filter Results Summary");
+			console.log("  Tasks filtered out by subtask:", subtaskCount);
+			console.log("  Tasks filtered out by label:", labelFilterCount);
+			console.log("  Tasks filtered out by project:", projectFilterCount);
+			console.log("  Tasks filtered out by section:", sectionFilterCount);
+			console.log("  FINAL tasks remaining:", items.length);
+		}
 
 		//**** FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs AND SECTION IDs */
 		if (self.config.debug) {
