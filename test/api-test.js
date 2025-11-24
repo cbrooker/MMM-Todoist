@@ -31,8 +31,9 @@ const colors = {
 // Configuration from .env
 const config = {
 	accessToken: process.env.TODOIST_ACCESS_TOKEN,
-	projects: process.env.TEST_PROJECT_IDS ? process.env.TEST_PROJECT_IDS.split(',').map(id => parseInt(id.trim())) : [],
-	sections: process.env.TEST_SECTION_IDS ? process.env.TEST_SECTION_IDS.split(',').map(id => parseInt(id.trim())) : [],
+	// Keep IDs as strings to match Todoist API response format
+	projects: process.env.TEST_PROJECT_IDS ? process.env.TEST_PROJECT_IDS.split(',').map(id => id.trim()) : [],
+	sections: process.env.TEST_SECTION_IDS ? process.env.TEST_SECTION_IDS.split(',').map(id => id.trim()) : [],
 	labels: process.env.TEST_LABELS ? process.env.TEST_LABELS.split(',').map(l => l.trim()) : [],
 	debug: process.env.DEBUG === 'true',
 	apiVersion: 'v9',
