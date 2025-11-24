@@ -274,6 +274,19 @@ Module.register("MMM-Todoist", {
 			return;
 		}
 
+		// Normalize config IDs to strings to match Todoist API response format
+		// This ensures compatibility whether users provide numbers or strings in config
+		// IMPORTANT: Must happen before blacklistProjects logic to ensure type consistency
+		if (self.config.projects && self.config.projects.length > 0) {
+			self.config.projects = self.config.projects.map(id => String(id));
+		}
+		if (self.config.sections && self.config.sections.length > 0) {
+			self.config.sections = self.config.sections.map(id => String(id));
+		}
+		if (this.userList && this.userList.length > 0) {
+			this.userList = this.userList.map(id => String(id));
+		}
+
 		if (this.config.blacklistProjects) {
 			// take all projects in payload, and remove the ones specified by user
 			// i.e., convert user's "whitelist" into a "blacklist"
@@ -304,6 +317,7 @@ Module.register("MMM-Todoist", {
 			}
 		}
 		*/
+
 		if (self.config.displayTasksWithinDays > -1 || !self.config.displayTasksWithoutDue) {
 			tasks.items = tasks.items.filter(function (item) {
 				if (item.due === null) {

@@ -96,6 +96,11 @@ Module configuration is passed through MagicMirror's `config/config.js`. Key con
 - `inputTasks`: Array of button configurations for adding tasks via MMM-Keyboard (default: [])
 - `showInboxButton`: Show default [+] button for inbox tasks when inputTasks are configured (default: true)
 
+**Important:** While the code now handles both number and string IDs (via normalization), IDs should be specified as **strings** in config for best practice:
+- ✅ `projects: ["166564794", "166564792"]`
+- ✅ `sections: ["123456789", "987654321"]`
+- ⚠️ `projects: [166564794, 166564792]` (works but not recommended)
+
 **Filter Logic:**
 - Filters use **AND logic**: Tasks must match ALL configured filter types
 - If `projects` is configured, tasks must be in those projects

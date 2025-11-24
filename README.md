@@ -36,11 +36,11 @@ modules: [
 			updateInterval: 10*60*1000, // Update every 10 minutes
 			fade: false,      
 			// projects and/or labels is mandatory:
-			projects: [ 166564794 ], 
+			projects: [ "166564794" ],
 			labels: [ "MagicMirror", "Important" ], // Tasks for any projects with these labels will be shown.
 			inputTasks: [
-					{"project" : 166564794, "task" : "Groceries", "symbol" : "cart-shopping"},
-				 	{"project" : 166564794, "task" : "Hardware Store", "symbol" : "screwdriver-wrench", "color" : "white", "bg-color" : "darkorange"}
+					{"project" : "166564794", "task" : "Groceries", "symbol" : "cart-shopping"},
+				 	{"project" : "166564794", "task" : "Hardware Store", "symbol" : "screwdriver-wrench", "color" : "white", "bg-color" : "darkorange"}
 				]
     }
 	}
@@ -93,7 +93,8 @@ The following properties can be configured:
 				Array of ProjectIDs you want to display. <br>
 				<br><b>Possible values:</b> <code>array</code>
 				<br><b>Default value:</b> <code>[ ]</code>
-				<br><b>Example:</b> <code>[166564794, 166564792]</code>
+				<br><b>Example:</b> <code>["166564794", "166564792"]</code>
+				<br><b>Note:</b> IDs should be specified as strings to match the Todoist API format.
 				<br>
 				<br>
 				<b>Getting the Todoist ProjectID:</b><br>
@@ -124,7 +125,8 @@ The following properties can be configured:
 				Array of section IDs you want to display. Sections are organizational units within projects that group related tasks.<br>
 				<br><b>Possible values:</b> <code>array</code>
 				<br><b>Default value:</b> <code>[ ]</code>
-				<br><b>Example:</b> <code>[123456789, 987654321]</code>
+				<br><b>Example:</b> <code>["123456789", "987654321"]</code>
+				<br><b>Note:</b> IDs should be specified as strings to match the Todoist API format.
 				<br>
 				<br>
 				<b>Getting the Todoist Section ID:</b><br>
@@ -280,9 +282,9 @@ modules: [
 	{
 		...
 			inputTasks: [
-					{"project" : 166564794, "task" : "Groceries", "symbol" : "cart-shopping"},
-				 	{"project" : 166564794, "task" : "Hardware Store", "symbol" : "screwdriver-wrench", "color" : "white", "bg-color" : "darkorange"},
-					{"project" : 166564794, "task" : "NEW", "section" : 123456789, "symbol" : "plus", "color" : "green"}
+					{"project" : "166564794", "task" : "Groceries", "symbol" : "cart-shopping"},
+				 	{"project" : "166564794", "task" : "Hardware Store", "symbol" : "screwdriver-wrench", "color" : "white", "bg-color" : "darkorange"},
+					{"project" : "166564794", "task" : "NEW", "section" : "123456789", "symbol" : "plus", "color" : "green"}
 				]
     }
 	}
@@ -316,7 +318,7 @@ The following properties can be configured for each inputTask:
 			<td>(required) Project to which this task will belong.<br>
 				<br><b>Possible values:</b> <code>any project id</code>
 				<br><b>Default value:</b> <code>none</code>
-				<br><b>Example:</b> <code>166564792</code>
+				<br><b>Example:</b> <code>"166564792"</code>
 				<br>
 				<b>Getting the Todoist ProjectID:</b><br>
 				1) Go to Todoist (Log in if you aren't)<br>
@@ -368,7 +370,7 @@ The following properties can be configured for each inputTask:
 			<td>(optional) Section ID where new tasks will be created. Sections are organizational units within projects.<br>
 				<br><b>Possible values:</b> <code>any section id</code>
 				<br><b>Default value:</b> <code>none</code>
-				<br><b>Example:</b> <code>123456789</code>
+				<br><b>Example:</b> <code>"123456789"</code>
 				<br>
 				<b>Getting the Todoist Section ID:</b><br>
 				If you add <b>debug=true</b> in your config.js, the Sections and Section IDs will be displayed on MagicMirror as well as in the Browser console.<br><br>
