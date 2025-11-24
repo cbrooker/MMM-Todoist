@@ -100,7 +100,8 @@
     flex-direction: row;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
+    margin-top: 20px;
 }
 
 .add-list-item-add {
@@ -114,7 +115,7 @@
     color: white;
     text-align: center;
     padding: 10px 5px 5px 5px;
-    border: 1px solid black;
+    border: none;
     border-radius: 10px;
     background-color: grey;
 }
