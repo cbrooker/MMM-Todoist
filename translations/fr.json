@@ -1,15 +1,24 @@
 {
 	"YESTERDAY": "Hier",
 	"JAN": "Jan",
-	"FEB": "Fev",
+	"FEB": "Fév",
     "MAR": "Mar",
     "APR": "Avr",
     "MAY": "Mai",
     "JUN": "Juin",
-    "JUL": "Jui",
+    "JUL": "Juil",
     "AUG": "Août",
     "SEP": "Sept",
     "OCT": "Oct",
     "NOV": "Nov",
-    "DEC": "Dec"
+    "DEC": "Dec",
+    "MARK_COMPLETE": "Marquer comme terminé",
+    "CANCEL": "Annuler",
+    "PROJECT": "Projet",
+    "DUE_DATE": "Date d'échéance",
+    "PRIORITY": "Priorité",
+    "DESCRIPTION": "Description",
+    "LABELS": "Étiquettes",
+    "COMPLETING": "En cours...",
+    "NO_DUE_DATE": "Pas de date d'échéance"
 }

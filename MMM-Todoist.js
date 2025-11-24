@@ -90,6 +90,9 @@ Module.register("MMM-Todoist", {
 		inputTasks: [],
 		showInboxButton: true, // show default [+] button for creating standalone tasks in inbox
 
+		// task completion feature
+		enableTaskCompletion: true, // enable tap-to-complete functionality
+
 		// Non-configurable parameters
 		apiVersion: "v9",
 		apiBase: "https://todoist.com/API",
@@ -107,7 +110,8 @@ Module.register("MMM-Todoist", {
 		return {
 			en: "translations/en.json",
 			de: "translations/de.json",
-			nb: "translations/nb.json"
+			nb: "translations/nb.json",
+			fr: "translations/fr.json"
 		};
 	},
 
@@ -256,6 +260,19 @@ Module.register("MMM-Todoist", {
 			this.sendSocketNotification("FETCH_TODOIST", this.config);
 		} else if (notification === "FETCH_ERROR") {
 			Log.error("Todoist Error. Could not fetch todos: " + payload.error);
+		} else if (notification === "TASK_COMPLETED") {
+			// Task was successfully completed
+			this.closeTaskModal();
+			// Immediately refresh the task list
+			this.sendSocketNotification("FETCH_TODOIST", this.config);
+		} else if (notification === "COMPLETE_ERROR") {
+			// Handle completion error
+			Log.error("Todoist task completion failed: " + payload.error);
+			var completeBtn = document.getElementById("todoist-modal-complete-btn");
+			if (completeBtn) {
+				completeBtn.disabled = false;
+				completeBtn.textContent = this.translate("MARK_COMPLETE");
+			}
 		}
 	},
 
@@ -692,7 +709,7 @@ Module.register("MMM-Todoist", {
 				}
 				var h = d.getHours();
 				var m = z(d.getMinutes());
-				if (config.timeFormat == 12) {
+				if (config.timeFormat === 12) {
 					return " " + (h % 12 || 12) + ":" + m + (h < 12 ? " AM" : " PM");
 				} else {
 					return " " + h + ":" + m;
@@ -708,7 +725,7 @@ Module.register("MMM-Todoist", {
 		var innerHTML = "<span class='projectcolor' style='color: " + projectcolor + "; background-color: " + projectcolor + "'></span>" + project.name;
 		return this.createCell("xsmall", innerHTML);
 	},
-	addAssigneeAvatorCell: function(item, collaboratorsMap) {	
+	addAssigneeAvatorCell: function(item, collaboratorsMap) {
 		var avatarImg = document.createElement("img");
 		avatarImg.className = "todoAvatarImg";
 
@@ -721,6 +738,237 @@ Module.register("MMM-Todoist", {
 		cell.appendChild(avatarImg);
 
 		return cell;
+	},
+
+	/**
+	 * Creates the task details modal/popup element
+	 * @returns {HTMLElement} The modal container element
+	 */
+	createTaskModal: function() {
+		var self = this;
+
+		// Create modal container
+		var modal = document.createElement("div");
+		modal.id = "todoist-task-modal";
+		modal.className = "todoist-modal hidden";
+
+		// Modal content wrapper
+		var modalContent = document.createElement("div");
+		modalContent.className = "todoist-modal-content";
+
+		// Close button (X)
+		var closeBtn = document.createElement("span");
+		closeBtn.className = "todoist-modal-close";
+		closeBtn.innerHTML = "&times;";
+		closeBtn.addEventListener("click", function() { self.closeTaskModal(); });
+
+		// Task title
+		var taskTitle = document.createElement("h3");
+		taskTitle.id = "todoist-modal-title";
+		taskTitle.className = "todoist-modal-title";
+
+		// Details container
+		var detailsContainer = document.createElement("div");
+		detailsContainer.className = "todoist-modal-details";
+
+		// Project row
+		var projectRow = document.createElement("div");
+		projectRow.className = "todoist-modal-row";
+		projectRow.innerHTML = '<span class="todoist-modal-label">' + this.translate("PROJECT") +
+			':</span> <span id="todoist-modal-project" class="todoist-modal-value"></span>';
+
+		// Due date row
+		var dueDateRow = document.createElement("div");
+		dueDateRow.className = "todoist-modal-row";
+		dueDateRow.innerHTML = '<span class="todoist-modal-label">' + this.translate("DUE_DATE") +
+			':</span> <span id="todoist-modal-due-date" class="todoist-modal-value"></span>';
+
+		// Priority row
+		var priorityRow = document.createElement("div");
+		priorityRow.className = "todoist-modal-row";
+		priorityRow.innerHTML = '<span class="todoist-modal-label">' + this.translate("PRIORITY") +
+			':</span> <span id="todoist-modal-priority" class="todoist-modal-value"></span>';
+
+		// Labels row (hidden if no labels)
+		var labelsRow = document.createElement("div");
+		labelsRow.id = "todoist-modal-labels-row";
+		labelsRow.className = "todoist-modal-row";
+		labelsRow.innerHTML = '<span class="todoist-modal-label">' + this.translate("LABELS") +
+			':</span> <span id="todoist-modal-labels" class="todoist-modal-value"></span>';
+
+		// Description row (hidden if no description)
+		var descriptionRow = document.createElement("div");
+		descriptionRow.id = "todoist-modal-description-row";
+		descriptionRow.className = "todoist-modal-row";
+		descriptionRow.innerHTML = '<span class="todoist-modal-label">' + this.translate("DESCRIPTION") +
+			':</span><div id="todoist-modal-description" class="todoist-modal-description"></div>';
+
+		detailsContainer.appendChild(projectRow);
+		detailsContainer.appendChild(dueDateRow);
+		detailsContainer.appendChild(priorityRow);
+		detailsContainer.appendChild(labelsRow);
+		detailsContainer.appendChild(descriptionRow);
+
+		// Button container
+		var buttonContainer = document.createElement("div");
+		buttonContainer.className = "todoist-modal-buttons";
+
+		// Cancel button
+		var cancelBtn = document.createElement("button");
+		cancelBtn.className = "todoist-modal-btn todoist-modal-btn-cancel";
+		cancelBtn.textContent = this.translate("CANCEL");
+		cancelBtn.addEventListener("click", function() { self.closeTaskModal(); });
+
+		// Complete button
+		var completeBtn = document.createElement("button");
+		completeBtn.id = "todoist-modal-complete-btn";
+		completeBtn.className = "todoist-modal-btn todoist-modal-btn-complete";
+		completeBtn.textContent = this.translate("MARK_COMPLETE");
+		completeBtn.addEventListener("click", function() { self.completeCurrentTask(); });
+
+		buttonContainer.appendChild(cancelBtn);
+		buttonContainer.appendChild(completeBtn);
+
+		// Assemble modal
+		modalContent.appendChild(closeBtn);
+		modalContent.appendChild(taskTitle);
+		modalContent.appendChild(detailsContainer);
+		modalContent.appendChild(buttonContainer);
+		modal.appendChild(modalContent);
+
+		// Click outside to close
+		modal.addEventListener("click", function(event) {
+			if (event.target === modal) {
+				self.closeTaskModal();
+			}
+		});
+
+		return modal;
+	},
+
+	/**
+	 * Handles click on a task row
+	 * @param {Event} event - The click event
+	 * @param {Object} item - The task item data
+	 */
+	handleTaskClick: function(event, item) {
+		event.stopPropagation();
+
+		// Store current task for completion
+		this.currentTaskId = item.id;
+		this.currentTaskItem = item;
+
+		// Find project name
+		var project = this.tasks.projects.find(function(p) { return p.id === item.project_id; });
+		var projectName = project ? project.name : "Unknown";
+		var projectColor = project ? this.config.projectColors[project.color] : "#808080";
+
+		// Format due date
+		var dueDateDisplay = "";
+		if (item.due && item.due.date && item.due.date !== "1900-01-01") {
+			var dueDateTime = this.parseDueDate(item.due.date);
+			dueDateDisplay = dueDateTime.toLocaleDateString(config.language, {
+				weekday: "short",
+				month: "short",
+				day: "numeric"
+			});
+			if (!item.all_day) {
+				var hours = dueDateTime.getHours();
+				var minutes = dueDateTime.getMinutes().toString().padStart(2, "0");
+				if (config.timeFormat === 12) {
+					var ampm = hours >= 12 ? "PM" : "AM";
+					hours = hours % 12 || 12;
+					dueDateDisplay += " " + hours + ":" + minutes + " " + ampm;
+				} else {
+					dueDateDisplay += " " + hours + ":" + minutes;
+				}
+			}
+		} else {
+			dueDateDisplay = this.translate("NO_DUE_DATE");
+		}
+
+		// Format priority
+		var priorityText = "";
+		var priorityClass = "";
+		switch (item.priority) {
+			case 4: priorityText = "P1 (Highest)"; priorityClass = "priority1"; break;
+			case 3: priorityText = "P2 (High)"; priorityClass = "priority2"; break;
+			case 2: priorityText = "P3 (Medium)"; priorityClass = "priority3"; break;
+			default: priorityText = "P4 (Normal)"; priorityClass = ""; break;
+		}
+
+		// Populate modal
+		var modal = document.getElementById("todoist-task-modal");
+		modal.querySelector("#todoist-modal-title").innerHTML = item.contentHtml || item.content;
+		modal.querySelector("#todoist-modal-project").innerHTML =
+			'<span class="projectcolor" style="background-color: ' + projectColor + ';"></span>' + projectName;
+		modal.querySelector("#todoist-modal-due-date").textContent = dueDateDisplay;
+
+		var prioritySpan = modal.querySelector("#todoist-modal-priority");
+		prioritySpan.textContent = priorityText;
+		prioritySpan.className = "todoist-modal-value " + priorityClass;
+
+		// Labels
+		var labelsRow = modal.querySelector("#todoist-modal-labels-row");
+		var labelsValue = modal.querySelector("#todoist-modal-labels");
+		if (item.labels && item.labels.length > 0) {
+			labelsValue.textContent = item.labels.join(", ");
+			labelsRow.style.display = "";
+		} else {
+			labelsRow.style.display = "none";
+		}
+
+		// Description
+		var descRow = modal.querySelector("#todoist-modal-description-row");
+		var descValue = modal.querySelector("#todoist-modal-description");
+		if (item.description && item.description.trim() !== "") {
+			descValue.textContent = item.description;
+			descRow.style.display = "";
+		} else {
+			descRow.style.display = "none";
+		}
+
+		// Reset button state
+		var completeBtn = modal.querySelector("#todoist-modal-complete-btn");
+		completeBtn.disabled = false;
+		completeBtn.textContent = this.translate("MARK_COMPLETE");
+
+		// Show modal
+		modal.classList.remove("hidden");
+	},
+
+	/**
+	 * Closes the task modal
+	 */
+	closeTaskModal: function() {
+		var modal = document.getElementById("todoist-task-modal");
+		if (modal) {
+			modal.classList.add("hidden");
+		}
+		this.currentTaskId = null;
+		this.currentTaskItem = null;
+	},
+
+	/**
+	 * Completes the currently selected task
+	 */
+	completeCurrentTask: function() {
+		if (!this.currentTaskId) {
+			return;
+		}
+
+		// Update button to show loading state
+		var completeBtn = document.getElementById("todoist-modal-complete-btn");
+		if (completeBtn) {
+			completeBtn.disabled = true;
+			completeBtn.textContent = this.translate("COMPLETING");
+		}
+
+		// Send completion request to backend
+		this.sendSocketNotification("COMPLETE_TODOIST", {
+			config: this.config,
+			taskId: this.currentTaskId
+		});
 	},
 
 	buildTaskTable: function () {
@@ -739,10 +987,20 @@ Module.register("MMM-Todoist", {
 		}
 
 		//Iterate through Todos
+		var self = this;
 		this.tasks.items.forEach(item => {
 			var divRow = document.createElement("div");
 			//Add the Row
 			divRow.className = "divTableRow";
+
+			// Add click handling for task completion (if enabled)
+			if (self.config.enableTaskCompletion) {
+				divRow.dataset.taskId = item.id;
+				divRow.classList.add("clickable-task");
+				divRow.addEventListener("click", function(event) {
+					self.handleTaskClick(event, item);
+				});
+			}
 
 			//Columns
 			divRow.appendChild(this.addPriorityIndicatorCell(item));
@@ -844,6 +1102,12 @@ Module.register("MMM-Todoist", {
 		// Build the input task button list (if enabled) and add it
 		const addList = this.buildInputList();
 		wrapper.appendChild(addList);
+
+		// Create task completion modal (if enabled)
+		if (this.config.enableTaskCompletion) {
+			const modal = this.createTaskModal();
+			wrapper.appendChild(modal);
+		}
 
 		// create the gradient
 		if (this.config.fade && this.config.fadePoint < 1) divTable.querySelectorAll('.divTableRow').forEach((row, i, rows) => row.style.opacity = Math.max(0, Math.min(1 - ((((i + 1) * (1 / (rows.length))) - this.config.fadePoint) / (1 - this.config.fadePoint)) * (1 - this.config.fadeMinimumOpacity), 1)));

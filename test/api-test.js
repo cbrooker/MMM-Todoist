@@ -38,6 +38,7 @@ const config = {
 	displayTasksWithinDays: process.env.DISPLAY_TASKS_WITHIN_DAYS ? parseInt(process.env.DISPLAY_TASKS_WITHIN_DAYS) : -1,
 	displayTasksWithoutDue: process.env.DISPLAY_TASKS_WITHOUT_DUE !== 'false', // default true
 	debug: process.env.DEBUG === 'true',
+	testCompleteTaskId: process.env.TEST_COMPLETE_TASK_ID || null,
 	apiVersion: 'v9',
 	apiBase: 'https://todoist.com/API',
 	todoistEndpoint: 'sync',
@@ -255,6 +256,90 @@ function displaySections(data) {
 	}
 }
 
+// Test task completion API
+function testTaskCompletion(data) {
+	return new Promise((resolve, reject) => {
+		logSection('Task Completion Test');
+
+		if (!config.testCompleteTaskId) {
+			logInfo('No TEST_COMPLETE_TASK_ID set - skipping completion test');
+			log('\nTo test task completion:');
+			log('1. Pick a task ID from the list above');
+			log('2. Add to .env: TEST_COMPLETE_TASK_ID=your_task_id');
+			log('3. Run npm test again');
+			logWarning('This will ACTUALLY complete the task in Todoist!\n');
+			resolve();
+			return;
+		}
+
+		// Find the task to verify it exists
+		const task = data.items.find(t => t.id === config.testCompleteTaskId);
+		if (!task) {
+			logError(`Task ID ${config.testCompleteTaskId} not found in your tasks`);
+			resolve();
+			return;
+		}
+
+		log(`Attempting to complete task: ${colors.bright}${task.content}${colors.reset}`);
+
+		const crypto = require('crypto');
+		const uuid = crypto.randomBytes(16).toString('hex');
+
+		request({
+			url: `${config.apiBase}/${config.apiVersion}/${config.todoistEndpoint}/`,
+			method: 'POST',
+			headers: {
+				'content-type': 'application/x-www-form-urlencoded',
+				'cache-control': 'no-cache',
+				'Authorization': `Bearer ${config.accessToken}`
+			},
+			form: {
+				commands: JSON.stringify([{
+					"type": "item_close",
+					"uuid": uuid,
+					"args": {
+						"id": config.testCompleteTaskId
+					}
+				}])
+			}
+		}, function(error, response, body) {
+			if (error) {
+				logError(`Completion API request failed: ${error}`);
+				reject(error);
+				return;
+			}
+
+			if (response.statusCode !== 200) {
+				logError(`Completion API returned status code ${response.statusCode}`);
+				if (config.debug) {
+					log(`Response: ${body}`, colors.dim);
+				}
+				reject(new Error(`HTTP ${response.statusCode}`));
+				return;
+			}
+
+			try {
+				const result = JSON.parse(body);
+				if (config.debug) {
+					log(`Response: ${JSON.stringify(result, null, 2)}`, colors.dim);
+				}
+
+				if (result.sync_status && result.sync_status[uuid] === 'ok') {
+					logSuccess(`Task "${task.content}" completed successfully!`);
+					log(`\n${colors.dim}The task has been marked complete in Todoist.${colors.reset}`);
+				} else {
+					logError('Task completion command returned unexpected status');
+					log(`Status: ${JSON.stringify(result.sync_status)}`, colors.yellow);
+				}
+				resolve();
+			} catch (e) {
+				logError(`Failed to parse completion response: ${e.message}`);
+				reject(e);
+			}
+		});
+	});
+}
+
 // Test filtering logic
 function testFiltering(data) {
 	logSection('Testing Filter Logic');
@@ -336,6 +421,7 @@ function testFiltering(data) {
 			const dueDate = task.due ? task.due.date : 'No due date';
 
 			log(`\n  ${i + 1}. ${colors.bright}${task.content}${colors.reset}`);
+			log(`     ${colors.dim}Task ID: ${task.id}${colors.reset}`);
 			log(`     Project: ${colors.cyan}${projectName}${colors.reset} | Section: ${colors.magenta}${sectionName}${colors.reset}`);
 			log(`     Due: ${dueDate} | Priority: ${task.priority}`);
 			if (task.labels && task.labels.length > 0) {
@@ -375,6 +461,9 @@ async function runTests() {
 
 		// Step 6: Test filtering
 		testFiltering(data);
+
+		// Step 7: Test task completion (optional)
+		await testTaskCompletion(data);
 
 		// Success!
 		logSection('Test Complete');

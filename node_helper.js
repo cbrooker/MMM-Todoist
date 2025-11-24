@@ -29,6 +29,10 @@ module.exports = NodeHelper.create({
 			this.addData = payload.addData;
 			this.fetchTodos(this.addItemToList);
 		}
+		if (notification === "COMPLETE_TODOIST") {
+			this.config = payload.config;
+			this.completeTask(payload.taskId);
+		}
 	},
 
 	fetchTodos : function(callback) {
@@ -253,5 +257,68 @@ module.exports = NodeHelper.create({
 		}
 
 		self.sendSocketNotification("ADDITEM", itemid);
+	},
+
+	/**
+	 * Completes a task via Todoist Sync API
+	 * @param {string} taskId - The ID of the task to complete
+	 */
+	completeTask: function(taskId) {
+		var self = this;
+		var accessCode = self.config.accessToken;
+
+		const crypto = require('crypto');
+		var uuid = crypto.randomBytes(16).toString('hex');
+
+		request({
+			url: self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint + "/",
+			method: "POST",
+			headers: {
+				"content-type": "application/x-www-form-urlencoded",
+				"cache-control": "no-cache",
+				"Authorization": "Bearer " + accessCode
+			},
+			form: {
+				commands: JSON.stringify([{
+					"type": "item_close",
+					"uuid": uuid,
+					"args": {
+						"id": taskId
+					}
+				}])
+			}
+		},
+		function(error, response, body) {
+			if (error) {
+				self.sendSocketNotification("COMPLETE_ERROR", {
+					error: error
+				});
+				return console.error("ERROR - MMM-Todoist: Task completion failed: " + error);
+			}
+
+			if (self.config.debug) {
+				console.log("Task completion response: " + body);
+			}
+
+			if (response.statusCode === 200) {
+				var responseJson = JSON.parse(body);
+				// Check sync_status for command result
+				if (responseJson.sync_status && responseJson.sync_status[uuid] === "ok") {
+					self.sendSocketNotification("TASK_COMPLETED", {
+						taskId: taskId
+					});
+				} else {
+					self.sendSocketNotification("COMPLETE_ERROR", {
+						error: "Task completion command failed",
+						details: responseJson.sync_status
+					});
+				}
+			} else {
+				self.sendSocketNotification("COMPLETE_ERROR", {
+					error: "HTTP " + response.statusCode
+				});
+				console.log("Todoist completion request status=" + response.statusCode);
+			}
+		});
 	}
 });

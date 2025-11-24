@@ -11,5 +11,14 @@
     "SEP": "Sep",
     "OCT": "Okt",
     "NOV": "Nov",
-    "DEC": "Des"
+    "DEC": "Des",
+    "MARK_COMPLETE": "Merk som fullført",
+    "CANCEL": "Avbryt",
+    "PROJECT": "Prosjekt",
+    "DUE_DATE": "Forfallsdato",
+    "PRIORITY": "Prioritet",
+    "DESCRIPTION": "Beskrivelse",
+    "LABELS": "Etiketter",
+    "COMPLETING": "Fullfører...",
+    "NO_DUE_DATE": "Ingen forfallsdato"
 }

@@ -11,5 +11,14 @@
     "SEP": "Sep",
     "OCT": "Oct",
     "NOV": "Nov",
-    "DEC": "Dec"
+    "DEC": "Dec",
+    "MARK_COMPLETE": "Mark Complete",
+    "CANCEL": "Cancel",
+    "PROJECT": "Project",
+    "DUE_DATE": "Due Date",
+    "PRIORITY": "Priority",
+    "DESCRIPTION": "Description",
+    "LABELS": "Labels",
+    "COMPLETING": "Completing...",
+    "NO_DUE_DATE": "No due date"
 }
