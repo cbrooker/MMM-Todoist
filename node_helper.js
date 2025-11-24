@@ -156,6 +156,8 @@ module.exports = NodeHelper.create({
 			if (response.statusCode === 200) {
 				var taskJson = JSON.parse(body);
 				itemid = taskJson["temp_id_mapping"][JSON.stringify(tmpid)];
+				// Send ADDITEM only after API confirms subtask was created
+				self.sendSocketNotification("ADDITEM", itemid);
 			}
 		});
 	},
@@ -216,6 +218,9 @@ module.exports = NodeHelper.create({
 				itemid = taskJson["temp_id_mapping"][tmpid];
 				if (callback) {
 					callback(self, proj, self.addData.message, itemid, section);
+				} else {
+					// Send ADDITEM only after API confirms task was created
+					self.sendSocketNotification("ADDITEM", itemid);
 				}
 			}
 		});
@@ -255,8 +260,8 @@ module.exports = NodeHelper.create({
 				self.addNewSubItemToList(self, reqProj, self.addData.message, itemid, reqSection);
 			}
 		}
-
-		self.sendSocketNotification("ADDITEM", itemid);
+		// Note: ADDITEM notification is now sent from the API response callbacks
+		// in addNewItemToList() and addNewSubItemToList() to ensure task exists
 	},
 
 	/**
