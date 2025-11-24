@@ -252,8 +252,8 @@ Module.register("MMM-Todoist", {
 			this.loaded = true;
 			this.updateDom(1000);
 		} else if (notification === "ADDITEM") {
-			this.loaded = true;
-			this.updateDom(1000);
+			// Immediately fetch fresh data to show the newly created task
+			this.sendSocketNotification("FETCH_TODOIST", this.config);
 		} else if (notification === "FETCH_ERROR") {
 			Log.error("Todoist Error. Could not fetch todos: " + payload.error);
 		}
@@ -637,49 +637,52 @@ Module.register("MMM-Todoist", {
 		var innerHTML = "";
 		
 		var oneDay = 24 * 60 * 60 * 1000;
-		var dueDateTime = this.parseDueDate(item.due.date);
-		var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
-		var now = new Date();
-		var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-		var diffDays = Math.floor((dueDate - today) / (oneDay));
-		var diffMonths = (dueDate.getFullYear() * 12 + dueDate.getMonth()) - (now.getFullYear() * 12 + now.getMonth());
-
-		if (diffDays < -1) {
-			innerHTML = dueDate.toLocaleDateString(config.language, {
-												"month": "short"
-											}) + " " + dueDate.getDate();
-			className += "xsmall todoDueOverdue";
-		} else if (diffDays === -1) {
-			innerHTML = this.translate("YESTERDAY");
-			className += "xsmall todoDueOverdue";
-		} else if (diffDays === 0) {
-			innerHTML = this.translate("TODAY");
-			if (item.all_day || dueDateTime >= now) {
-				className += "todoDueToday";
-			} else {
-				className += "todoDueOverdue";
-			}
-		} else if (diffDays === 1) {
-			innerHTML = this.translate("TOMORROW");
-			className += "xsmall todoDueTomorrow";
-		} else if (diffDays < 7) {
-			innerHTML = dueDate.toLocaleDateString(config.language, {
-				"weekday": "short"
-			});
-			className += "xsmall";
-		} else if (diffMonths < 7 || dueDate.getFullYear() == now.getFullYear()) {
-			innerHTML = dueDate.toLocaleDateString(config.language, {
-				"month": "short"
-			}) + " " + dueDate.getDate();
-			className += "xsmall";
-		} else if (item.due.date === "2100-12-31") {
+		// Check for fake date first, before any calculations
+		if (item.due.date === "1900-01-01") {
 			innerHTML = "";
 			className += "xsmall";
 		} else {
-			innerHTML = dueDate.toLocaleDateString(config.language, {
-				"month": "short"
-			}) + " " + dueDate.getDate() + " " + dueDate.getFullYear();
-			className += "xsmall";
+			var dueDateTime = this.parseDueDate(item.due.date);
+			var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
+			var now = new Date();
+			var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+			var diffDays = Math.floor((dueDate - today) / (oneDay));
+			var diffMonths = (dueDate.getFullYear() * 12 + dueDate.getMonth()) - (now.getFullYear() * 12 + now.getMonth());
+
+			if (diffDays < -1) {
+				innerHTML = dueDate.toLocaleDateString(config.language, {
+													"month": "short"
+												}) + " " + dueDate.getDate();
+				className += "xsmall todoDueOverdue";
+			} else if (diffDays === -1) {
+				innerHTML = this.translate("YESTERDAY");
+				className += "xsmall todoDueOverdue";
+			} else if (diffDays === 0) {
+				innerHTML = this.translate("TODAY");
+				if (item.all_day || dueDateTime >= now) {
+					className += "todoDueToday";
+				} else {
+					className += "todoDueOverdue";
+				}
+			} else if (diffDays === 1) {
+				innerHTML = this.translate("TOMORROW");
+				className += "xsmall todoDueTomorrow";
+			} else if (diffDays < 7) {
+				innerHTML = dueDate.toLocaleDateString(config.language, {
+					"weekday": "short"
+				});
+				className += "xsmall";
+			} else if (diffMonths < 7 || dueDate.getFullYear() == now.getFullYear()) {
+				innerHTML = dueDate.toLocaleDateString(config.language, {
+					"month": "short"
+				}) + " " + dueDate.getDate();
+				className += "xsmall";
+			} else {
+				innerHTML = dueDate.toLocaleDateString(config.language, {
+					"month": "short"
+				}) + " " + dueDate.getDate() + " " + dueDate.getFullYear();
+				className += "xsmall";
+			}
 		}
 
 		if (innerHTML !== "" && !item.all_day) {

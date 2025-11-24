@@ -169,12 +169,12 @@ module.exports = NodeHelper.create({
 
 		var proj_str = "";
 		if ((proj !== "inbox")) {
-			proj_str = "\"project_id\": \"" + proj + "\",";
+			proj_str = "\"project_id\": \"" + proj + "\"";
 		}
 
 		var section_str = "";
 		if (section) {
-			section_str = "\"section_id\": \"" + section + "\",";
+			section_str = "\"section_id\": \"" + section + "\"";
 		}
 
 		request({
@@ -191,8 +191,9 @@ module.exports = NodeHelper.create({
 							\"temp_id\": \"" + tmpid + "\", \
 							\"uuid\": \"" + uuid + "\", \
 							\"args\": { \
-									\"content\": \"" + task + "\"," + proj_str + section_str +
-									"\"due\": {\"string\":\"today\"} \
+									\"content\": \"" + task + "\"" +
+									(proj_str ? "," + proj_str : "") +
+									(section_str ? "," + section_str : "") + " \
 							}}]"
 			}
 		},
