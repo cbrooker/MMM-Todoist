@@ -265,19 +265,28 @@ module.exports = NodeHelper.create({
 	},
 
 	/**
-	 * Completes a task via Todoist Sync API
+	 * Completes a task via Todoist Sync API with retry logic
 	 * @param {string} taskId - The ID of the task to complete
+	 * @param {number} attempt - Current attempt number (default 1)
+	 * @param {number} maxRetries - Maximum number of retry attempts (default 3)
 	 */
-	completeTask: function(taskId) {
+	completeTask: function(taskId, attempt, maxRetries) {
 		var self = this;
+		attempt = attempt || 1;
+		maxRetries = maxRetries || 3;
 		var accessCode = self.config.accessToken;
 
 		const crypto = require('crypto');
 		var uuid = crypto.randomBytes(16).toString('hex');
 
+		if (self.config.debug) {
+			console.log("MMM-Todoist: Attempting to complete task " + taskId + " (attempt " + attempt + "/" + maxRetries + ")");
+		}
+
 		request({
 			url: self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint + "/",
 			method: "POST",
+			timeout: 15000, // 15 second timeout per request
 			headers: {
 				"content-type": "application/x-www-form-urlencoded",
 				"cache-control": "no-cache",
@@ -295,10 +304,21 @@ module.exports = NodeHelper.create({
 		},
 		function(error, response, body) {
 			if (error) {
-				self.sendSocketNotification("COMPLETE_ERROR", {
-					error: error
-				});
-				return console.error("ERROR - MMM-Todoist: Task completion failed: " + error);
+				console.error("ERROR - MMM-Todoist: Task completion failed (attempt " + attempt + "): " + error);
+				
+				// Retry on network errors
+				if (attempt < maxRetries) {
+					var delay = Math.pow(2, attempt) * 1000; // Exponential backoff: 2s, 4s, 8s
+					console.log("MMM-Todoist: Retrying in " + (delay/1000) + " seconds...");
+					setTimeout(function() {
+						self.completeTask(taskId, attempt + 1, maxRetries);
+					}, delay);
+				} else {
+					self.sendSocketNotification("COMPLETE_ERROR", {
+						error: "Network error after " + maxRetries + " attempts: " + error.message
+					});
+				}
+				return;
 			}
 
 			if (self.config.debug) {
@@ -306,18 +326,37 @@ module.exports = NodeHelper.create({
 			}
 
 			if (response.statusCode === 200) {
-				var responseJson = JSON.parse(body);
+				var responseJson;
+				try {
+					responseJson = JSON.parse(body);
+				} catch (parseError) {
+					console.error("ERROR - MMM-Todoist: Failed to parse completion response: " + parseError);
+					self.sendSocketNotification("COMPLETE_ERROR", {
+						error: "Invalid response from server"
+					});
+					return;
+				}
+				
 				// Check sync_status for command result
 				if (responseJson.sync_status && responseJson.sync_status[uuid] === "ok") {
 					self.sendSocketNotification("TASK_COMPLETED", {
 						taskId: taskId
 					});
 				} else {
+					// Command failed but got a response - don't retry, report error
 					self.sendSocketNotification("COMPLETE_ERROR", {
 						error: "Task completion command failed",
 						details: responseJson.sync_status
 					});
 				}
+			} else if (response.statusCode >= 500 && attempt < maxRetries) {
+				// Server error - retry with backoff
+				console.log("MMM-Todoist: Server error " + response.statusCode + " (attempt " + attempt + ")");
+				var delay = Math.pow(2, attempt) * 1000;
+				console.log("MMM-Todoist: Retrying in " + (delay/1000) + " seconds...");
+				setTimeout(function() {
+					self.completeTask(taskId, attempt + 1, maxRetries);
+				}, delay);
 			} else {
 				self.sendSocketNotification("COMPLETE_ERROR", {
 					error: "HTTP " + response.statusCode

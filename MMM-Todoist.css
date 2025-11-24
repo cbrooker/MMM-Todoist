@@ -277,6 +277,11 @@
     cursor: not-allowed;
 }
 
+.todoist-modal-btn-complete.todoist-modal-btn-error {
+    background-color: #d14343;
+    cursor: not-allowed;
+}
+
 /* Project color in modal */
 .todoist-modal-content .projectcolor {
     display: inline-block;

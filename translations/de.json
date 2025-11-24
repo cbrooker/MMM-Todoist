@@ -20,5 +20,7 @@
     "DESCRIPTION": "Beschreibung",
     "LABELS": "Labels",
     "COMPLETING": "Wird erledigt...",
-    "NO_DUE_DATE": "Kein Fälligkeitsdatum"
+    "NO_DUE_DATE": "Kein Fälligkeitsdatum",
+    "COMPLETION_FAILED": "Fehlgeschlagen - Erneut tippen",
+    "COMPLETION_TIMEOUT": "Zeitüberschreitung"
 }

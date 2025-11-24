@@ -20,5 +20,7 @@
     "DESCRIPTION": "Description",
     "LABELS": "Labels",
     "COMPLETING": "Completing...",
-    "NO_DUE_DATE": "No due date"
+    "NO_DUE_DATE": "No due date",
+    "COMPLETION_FAILED": "Failed - Tap to retry",
+    "COMPLETION_TIMEOUT": "Request timed out"
 }

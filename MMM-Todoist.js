@@ -269,17 +269,23 @@ Module.register("MMM-Todoist", {
 			Log.error("Todoist Error. Could not fetch todos: " + payload.error);
 		} else if (notification === "TASK_COMPLETED") {
 			// Task was successfully completed
+			// Clear the completion timeout since we received a response
+			if (this.completionTimeout) {
+				clearTimeout(this.completionTimeout);
+				this.completionTimeout = null;
+			}
 			this.closeTaskModal();
 			// Immediately refresh the task list
 			this.sendSocketNotification("FETCH_TODOIST", this.config);
 		} else if (notification === "COMPLETE_ERROR") {
 			// Handle completion error
 			Log.error("Todoist task completion failed: " + payload.error);
-			var completeBtn = document.getElementById("todoist-modal-complete-btn");
-			if (completeBtn) {
-				completeBtn.disabled = false;
-				completeBtn.textContent = this.translate("MARK_COMPLETE");
+			// Clear the completion timeout since we received a response
+			if (this.completionTimeout) {
+				clearTimeout(this.completionTimeout);
+				this.completionTimeout = null;
 			}
+			this.showCompletionError(payload.error);
 		}
 	},
 
@@ -971,6 +977,16 @@ Module.register("MMM-Todoist", {
 		if (modal) {
 			modal.classList.add("hidden");
 		}
+		// Clear any pending completion timeout
+		if (this.completionTimeout) {
+			clearTimeout(this.completionTimeout);
+			this.completionTimeout = null;
+		}
+		// Clear any pending error reset timeout
+		if (this.errorResetTimeout) {
+			clearTimeout(this.errorResetTimeout);
+			this.errorResetTimeout = null;
+		}
 		this.currentTaskId = null;
 		this.currentTaskItem = null;
 
@@ -994,6 +1010,7 @@ Module.register("MMM-Todoist", {
 	 * Completes the currently selected task
 	 */
 	completeCurrentTask: function() {
+		var self = this;
 		if (!this.currentTaskId) {
 			return;
 		}
@@ -1005,11 +1022,47 @@ Module.register("MMM-Todoist", {
 			completeBtn.textContent = this.translate("COMPLETING");
 		}
 
+		// Set a timeout for the completion request (30 seconds to allow for retries)
+		// The backend will retry up to 3 times with exponential backoff
+		this.completionTimeout = setTimeout(function() {
+			Log.error("Todoist task completion timed out");
+			self.showCompletionError(self.translate("COMPLETION_TIMEOUT"));
+		}, 30000);
+
 		// Send completion request to backend
 		this.sendSocketNotification("COMPLETE_TODOIST", {
 			config: this.config,
 			taskId: this.currentTaskId
 		});
+	},
+
+	/**
+	 * Shows a completion error and resets the button state
+	 * @param {string} errorMessage - The error message to display
+	 */
+	showCompletionError: function(errorMessage) {
+		var completeBtn = document.getElementById("todoist-modal-complete-btn");
+		if (completeBtn) {
+			// Show error state briefly
+			completeBtn.textContent = this.translate("COMPLETION_FAILED");
+			completeBtn.classList.add("todoist-modal-btn-error");
+
+			// Clear any existing error reset timeout
+			if (this.errorResetTimeout) {
+				clearTimeout(this.errorResetTimeout);
+			}
+
+			// Reset to normal state after 3 seconds
+			var self = this;
+			this.errorResetTimeout = setTimeout(function() {
+				if (completeBtn) {
+					completeBtn.disabled = false;
+					completeBtn.textContent = self.translate("MARK_COMPLETE");
+					completeBtn.classList.remove("todoist-modal-btn-error");
+				}
+				self.errorResetTimeout = null;
+			}, 3000);
+		}
 	},
 
 	buildTaskTable: function () {

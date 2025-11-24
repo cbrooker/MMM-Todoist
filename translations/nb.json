@@ -20,5 +20,7 @@
     "DESCRIPTION": "Beskrivelse",
     "LABELS": "Etiketter",
     "COMPLETING": "Fullfører...",
-    "NO_DUE_DATE": "Ingen forfallsdato"
+    "NO_DUE_DATE": "Ingen forfallsdato",
+    "COMPLETION_FAILED": "Mislykket - Trykk igjen",
+    "COMPLETION_TIMEOUT": "Tidsavbrudd"
 }

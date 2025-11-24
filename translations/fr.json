@@ -20,5 +20,7 @@
     "DESCRIPTION": "Description",
     "LABELS": "Étiquettes",
     "COMPLETING": "En cours...",
-    "NO_DUE_DATE": "Pas de date d'échéance"
+    "NO_DUE_DATE": "Pas de date d'échéance",
+    "COMPLETION_FAILED": "Échec - Réessayer",
+    "COMPLETION_TIMEOUT": "Délai dépassé"
 }
