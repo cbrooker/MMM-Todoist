@@ -289,4 +289,6 @@
     padding-top: 4px;
     font-size: 0.9em;
     text-align: left;
+    /* Align with task title column (after priority + spacer cells) */
+    margin-left: 6px;
 }
