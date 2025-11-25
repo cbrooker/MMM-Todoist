@@ -1115,6 +1115,7 @@ Module.register("MMM-Todoist", {
 			divRow.appendChild(this.addPriorityIndicatorCell(item));
 			divRow.appendChild(this.addColumnSpacerCell());
 			divRow.appendChild(this.addTodoTextCell(item));
+			divRow.appendChild(this.addColumnSpacerCell());
 			divRow.appendChild(this.addDueDateCell(item));
 			if (this.config.showProject) {
 				divRow.appendChild(this.addColumnSpacerCell());
