@@ -1114,15 +1114,6 @@ Module.register("MMM-Todoist", {
 
 		divTable.appendChild(divBody);
 
-		// Add "more tasks" indicator if list is truncated
-		var hiddenCount = this.tasks.totalCount - this.tasks.items.length;
-		if (hiddenCount > 0) {
-			var moreIndicator = document.createElement("div");
-			moreIndicator.className = "todoist-more-indicator";
-			moreIndicator.innerHTML = "+ " + hiddenCount + " more task" + (hiddenCount === 1 ? "" : "s");
-			divTable.appendChild(moreIndicator);
-		}
-
 		return divTable;
 	},
 
@@ -1229,6 +1220,16 @@ Module.register("MMM-Todoist", {
 		// Build the Todoist task table and add it
 		const taskTable = this.buildTaskTable();
 		wrapper.appendChild(taskTable);
+
+		// Add "more tasks" indicator if list is truncated (outside table for proper layout)
+		var hiddenCount = this.tasks.totalCount - this.tasks.items.length;
+		if (hiddenCount > 0) {
+			var moreIndicator = document.createElement("div");
+			moreIndicator.className = "todoist-more-indicator";
+			moreIndicator.innerHTML = "+ " + hiddenCount + " more task" + (hiddenCount === 1 ? "" : "s");
+			wrapper.appendChild(moreIndicator);
+		}
+
 		// Build the input task button list (if enabled) and add it
 		const addList = this.buildInputList();
 		wrapper.appendChild(addList);
@@ -1240,7 +1241,7 @@ Module.register("MMM-Todoist", {
 		}
 
 		// create the gradient
-		if (this.config.fade && this.config.fadePoint < 1) divTable.querySelectorAll('.divTableRow').forEach((row, i, rows) => row.style.opacity = Math.max(0, Math.min(1 - ((((i + 1) * (1 / (rows.length))) - this.config.fadePoint) / (1 - this.config.fadePoint)) * (1 - this.config.fadeMinimumOpacity), 1)));
+		if (this.config.fade && this.config.fadePoint < 1) taskTable.querySelectorAll('.divTableRow').forEach((row, i, rows) => row.style.opacity = Math.max(0, Math.min(1 - ((((i + 1) * (1 / (rows.length))) - this.config.fadePoint) / (1 - this.config.fadePoint)) * (1 - this.config.fadeMinimumOpacity), 1)));
 
 		// display the update time at the end, if defined so by the user config
 		if (this.config.displayLastUpdate) {
