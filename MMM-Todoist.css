@@ -130,8 +130,7 @@
     background-color: rgba(255, 255, 255, 0.1);
 }
 
-.clickable-task:active,
-.clickable-task.selected-task {
+.clickable-task:active {
     background-color: rgba(255, 255, 255, 0.15);
 }
 

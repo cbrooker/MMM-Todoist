@@ -274,6 +274,17 @@ Module.register("MMM-Todoist", {
 				clearTimeout(this.completionTimeout);
 				this.completionTimeout = null;
 			}
+
+			// Immediately hide the completed task row to:
+			// 1. Provide instant visual feedback
+			// 2. Remove the element with :active state before DOM rebuild
+			if (this.currentTaskId) {
+				var completedRow = document.querySelector('[data-task-id="' + CSS.escape(this.currentTaskId) + '"]');
+				if (completedRow) {
+					completedRow.style.display = 'none';
+				}
+			}
+
 			this.closeTaskModal();
 			// Immediately refresh the task list
 			this.sendSocketNotification("FETCH_TODOIST", this.config);
@@ -883,20 +894,12 @@ Module.register("MMM-Todoist", {
 	handleTaskClick: function(event, item) {
 		event.stopPropagation();
 
-		// Clear any previously selected row
-		this.clearSelectedRow();
-
 		// Mark modal as open to prevent DOM updates
 		this.isModalOpen = true;
 
 		// Store current task for completion
 		this.currentTaskId = item.id;
 		this.currentTaskItem = item;
-
-		// Mark the clicked row as selected
-		var clickedRow = event.currentTarget;
-		clickedRow.classList.add("selected-task");
-		this.selectedRowElement = clickedRow;
 
 		// Find project name
 		var project = this.tasks.projects.find(function(p) { return p.id === item.project_id; });
@@ -981,9 +984,6 @@ Module.register("MMM-Todoist", {
 	 * Closes the task modal
 	 */
 	closeTaskModal: function() {
-		// Clear selected row highlight before closing modal
-		this.clearSelectedRow();
-
 		var modal = document.getElementById("todoist-task-modal");
 		if (modal) {
 			modal.classList.add("hidden");
@@ -1015,16 +1015,6 @@ Module.register("MMM-Todoist", {
 			this.pendingTasksData = null;
 			this.hasPendingUpdate = false;
 		}
-	},
-
-	/**
-	 * Clears the selected-task class from the currently selected row
-	 */
-	clearSelectedRow: function() {
-		if (this.selectedRowElement && document.body.contains(this.selectedRowElement)) {
-			this.selectedRowElement.classList.remove("selected-task");
-		}
-		this.selectedRowElement = null;
 	},
 
 	/**
