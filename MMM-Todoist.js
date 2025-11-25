@@ -1153,14 +1153,18 @@ Module.register("MMM-Todoist", {
 				
 				// Build button class
 				let btnClass = "add-list-item-add";
-				if (showSymbol) {
-					const symbol = item["symbol"] || "plus";
-					btnClass += " fas fa-" + symbol;
-				}
 				if (hasText) {
 					btnClass += " has-text";
 				}
 				addListBtn.className = btnClass;
+				
+				// Add icon if specified
+				if (showSymbol) {
+					const symbol = item["symbol"] || "plus";
+					const iconElement = document.createElement("i");
+					iconElement.className = "fas fa-" + symbol;
+					addListBtn.appendChild(iconElement);
+				}
 				
 				// Add text content if specified
 				if (hasText) {
@@ -1196,10 +1200,16 @@ Module.register("MMM-Todoist", {
 			// If using input tasks, create a button for new inbox items
 			if (this.config.showInboxButton) {
 				var addNewBtn = document.createElement("div");
-				addNewBtn.className = "add-list-item-add fas fa-square-plus";
+				addNewBtn.className = "add-list-item-add";
 				addNewBtn.id = "inbox-NEW";
 				addNewBtn.style.color = "white";
 				addNewBtn.style.backgroundColor = "darkgrey";
+				
+				// Add icon for inbox button
+				const inboxIcon = document.createElement("i");
+				inboxIcon.className = "fas fa-square-plus";
+				addNewBtn.appendChild(inboxIcon);
+				
 				addNewBtn.addEventListener("click", event => {
 					this.sendNotification("KEYBOARD", {
 						key: "MMM-Todoist",
