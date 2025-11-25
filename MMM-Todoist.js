@@ -550,6 +550,9 @@ Module.register("MMM-Todoist", {
 			break;
 		}
 
+		// Store total count before slicing for "more tasks" indicator
+		var totalCount = items.length;
+
 		//Slice by max Entries
 		items = items.slice(0, this.config.maximumEntries);
 
@@ -557,7 +560,8 @@ Module.register("MMM-Todoist", {
 			"items": items,
 			"projects": tasks.projects,
 			"collaborators": tasks.collaborators,
-			"sections": tasks.sections
+			"sections": tasks.sections,
+			"totalCount": totalCount
 		};
 
 	},
@@ -1106,7 +1110,22 @@ Module.register("MMM-Todoist", {
 			}
 
 			divBody.appendChild(divRow);
-		});		
+		});
+
+		// Add "more tasks" footer row if list is truncated
+		var hiddenCount = this.tasks.totalCount - this.tasks.items.length;
+		if (hiddenCount > 0) {
+			var footerRow = document.createElement("div");
+			footerRow.className = "divTableRow todoist-more-row";
+
+			var footerCell = document.createElement("div");
+			footerCell.className = "divTableCell todoist-more-cell";
+			footerCell.innerHTML = "+ " + hiddenCount + " more task" + (hiddenCount === 1 ? "" : "s");
+
+			footerRow.appendChild(footerCell);
+			divBody.appendChild(footerRow);
+		}
+
 		divTable.appendChild(divBody);
 
 		return divTable;

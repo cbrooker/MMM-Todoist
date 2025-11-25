@@ -107,16 +107,16 @@
 .add-list-item-add {
     display: flex;
     flex-direction: column;
-    width: 25px;
-    height: 25px;
-    margin: 5px;
-    font-size: 20px;
+    width: 12px;
+    height: 12px;
+    margin: 2px;
+    font-size: 10px;
     font-weight: bold;
     color: white;
     text-align: center;
-    padding: 10px 5px 5px 5px;
+    padding: 5px 2px 2px 2px;
     border: none;
-    border-radius: 10px;
+    border-radius: 5px;
     background-color: grey;
 }
 
@@ -265,4 +265,16 @@
     border-radius: 50%;
     margin-right: 6px;
     vertical-align: middle;
+}
+
+/* "More tasks" indicator row */
+.todoist-more-row {
+    opacity: 0.6;
+}
+
+.todoist-more-cell {
+    text-align: center;
+    font-style: italic;
+    padding-top: 8px;
+    font-size: 0.9em;
 }
