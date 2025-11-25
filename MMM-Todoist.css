@@ -285,6 +285,7 @@
     display: block;
     opacity: 0.6;
     font-style: italic;
-    padding-top: 8px;
+    padding-top: 4px;
     font-size: 0.9em;
+    text-align: left;
 }
