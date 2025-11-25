@@ -930,7 +930,12 @@ Module.register("MMM-Todoist", {
 
 		// Populate modal (use instance-specific IDs for multi-instance support)
 		var id = this.identifier;
-		var modal = document.getElementById("todoist-task-modal-" + id);
+		var modal = this.modalElement;
+
+		// Ensure modal is in document.body for proper fixed positioning (escapes module wrapper constraints)
+		if (modal && modal.parentNode !== document.body) {
+			document.body.appendChild(modal);
+		}
 		modal.querySelector("#todoist-modal-title-" + id).innerHTML = item.contentHtml || item.content;
 		modal.querySelector("#todoist-modal-project-" + id).innerHTML =
 			'<span class="projectcolor" style="background-color: ' + projectColor + ';"></span>' + projectName;
@@ -974,7 +979,7 @@ Module.register("MMM-Todoist", {
 	 * @param {boolean} skipPendingUpdate - If true, skip applying pending data (used when fresh data is about to be fetched)
 	 */
 	closeTaskModal: function(skipPendingUpdate) {
-		var modal = document.getElementById("todoist-task-modal-" + this.identifier);
+		var modal = this.modalElement;
 		if (modal) {
 			modal.classList.add("hidden");
 		}
@@ -1237,9 +1242,9 @@ Module.register("MMM-Todoist", {
 		wrapper.appendChild(addList);
 
 		// Create task completion modal (if enabled)
-		if (this.config.enableTaskCompletion) {
-			const modal = this.createTaskModal();
-			wrapper.appendChild(modal);
+		// Store reference but don't append to wrapper - will be appended to document.body when shown
+		if (this.config.enableTaskCompletion && !this.modalElement) {
+			this.modalElement = this.createTaskModal();
 		}
 
 		// create the gradient
