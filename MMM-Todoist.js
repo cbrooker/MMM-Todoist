@@ -1112,21 +1112,16 @@ Module.register("MMM-Todoist", {
 			divBody.appendChild(divRow);
 		});
 
-		// Add "more tasks" footer row if list is truncated
+		divTable.appendChild(divBody);
+
+		// Add "more tasks" indicator if list is truncated
 		var hiddenCount = this.tasks.totalCount - this.tasks.items.length;
 		if (hiddenCount > 0) {
-			var footerRow = document.createElement("div");
-			footerRow.className = "divTableRow todoist-more-row";
-
-			var footerCell = document.createElement("div");
-			footerCell.className = "divTableCell todoist-more-cell";
-			footerCell.innerHTML = "+ " + hiddenCount + " more task" + (hiddenCount === 1 ? "" : "s");
-
-			footerRow.appendChild(footerCell);
-			divBody.appendChild(footerRow);
+			var moreIndicator = document.createElement("div");
+			moreIndicator.className = "todoist-more-indicator";
+			moreIndicator.innerHTML = "+ " + hiddenCount + " more task" + (hiddenCount === 1 ? "" : "s");
+			divTable.appendChild(moreIndicator);
 		}
-
-		divTable.appendChild(divBody);
 
 		return divTable;
 	},

@@ -267,13 +267,10 @@
     vertical-align: middle;
 }
 
-/* "More tasks" indicator row */
-.todoist-more-row {
+/* "More tasks" indicator */
+.todoist-more-indicator {
+    display: block;
     opacity: 0.6;
-}
-
-.todoist-more-cell {
-    text-align: center;
     font-style: italic;
     padding-top: 8px;
     font-size: 0.9em;
