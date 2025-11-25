@@ -29,9 +29,6 @@
  * - correction of regression on commit #28 for tasks without dueDate
  * */
 
-//UserPresence Management (PIR sensor)
-var UserPresence = true; //true by default, so no impact for user without a PIR sensor
-
 Module.register("MMM-Todoist", {
 
 	defaults: {
@@ -122,6 +119,9 @@ Module.register("MMM-Todoist", {
 		this.updateIntervalID = 0; // Definition of the IntervalID to be able to stop and start it again
 		this.ModuleToDoIstHidden = false; // by default it is considered displayed. Note : core function "this.hidden" has strange behaviour, so not used here
 
+		// UserPresence Management (PIR sensor) - instance-level for multi-instance support
+		this.userPresence = true; // true by default, so no impact for user without a PIR sensor
+
 		//to display "Loading..." at start-up
 		this.title = "Loading...";
 		this.loaded = false;
@@ -170,7 +170,7 @@ Module.register("MMM-Todoist", {
 	notificationReceived: function (notification, payload) {
 		if (notification === "USER_PRESENCE") { // notification sended by module MMM-PIR-Sensor. See its doc
 			//Log.log("Fct notificationReceived USER_PRESENCE - payload = " + payload);
-			UserPresence = payload;
+			this.userPresence = payload;
 			this.GestionUpdateIntervalToDoIst();
 		}
 
@@ -182,7 +182,7 @@ Module.register("MMM-Todoist", {
 	},
 
 	GestionUpdateIntervalToDoIst: function () {
-		if (UserPresence === true && this.ModuleToDoIstHidden === false) {
+		if (this.userPresence === true && this.ModuleToDoIstHidden === false) {
 			var self = this;
 
 			// update now
@@ -196,7 +196,7 @@ Module.register("MMM-Todoist", {
 				}, this.config.updateInterval);
 			}
 
-		} else { //if (UserPresence = false OR ModuleHidden = true)
+		} else { //if (this.userPresence = false OR ModuleHidden = true)
 			Log.log("Personne regarde : on stop l'update " + this.name + " projet : " + this.config.projects);
 			clearInterval(this.updateIntervalID); // stop the update interval of this module
 			this.updateIntervalID = 0; //reset the flag to be able to start another one at resume
@@ -780,10 +780,11 @@ Module.register("MMM-Todoist", {
 	 */
 	createTaskModal: function() {
 		var self = this;
+		var id = this.identifier; // Unique identifier for multi-instance support
 
 		// Create modal container
 		var modal = document.createElement("div");
-		modal.id = "todoist-task-modal";
+		modal.id = "todoist-task-modal-" + id;
 		modal.className = "todoist-modal hidden";
 
 		// Modal content wrapper
@@ -792,7 +793,7 @@ Module.register("MMM-Todoist", {
 
 		// Task title
 		var taskTitle = document.createElement("h3");
-		taskTitle.id = "todoist-modal-title";
+		taskTitle.id = "todoist-modal-title-" + id;
 		taskTitle.className = "todoist-modal-title";
 
 		// Details container
@@ -803,33 +804,33 @@ Module.register("MMM-Todoist", {
 		var projectRow = document.createElement("div");
 		projectRow.className = "todoist-modal-row";
 		projectRow.innerHTML = '<span class="todoist-modal-label">' + this.translate("PROJECT") +
-			':</span> <span id="todoist-modal-project" class="todoist-modal-value"></span>';
+			':</span> <span id="todoist-modal-project-' + id + '" class="todoist-modal-value"></span>';
 
 		// Due date row
 		var dueDateRow = document.createElement("div");
 		dueDateRow.className = "todoist-modal-row";
 		dueDateRow.innerHTML = '<span class="todoist-modal-label">' + this.translate("DUE_DATE") +
-			':</span> <span id="todoist-modal-due-date" class="todoist-modal-value"></span>';
+			':</span> <span id="todoist-modal-due-date-' + id + '" class="todoist-modal-value"></span>';
 
 		// Priority row
 		var priorityRow = document.createElement("div");
 		priorityRow.className = "todoist-modal-row";
 		priorityRow.innerHTML = '<span class="todoist-modal-label">' + this.translate("PRIORITY") +
-			':</span> <span id="todoist-modal-priority" class="todoist-modal-value"></span>';
+			':</span> <span id="todoist-modal-priority-' + id + '" class="todoist-modal-value"></span>';
 
 		// Labels row (hidden if no labels)
 		var labelsRow = document.createElement("div");
-		labelsRow.id = "todoist-modal-labels-row";
+		labelsRow.id = "todoist-modal-labels-row-" + id;
 		labelsRow.className = "todoist-modal-row";
 		labelsRow.innerHTML = '<span class="todoist-modal-label">' + this.translate("LABELS") +
-			':</span> <span id="todoist-modal-labels" class="todoist-modal-value"></span>';
+			':</span> <span id="todoist-modal-labels-' + id + '" class="todoist-modal-value"></span>';
 
 		// Description row (hidden if no description)
 		var descriptionRow = document.createElement("div");
-		descriptionRow.id = "todoist-modal-description-row";
+		descriptionRow.id = "todoist-modal-description-row-" + id;
 		descriptionRow.className = "todoist-modal-row";
 		descriptionRow.innerHTML = '<span class="todoist-modal-label">' + this.translate("DESCRIPTION") +
-			':</span><div id="todoist-modal-description" class="todoist-modal-description"></div>';
+			':</span><div id="todoist-modal-description-' + id + '" class="todoist-modal-description"></div>';
 
 		detailsContainer.appendChild(projectRow);
 		detailsContainer.appendChild(dueDateRow);
@@ -849,7 +850,7 @@ Module.register("MMM-Todoist", {
 
 		// Complete button
 		var completeBtn = document.createElement("button");
-		completeBtn.id = "todoist-modal-complete-btn";
+		completeBtn.id = "todoist-modal-complete-btn-" + id;
 		completeBtn.className = "todoist-modal-btn todoist-modal-btn-complete";
 		completeBtn.textContent = this.translate("MARK_COMPLETE");
 		completeBtn.addEventListener("click", function() { self.completeCurrentTask(); });
@@ -927,20 +928,21 @@ Module.register("MMM-Todoist", {
 			default: priorityText = "P4 (Normal)"; priorityClass = ""; break;
 		}
 
-		// Populate modal
-		var modal = document.getElementById("todoist-task-modal");
-		modal.querySelector("#todoist-modal-title").innerHTML = item.contentHtml || item.content;
-		modal.querySelector("#todoist-modal-project").innerHTML =
+		// Populate modal (use instance-specific IDs for multi-instance support)
+		var id = this.identifier;
+		var modal = document.getElementById("todoist-task-modal-" + id);
+		modal.querySelector("#todoist-modal-title-" + id).innerHTML = item.contentHtml || item.content;
+		modal.querySelector("#todoist-modal-project-" + id).innerHTML =
 			'<span class="projectcolor" style="background-color: ' + projectColor + ';"></span>' + projectName;
-		modal.querySelector("#todoist-modal-due-date").textContent = dueDateDisplay;
+		modal.querySelector("#todoist-modal-due-date-" + id).textContent = dueDateDisplay;
 
-		var prioritySpan = modal.querySelector("#todoist-modal-priority");
+		var prioritySpan = modal.querySelector("#todoist-modal-priority-" + id);
 		prioritySpan.textContent = priorityText;
 		prioritySpan.className = "todoist-modal-value " + priorityClass;
 
 		// Labels
-		var labelsRow = modal.querySelector("#todoist-modal-labels-row");
-		var labelsValue = modal.querySelector("#todoist-modal-labels");
+		var labelsRow = modal.querySelector("#todoist-modal-labels-row-" + id);
+		var labelsValue = modal.querySelector("#todoist-modal-labels-" + id);
 		if (item.labels && item.labels.length > 0) {
 			labelsValue.textContent = item.labels.join(", ");
 			labelsRow.style.display = "";
@@ -949,8 +951,8 @@ Module.register("MMM-Todoist", {
 		}
 
 		// Description
-		var descRow = modal.querySelector("#todoist-modal-description-row");
-		var descValue = modal.querySelector("#todoist-modal-description");
+		var descRow = modal.querySelector("#todoist-modal-description-row-" + id);
+		var descValue = modal.querySelector("#todoist-modal-description-" + id);
 		if (item.description && item.description.trim() !== "") {
 			descValue.textContent = item.description;
 			descRow.style.display = "";
@@ -959,7 +961,7 @@ Module.register("MMM-Todoist", {
 		}
 
 		// Reset button state
-		var completeBtn = modal.querySelector("#todoist-modal-complete-btn");
+		var completeBtn = modal.querySelector("#todoist-modal-complete-btn-" + id);
 		completeBtn.disabled = false;
 		completeBtn.textContent = this.translate("MARK_COMPLETE");
 
@@ -972,7 +974,7 @@ Module.register("MMM-Todoist", {
 	 * @param {boolean} skipPendingUpdate - If true, skip applying pending data (used when fresh data is about to be fetched)
 	 */
 	closeTaskModal: function(skipPendingUpdate) {
-		var modal = document.getElementById("todoist-task-modal");
+		var modal = document.getElementById("todoist-task-modal-" + this.identifier);
 		if (modal) {
 			modal.classList.add("hidden");
 		}
@@ -1016,7 +1018,7 @@ Module.register("MMM-Todoist", {
 		}
 
 		// Update button to show loading state
-		var completeBtn = document.getElementById("todoist-modal-complete-btn");
+		var completeBtn = document.getElementById("todoist-modal-complete-btn-" + this.identifier);
 		if (completeBtn) {
 			completeBtn.disabled = true;
 			completeBtn.textContent = this.translate("COMPLETING");
@@ -1041,7 +1043,7 @@ Module.register("MMM-Todoist", {
 	 * @param {string} errorMessage - The error message to display
 	 */
 	showCompletionError: function(errorMessage) {
-		var completeBtn = document.getElementById("todoist-modal-complete-btn");
+		var completeBtn = document.getElementById("todoist-modal-complete-btn-" + this.identifier);
 		if (completeBtn) {
 			// Show error state briefly
 			completeBtn.textContent = this.translate("COMPLETION_FAILED");
