@@ -157,25 +157,9 @@
     border: 1px solid #333;
 }
 
-/* Close button */
-.todoist-modal-close {
-    position: absolute;
-    top: 12px;
-    right: 16px;
-    font-size: 28px;
-    cursor: pointer;
-    color: #888;
-    line-height: 1;
-}
-
-.todoist-modal-close:hover {
-    color: #fff;
-}
-
 /* Modal title */
 .todoist-modal-title {
     margin: 0 0 20px 0;
-    padding-right: 30px;
     font-size: 1.4em;
     color: #fff;
     word-wrap: break-word;
@@ -242,6 +226,15 @@
     font-size: 1em;
     cursor: pointer;
     transition: all 0.2s ease;
+}
+
+.todoist-modal-btn-cancel {
+    background-color: #444;
+    color: #fff;
+}
+
+.todoist-modal-btn-cancel:hover {
+    background-color: #555;
 }
 
 .todoist-modal-btn-complete {

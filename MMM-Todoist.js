@@ -786,12 +786,6 @@ Module.register("MMM-Todoist", {
 		var modalContent = document.createElement("div");
 		modalContent.className = "todoist-modal-content";
 
-		// Close button (X)
-		var closeBtn = document.createElement("span");
-		closeBtn.className = "todoist-modal-close";
-		closeBtn.innerHTML = "&times;";
-		closeBtn.addEventListener("click", function() { self.closeTaskModal(); });
-
 		// Task title
 		var taskTitle = document.createElement("h3");
 		taskTitle.id = "todoist-modal-title";
@@ -843,6 +837,12 @@ Module.register("MMM-Todoist", {
 		var buttonContainer = document.createElement("div");
 		buttonContainer.className = "todoist-modal-buttons";
 
+		// Cancel button
+		var cancelBtn = document.createElement("button");
+		cancelBtn.className = "todoist-modal-btn todoist-modal-btn-cancel";
+		cancelBtn.textContent = this.translate("CANCEL");
+		cancelBtn.addEventListener("click", function() { self.closeTaskModal(); });
+
 		// Complete button
 		var completeBtn = document.createElement("button");
 		completeBtn.id = "todoist-modal-complete-btn";
@@ -850,10 +850,10 @@ Module.register("MMM-Todoist", {
 		completeBtn.textContent = this.translate("MARK_COMPLETE");
 		completeBtn.addEventListener("click", function() { self.completeCurrentTask(); });
 
+		buttonContainer.appendChild(cancelBtn);
 		buttonContainer.appendChild(completeBtn);
 
 		// Assemble modal
-		modalContent.appendChild(closeBtn);
 		modalContent.appendChild(taskTitle);
 		modalContent.appendChild(detailsContainer);
 		modalContent.appendChild(buttonContainer);
