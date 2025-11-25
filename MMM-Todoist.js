@@ -179,6 +179,12 @@ Module.register("MMM-Todoist", {
 		}
 
 		if (notification == "KEYBOARD_INPUT" && payload.key === "MMM-Todoist") {
+			// Only process keyboard input if this module instance is currently visible
+			// This prevents duplicate task creation when multiple instances exist (e.g., with MMM-Pages)
+			if (this.ModuleToDoIstHidden) {
+				return;
+			}
+			
 			//this.addItemToList(payload.data, payload.message);
 			var ndata = {"config" : this.config, "addData" : payload}; 
 			this.sendSocketNotification("ADDITEM_TODOIST", ndata);
