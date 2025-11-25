@@ -197,7 +197,8 @@ module.exports = NodeHelper.create({
 							\"temp_id\": \"" + tmpid + "\", \
 							\"uuid\": \"" + uuid + "\", \
 							\"args\": { \
-									\"content\": \"" + task + "\"" +
+									\"content\": \"" + task + "\"," +
+									"\"due\": {\"string\":\"today\"}" +
 									(proj_str ? "," + proj_str : "") +
 									(section_str ? "," + section_str : "") + " \
 							}}]"

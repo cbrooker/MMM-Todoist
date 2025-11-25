@@ -123,15 +123,6 @@
 /* Clickable task rows */
 .clickable-task {
     cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.clickable-task:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.clickable-task:active {
-    background-color: rgba(255, 255, 255, 0.15);
 }
 
 /* Modal overlay */
@@ -251,15 +242,6 @@
     font-size: 1em;
     cursor: pointer;
     transition: all 0.2s ease;
-}
-
-.todoist-modal-btn-cancel {
-    background-color: #444;
-    color: #fff;
-}
-
-.todoist-modal-btn-cancel:hover {
-    background-color: #555;
 }
 
 .todoist-modal-btn-complete {

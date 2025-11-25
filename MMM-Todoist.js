@@ -275,16 +275,6 @@ Module.register("MMM-Todoist", {
 				this.completionTimeout = null;
 			}
 
-			// Immediately hide the completed task row to:
-			// 1. Provide instant visual feedback
-			// 2. Remove the element with :active state before DOM rebuild
-			if (this.currentTaskId) {
-				var completedRow = document.querySelector('[data-task-id="' + CSS.escape(this.currentTaskId) + '"]');
-				if (completedRow) {
-					completedRow.style.display = 'none';
-				}
-			}
-
 			this.closeTaskModal(true);  // Skip pending update since we're fetching fresh data
 			// Immediately refresh the task list
 			this.sendSocketNotification("FETCH_TODOIST", this.config);
@@ -853,12 +843,6 @@ Module.register("MMM-Todoist", {
 		var buttonContainer = document.createElement("div");
 		buttonContainer.className = "todoist-modal-buttons";
 
-		// Cancel button
-		var cancelBtn = document.createElement("button");
-		cancelBtn.className = "todoist-modal-btn todoist-modal-btn-cancel";
-		cancelBtn.textContent = this.translate("CANCEL");
-		cancelBtn.addEventListener("click", function() { self.closeTaskModal(); });
-
 		// Complete button
 		var completeBtn = document.createElement("button");
 		completeBtn.id = "todoist-modal-complete-btn";
@@ -866,7 +850,6 @@ Module.register("MMM-Todoist", {
 		completeBtn.textContent = this.translate("MARK_COMPLETE");
 		completeBtn.addEventListener("click", function() { self.completeCurrentTask(); });
 
-		buttonContainer.appendChild(cancelBtn);
 		buttonContainer.appendChild(completeBtn);
 
 		// Assemble modal
@@ -878,7 +861,7 @@ Module.register("MMM-Todoist", {
 
 		// Click outside to close
 		modal.addEventListener("click", function(event) {
-			if (event.target === modal) {
+			if (!event.target.closest('.todoist-modal-content')) {
 				self.closeTaskModal();
 			}
 		});
