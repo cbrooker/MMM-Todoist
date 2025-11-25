@@ -282,8 +282,9 @@ modules: [
 	{
 		...
 			inputTasks: [
-					{"project" : "166564794", "task" : "Groceries", "symbol" : "cart-shopping"},
+					{"project" : "166564794", "task" : "Groceries", "symbol" : "cart-shopping", "text" : "Groceries"},
 				 	{"project" : "166564794", "task" : "Hardware Store", "symbol" : "screwdriver-wrench", "color" : "white", "bg-color" : "darkorange"},
+					{"project" : "166564794", "task" : "NEW", "text" : "Add Task", "showSymbol" : false, "color" : "white", "bg-color" : "green"},
 					{"project" : "166564794", "task" : "NEW", "section" : "123456789", "symbol" : "plus", "color" : "green"}
 				]
     }
@@ -291,9 +292,10 @@ modules: [
 ]
 ````
 
-Four buttons will appear (as in the screenshot below):
-- *Groceries* with a shopping cart icon - creates subtasks under a "Groceries" parent task
-- *Hardware Store* with a tools icon - creates subtasks under a "Hardware Store" parent task
+Five buttons will appear (as in the screenshot below):
+- *Groceries* with text "Groceries" and a shopping cart icon - creates subtasks under a "Groceries" parent task
+- *Hardware Store* with a tools icon (no text) - creates subtasks under a "Hardware Store" parent task
+- "Add Task" text only (no icon) - creates standalone tasks in the project
 - A green [+] icon - creates standalone tasks in section 123456789
 - A default [+] icon - creates standalone tasks in the inbox
 
@@ -349,6 +351,22 @@ The following properties can be configured for each inputTask:
 				<br><b>Possible values:</b> <code>string</code>
 				<br><b>Default value:</b> <code>"plus"</code>
 				<br><b>Note:</b> You can use any of the free Font Awesome icon values found here https://fontawesome.com/v6/search?o=r&m=free.
+			</td>
+		</tr>
+		<tr>
+			<td><code>text</code></td>
+			<td>(optional) Text label to display on the button. Appears to the right of the icon if both are shown.<br>
+				<br><b>Possible values:</b> <code>string</code>
+				<br><b>Default value:</b> <code>none</code>
+				<br><b>Example:</b> <code>"Add Task"</code>
+			</td>
+		</tr>
+		<tr>
+			<td><code>showSymbol</code></td>
+			<td>(optional) Whether to show the icon symbol on the button. If set to false and no text is provided, the symbol will still be shown.<br>
+				<br><b>Possible values:</b> <code>boolean</code>
+				<br><b>Default value:</b> <code>true</code>
+				<br><b>Note:</b> At least one of text or symbol must be visible on the button.
 			</td>
 		</tr>
 		<tr>

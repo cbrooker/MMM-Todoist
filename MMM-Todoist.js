@@ -1134,11 +1134,35 @@ Module.register("MMM-Todoist", {
 			for (var idx = 0; idx < this.config.inputTasks.length; idx++) {
 				var item = this.config.inputTasks[idx];
 				var addListBtn = document.createElement("div");
-				var symbol = "plus"
-				if (item["symbol"]) {
-					symbol = item["symbol"];
+				
+				// Determine if we should show symbol (default true for backward compatibility)
+				let showSymbol = item["showSymbol"] !== false;
+				const hasText = item["text"] && item["text"].trim() !== "";
+				
+				// Must have at least text or symbol
+				if (!hasText && !showSymbol) {
+					showSymbol = true; // Force symbol if no text
 				}
-				addListBtn.className = "add-list-item-add fas fa-" + symbol;
+				
+				// Build button class
+				let btnClass = "add-list-item-add";
+				if (showSymbol) {
+					const symbol = item["symbol"] || "plus";
+					btnClass += " fas fa-" + symbol;
+				}
+				if (hasText) {
+					btnClass += " has-text";
+				}
+				addListBtn.className = btnClass;
+				
+				// Add text content if specified
+				if (hasText) {
+					const textSpan = document.createElement("span");
+					textSpan.className = "add-list-btn-text";
+					textSpan.textContent = item["text"];
+					addListBtn.appendChild(textSpan);
+				}
+				
 				// Build button ID: project-task or project-task-section
 				addListBtn.id = item["project"] + "-" + item["task"];
 				if (item["section"]) {
@@ -1151,10 +1175,12 @@ Module.register("MMM-Todoist", {
 					addListBtn.style.backgroundColor = item["bg-color"];
 				}
 				addListBtn.addEventListener("click", event => {
+					// Use currentTarget to ensure we get the button, not the text span
+					const btnId = event.currentTarget.id;
 					this.sendNotification("KEYBOARD", {
 						key: "MMM-Todoist",
 						style: "default",
-						data: {"id" : event.target.id }
+						data: {"id" : btnId }
 					});
 				});
 				addList.appendChild(addListBtn);	
@@ -1171,7 +1197,7 @@ Module.register("MMM-Todoist", {
 					this.sendNotification("KEYBOARD", {
 						key: "MMM-Todoist",
 						style: "default",
-						data: {"id" : event.target.id }
+						data: {"id" : event.currentTarget.id }
 					});
 				});
 				addList.appendChild(addNewBtn);
