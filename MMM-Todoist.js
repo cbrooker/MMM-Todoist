@@ -285,7 +285,7 @@ Module.register("MMM-Todoist", {
 				}
 			}
 
-			this.closeTaskModal();
+			this.closeTaskModal(true);  // Skip pending update since we're fetching fresh data
 			// Immediately refresh the task list
 			this.sendSocketNotification("FETCH_TODOIST", this.config);
 		} else if (notification === "COMPLETE_ERROR") {
@@ -982,8 +982,9 @@ Module.register("MMM-Todoist", {
 
 	/**
 	 * Closes the task modal
+	 * @param {boolean} skipPendingUpdate - If true, skip applying pending data (used when fresh data is about to be fetched)
 	 */
-	closeTaskModal: function() {
+	closeTaskModal: function(skipPendingUpdate) {
 		var modal = document.getElementById("todoist-task-modal");
 		if (modal) {
 			modal.classList.add("hidden");
@@ -1005,7 +1006,8 @@ Module.register("MMM-Todoist", {
 		this.isModalOpen = false;
 
 		// Apply any pending updates that were deferred while modal was open
-		if (this.hasPendingUpdate) {
+		// Skip if we're about to fetch fresh data anyway (e.g., after task completion)
+		if (this.hasPendingUpdate && !skipPendingUpdate) {
 			if (this.config.debug) {
 				Log.log("MMM-Todoist: Modal closed, applying pending update");
 			}
