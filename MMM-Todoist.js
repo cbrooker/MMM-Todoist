@@ -717,9 +717,9 @@ Module.register("MMM-Todoist", {
 			} else if (diffDays === 0) {
 				innerHTML = this.translate("TODAY");
 				if (item.all_day || dueDateTime >= now) {
-					className += "todoDueToday";
+					className += "xsmall todoDueToday";
 				} else {
-					className += "todoDueOverdue";
+					className += "xsmall todoDueOverdue";
 				}
 			} else if (diffDays === 1) {
 				innerHTML = this.translate("TOMORROW");
