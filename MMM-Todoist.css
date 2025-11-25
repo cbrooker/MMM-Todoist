@@ -20,7 +20,11 @@
 }
 
 .spacerCell {
-    width: 6px;
+    width: 3px;
+}
+
+.spacerCellLarge {
+    width: 15px;
 }
 
 .todoDueOverdue {

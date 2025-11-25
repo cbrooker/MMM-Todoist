@@ -670,6 +670,9 @@ Module.register("MMM-Todoist", {
 	addColumnSpacerCell: function() {
 		return this.createCell("spacerCell", "&nbsp;");
 	},
+	addColumnSpacerCellLarge: function() {
+		return this.createCell("spacerCellLarge", "&nbsp;");
+	},
 	addTodoTextCell: function(item) {
 		var temp = document.createElement('div');
 		temp.innerHTML = item.contentHtml;
@@ -1115,7 +1118,7 @@ Module.register("MMM-Todoist", {
 			divRow.appendChild(this.addPriorityIndicatorCell(item));
 			divRow.appendChild(this.addColumnSpacerCell());
 			divRow.appendChild(this.addTodoTextCell(item));
-			divRow.appendChild(this.addColumnSpacerCell());
+			divRow.appendChild(this.addColumnSpacerCellLarge());
 			divRow.appendChild(this.addDueDateCell(item));
 			if (this.config.showProject) {
 				divRow.appendChild(this.addColumnSpacerCell());
