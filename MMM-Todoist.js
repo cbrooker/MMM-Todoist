@@ -158,6 +158,10 @@ Module.register("MMM-Todoist", {
 	suspend: function () { //called by core system when the module is not displayed anymore on the screen
 		this.ModuleToDoIstHidden = true;
 		//Log.log("Fct suspend - ModuleHidden = " + ModuleHidden);
+		// Clean up modal from document.body to prevent memory leak
+		if (this.modalElement && this.modalElement.parentNode === document.body) {
+			document.body.removeChild(this.modalElement);
+		}
 		this.GestionUpdateIntervalToDoIst();
 	},
 
@@ -309,7 +313,6 @@ Module.register("MMM-Todoist", {
 	filterTodoistData: function (tasks) {
 		var self = this;
 		var items = [];
-		var labelIds = [];
 
 		if (tasks == undefined) {
 			return;
@@ -932,8 +935,13 @@ Module.register("MMM-Todoist", {
 		var id = this.identifier;
 		var modal = this.modalElement;
 
+		// Early return if modal not yet created
+		if (!modal) {
+			return;
+		}
+
 		// Ensure modal is in document.body for proper fixed positioning (escapes module wrapper constraints)
-		if (modal && modal.parentNode !== document.body) {
+		if (modal.parentNode !== document.body) {
 			document.body.appendChild(modal);
 		}
 		modal.querySelector("#todoist-modal-title-" + id).innerHTML = item.contentHtml || item.content;
@@ -1243,7 +1251,8 @@ Module.register("MMM-Todoist", {
 
 		// Create task completion modal (if enabled)
 		// Store reference but don't append to wrapper - will be appended to document.body when shown
-		if (this.config.enableTaskCompletion && !this.modalElement) {
+		// Also recreate if modal was removed from DOM (e.g., during suspend/resume)
+		if (this.config.enableTaskCompletion && (!this.modalElement || !document.body.contains(this.modalElement))) {
 			this.modalElement = this.createTaskModal();
 		}
 
