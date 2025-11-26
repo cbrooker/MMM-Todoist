@@ -1023,11 +1023,12 @@ Module.register("MMM-Todoist", {
 				Log.log("MMM-Todoist: Modal closed, applying pending update");
 			}
 			this.applyTasksData(this.pendingTasksData);
-
-			// Clear pending data
-			this.pendingTasksData = null;
-			this.hasPendingUpdate = false;
 		}
+
+		// Always clear pending data, even if not applied
+		// This prevents stale data from persisting across modal sessions
+		this.pendingTasksData = null;
+		this.hasPendingUpdate = false;
 	},
 
 	/**
