@@ -32,7 +32,7 @@ var UserPresence = true; //true by default, so no impact for user without a PIR 
 
 Module.register("MMM-Todoist", {
 
-	defaults: {
+		defaults: {
 		maximumEntries: 10,
 		projects: [],
 		blacklistProjects: false,
@@ -87,37 +87,18 @@ Module.register("MMM-Todoist", {
 	},
 
 	// Define required scripts.
-	getStyles () {
+	getStyles: function () {
 		return ["MMM-Todoist.css"];
 	},
-	getTranslations () {
+	getTranslations: function () {
 		return {
 			en: "translations/en.json",
 			de: "translations/de.json",
 			nb: "translations/nb.json"
 		};
 	},
-	
-	/*
-	 * The Todoist API returns task due dates as strings in these two formats: YYYY-MM-DD and YYYY-MM-DDThh:mm:ss
-	 * This depends on whether a task only has a due day or a due day and time. You cannot pass this date string into
-	 * "new Date()" - it is inconsistent. In one format, the date string is considered to be in UTC, the other in the
-	 * local timezone. Additionally, if the task's due date has a timezone set, it is given in UTC (zulu format),
-	 * otherwise it is local time. The parseDueDate function keeps Dates consistent by interpreting them all relative
-	 * to the same timezone.
-	 */
-	parseDueDate(date) {
-		let [year, month, day, hour = 0, minute = 0, second = 0] = date.split(/\D/).map(Number);
 
-		// If the task's due date has a timezone set (as opposed to the default floating timezone), it's given in UTC time.
-		if (date[date.length -1] === "Z") {
-			return new Date(Date.UTC(year, month - 1, day, hour, minute, second));
-		}
-
-		return new Date(year, month - 1, day, hour, minute, second);
-	},
-
-	start() {
+	start: function () {
 		var self = this;
 		Log.info("Starting module: " + this.name);
 
@@ -152,19 +133,19 @@ Module.register("MMM-Todoist", {
 		}, this.config.updateInterval);
 	},
 
-	suspend() { //called by core system when the module is not displayed anymore on the screen
+	suspend: function () { //called by core system when the module is not displayed anymore on the screen
 		this.ModuleToDoIstHidden = true;
 		//Log.log("Fct suspend - ModuleHidden = " + ModuleHidden);
 		this.GestionUpdateIntervalToDoIst();
 	},
 
-	resume () { //called by core system when the module is displayed on the screen
+	resume: function () { //called by core system when the module is displayed on the screen
 		this.ModuleToDoIstHidden = false;
 		//Log.log("Fct resume - ModuleHidden = " + ModuleHidden);
 		this.GestionUpdateIntervalToDoIst();
 	},
 
-	notificationReceived (notification, payload) {
+	notificationReceived: function (notification, payload) {
 		if (notification === "USER_PRESENCE") { // notification sended by module MMM-PIR-Sensor. See its doc
 			//Log.log("Fct notificationReceived USER_PRESENCE - payload = " + payload);
 			UserPresence = payload;
@@ -172,7 +153,7 @@ Module.register("MMM-Todoist", {
 		}
 	},
 
-	GestionUpdateIntervalToDoIst () {
+	GestionUpdateIntervalToDoIst: function () {
 		if (UserPresence === true && this.ModuleToDoIstHidden === false) {
 			var self = this;
 
@@ -203,7 +184,7 @@ Module.register("MMM-Todoist", {
 	 * @param {boolean} wrapEvents Wrap the text after the line has reached maxLength
 	 * @returns {string} The shortened string
 	 */
-	shorten(string, maxLength, wrapEvents) {
+	shorten: function (string, maxLength, wrapEvents) {
 		if (typeof string !== "string") {
 			return "";
 		}
@@ -240,10 +221,9 @@ Module.register("MMM-Todoist", {
 
 	// Override socket notification handler.
 	// ******** Data sent from the Backend helper. This is the data from the Todoist API ************
-	socketNotificationReceived (notification, payload) {
+	socketNotificationReceived: function (notification, payload) {
 		if (notification === "TASKS") {
-			let a = this.filterTodoistData(this,payload);
-			console.log(a)
+			let a = this.filterTodoistData(payload);
 
 			if (this.config.displayLastUpdate) {
 				this.lastUpdate = Date.now() / 1000; //save the timestamp of the last update to be able to display it
@@ -257,36 +237,36 @@ Module.register("MMM-Todoist", {
 		}
 	},
 
-	filterTodoistData (this_transfer,tasks) {
-		let items = [];
+	filterTodoistData: function (tasks) {
+		const items = [];
 		const labelIds = [];
 
-		if (!tasks || !tasks.items || tasks.accessToken != this_transfer.config.accessToken) {
+		if (!tasks || !tasks.items || tasks.accessToken != this.config.accessToken) {
 			return;
 		}
 
 
-		if (this_transfer.config.blacklistProjects) {
+		if (this.config.blacklistProjects) {
 			// take all projects in payload, and remove the ones specified by user
 			// i.e., convert user's "whitelist" into a "blacklist"
-			this_transfer.config.projects = [];
+			this.config.projects = [];
 			tasks.projects.forEach(project => {
-				if(this_transfer.userList.includes(project.id)) {
+				if(this.userList.includes(project.id)) {
 					return; // blacklisted
 				}
-				this_transfer.config.projects.push(project.id);
+				this.config.projects.push(project.id);
 			});
-			if(this_transfer.config.debug) {
+			if(this.config.debug) {
 				console.log("MMM-Todoist: original list of projects was blacklisted.\n" +
 					"Only considering the following projects:");
-				console.log(this_transfer.config.projects);
+				console.log(this.config.projects);
 			}
 		}
 
 		// Map configured label names (or IDs) to label IDs returned by the API so filtering works
-		if (this_transfer.config.labels.length > 0 && tasks.labels != undefined) {
+		if (this.config.labels.length > 0 && tasks.labels != undefined) {
 			for (let apiLabel of tasks.labels) {
-				for (let configLabelName of this_transfer.config.labels) {
+				for (let configLabelName of this.config.labels) {
 					if ((apiLabel.name && configLabelName && apiLabel.name.toLowerCase() === String(configLabelName).toLowerCase()) || String(apiLabel.id) === String(configLabelName)) {
 						labelIds.push(apiLabel.id);
 						break;
@@ -295,38 +275,38 @@ Module.register("MMM-Todoist", {
 			}
 		}
 
-		if (this_transfer.config.displayTasksWithinDays > -1 || !this_transfer.config.displayTasksWithoutDue) {
+		if (this.config.displayTasksWithinDays > -1 || !this.config.displayTasksWithoutDue) {
 			tasks.items = tasks.items.filter(function (item) {
 				if (item.due === null) {
-					return this_transfer.config.displayTasksWithoutDue;
+					return this.config.displayTasksWithoutDue;
 				}
 
 				var oneDay = 24 * 60 * 60 * 1000;
-				var dueDateTime = this_transfer.parseDueDate(item.due.date);
+				var dueDateTime = this.parseDueDate(item.due.date);
 				var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
 				var now = new Date();
 				var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 				var diffDays = Math.floor((dueDate - today) / (oneDay));
-				return diffDays <= this_transfer.config.displayTasksWithinDays;
+				return diffDays <= this.config.displayTasksWithinDays;
 			});
 		}
 
 		//Filter the Todos by the criteria specified in the Config
 		tasks.items.forEach(function (item) {
 			// Ignore sub-tasks
-			if (item.parent_id!=null && !this_transfer.config.displaySubtasks) { return; }
+			if (item.parent_id!=null && !this.config.displaySubtasks) { return; }
 
 			// If no projects or labels are configured, include all tasks
-			if (this_transfer.config.labels.length === 0 && this_transfer.config.projects.length === 0) {
+			if (this.config.labels.length === 0 && this.config.projects.length === 0) {
 				items.push(item);
 				return;
 			}
 
 			// Filter using label if a label is configured
-			if (this_transfer.config.labels.length > 0 && item.labels.length > 0) {
+			if (this.config.labels.length > 0 && item.labels.length > 0) {
 					// item.labels contains label IDs. Use mapped labelIds (from tasks.labels) or allow numeric IDs in config.
 					for (let itemLabelId of item.labels) {
-						if (labelIds.includes(itemLabelId) || this_transfer.config.labels.includes(itemLabelId) || this_transfer.config.labels.includes(String(itemLabelId))) {
+						if (labelIds.includes(itemLabelId) || this.config.labels.includes(itemLabelId) || this.config.labels.includes(String(itemLabelId))) {
 							items.push(item);
 							return;
 						}
@@ -334,8 +314,8 @@ Module.register("MMM-Todoist", {
 			}
 
 			// Filter using projets if projects are configured
-			if (this_transfer.config.projects.length>0){
-			  this_transfer.config.projects.forEach(function (project) {
+			if (this.config.projects.length>0){
+			  this.config.projects.forEach(function (project) {
 			  		if (item.project_id == project) {
 						items.push(item);
 						return;
@@ -345,7 +325,7 @@ Module.register("MMM-Todoist", {
 		});
 
 		//**** FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs */
-		if (this_transfer.config.debug) {
+		if (this.config.debug) {
 			console.log("%c *** PROJECT -- ID ***", "background: #222; color: #bada55");
 			tasks.projects.forEach(project => {
 				console.log("%c" + project.name + " -- " + project.id, "background: #222; color: #bada55");
@@ -361,7 +341,7 @@ Module.register("MMM-Todoist", {
 				item.all_day = true;
 			}
 			// Used to sort by date.
-			item.date = this_transfer.parseDueDate(item.due.date);
+			item.date = this.parseDueDate(item.due.date);
 
 			// The Sync API does not include an 'all_day' field, so we check due.date for presence of time
 			// if due.date has a time then set item.all_day to false else all_day is true
@@ -374,39 +354,56 @@ Module.register("MMM-Todoist", {
 
 		//***** Sorting code if you want to add new methods. */
 		var sorteditems;
-		switch (this_transfer.config.sortType) {
+		switch (this.config.sortType) {
 		case "todoist":
-			sorteditems = this_transfer.sortByTodoist(items);
+			sorteditems = this.sortByTodoist(items);
 			break;
 		case 'priority':
-			sorteditems = this_transfer.sortByPriority(items);
+			sorteditems = this.sortByPriority(items);
 			break;
 		case "dueDateAsc":
-			sorteditems = this_transfer.sortByDueDateAsc(items);
+			sorteditems = this.sortByDueDateAsc(items);
 			break;
 		case "dueDateDesc":
-			sorteditems = this_transfer.sortByDueDateDesc(items);
+			sorteditems = this.sortByDueDateDesc(items);
 			break;
 		case "dueDateDescPriority":
-			sorteditems = this_transfer.sortByDueDateDescPriority(items);
+			sorteditems = this.sortByDueDateDescPriority(items);
 			break;
 		default:
-			sorteditems = this_transfer.sortByTodoist(items);
+			sorteditems = this.sortByTodoist(items);
 			break;
 		}
 
 		//Slice by max Entries
-		items = sorteditems.slice(0, this_transfer.config.maximumEntries);
+		items = sorteditems.slice(0, this.config.maximumEntries);
 
-		this_transfer.tasks = {
+		this.tasks = {
 			"items": items,
 			"projects": tasks.projects || [],
 			"collaborators": tasks.collaborators || []
 		};
 
 	},
-	
-	sortByTodoist (itemstoSort) {
+	/*
+	 * The Todoist API returns task due dates as strings in these two formats: YYYY-MM-DD and YYYY-MM-DDThh:mm:ss
+	 * This depends on whether a task only has a due day or a due day and time. You cannot pass this date string into
+	 * "new Date()" - it is inconsistent. In one format, the date string is considered to be in UTC, the other in the
+	 * local timezone. Additionally, if the task's due date has a timezone set, it is given in UTC (zulu format),
+	 * otherwise it is local time. The parseDueDate function keeps Dates consistent by interpreting them all relative
+	 * to the same timezone.
+	 */
+	parseDueDate: function (date) {
+		let [year, month, day, hour = 0, minute = 0, second = 0] = date.split(/\D/).map(Number);
+
+		// If the task's due date has a timezone set (as opposed to the default floating timezone), it's given in UTC time.
+		if (date[date.length -1] === "Z") {
+			return new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+		}
+
+		return new Date(year, month - 1, day, hour, minute, second);
+	},
+	sortByTodoist: function (itemstoSort) {
 		itemstoSort.sort(function (a, b) {
 			if (!a.parent_id && !b.parent_id) {
 				// neither have parent_id so both are parent tasks, sort by their id
@@ -433,25 +430,25 @@ Module.register("MMM-Todoist", {
 		});
 		return itemstoSort;
 	},
-	sortByDueDateAsc (itemstoSort) {
+	sortByDueDateAsc: function (itemstoSort) {
 		itemstoSort.sort(function (a, b) {
 			return a.date - b.date;
 		});
 		return itemstoSort;
 	},
-	sortByDueDateDesc (itemstoSort) {
+	sortByDueDateDesc: function (itemstoSort) {
 		itemstoSort.sort(function (a, b) {
 			return b.date - a.date;
 		});
 		return itemstoSort;
 	},
-	sortByPriority (itemstoSort) {
+	sortByPriority: function (itemstoSort) {
 		itemstoSort.sort(function (a, b) {
 			return b.priority - a.priority;
 		});
 		return itemstoSort;
 	},
-	sortByDueDateDescPriority (itemstoSort) {
+	sortByDueDateDescPriority: function (itemstoSort) {
 		itemstoSort.sort(function (a, b) {
 			if (a.date > b.date) return 1;
 			if (a.date < b.date) return -1;
@@ -461,13 +458,13 @@ Module.register("MMM-Todoist", {
 		});
 		return itemstoSort;
     	},
-	createCell(className, innerHTML) {
+	createCell: function(className, innerHTML) {
 		var cell = document.createElement("div");
 		cell.className = "divTableCell " + className;
 		cell.innerHTML = innerHTML;
 		return cell;
 	},
-	addPriorityIndicatorCell(item) {
+	addPriorityIndicatorCell: function(item) {
 		var className = "priority ";
 		switch (item.priority) {
 			case 4:
@@ -485,10 +482,10 @@ Module.register("MMM-Todoist", {
 		}
 		return this.createCell(className, "&nbsp;");;
 	},
-	addColumnSpacerCell() {
+	addColumnSpacerCell: function() {
 		return this.createCell("spacerCell", "&nbsp;");
 	},
-	addTodoTextCell(item) {
+	addTodoTextCell: function(item) {
 		var taskText = "";
 		if (item.contentHtml) {
 			var temp = document.createElement('div');
@@ -512,7 +509,7 @@ Module.register("MMM-Todoist", {
 			this.shorten(taskText, this.config.maxTitleLength, this.config.wrapEvents));
 	},
 	
-	addDueDateCell(item) {
+	addDueDateCell: function(item) {
 		var className = "bright align-right dueDate ";
 		var innerHTML = "";
 		
@@ -579,7 +576,7 @@ Module.register("MMM-Todoist", {
 		}
 		return this.createCell(className, innerHTML);
 	},
-	addProjectCell(item) {
+	addProjectCell: function(item) {
 		var project = this.tasks.projects.find(p => p.id === item.project_id);
 		if (!project) {
 			return this.createCell("xsmall", "");
@@ -588,7 +585,7 @@ Module.register("MMM-Todoist", {
 		var innerHTML = "<span class='projectcolor' style='color: " + projectcolor + "; background-color: " + projectcolor + "'></span>" + (project.name || "");
 		return this.createCell("xsmall", innerHTML);
 	},
-	addAssigneeAvatorCell(item, collaboratorsMap) {	
+	addAssigneeAvatorCell: function(item, collaboratorsMap) {	
 		var avatarImg = document.createElement("img");
 		avatarImg.className = "todoAvatarImg";
 
@@ -607,7 +604,7 @@ Module.register("MMM-Todoist", {
 
 		return cell;
 	},
-	getDom () {
+	getDom: function () {
 	
 		if (this.config.hideWhenEmpty && (!this.tasks || !this.tasks.items || this.tasks.items.length === 0)) {
 			return null;
