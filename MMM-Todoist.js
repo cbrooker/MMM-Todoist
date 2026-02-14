@@ -91,8 +91,8 @@ Module.register("MMM-Todoist", {
 		enableTaskCompletion: true, // enable tap-to-complete functionality
 
 		// Non-configurable parameters
-		apiVersion: "v9",
-		apiBase: "https://todoist.com/API",
+		apiVersion: "v1",
+		apiBase: "https://api.todoist.com/api",
 		todoistEndpoint: "sync",
 		todoistResourceType: "[\"items\", \"projects\", \"collaborators\", \"user\", \"labels\", \"sections\"]",
 
@@ -125,6 +125,7 @@ Module.register("MMM-Todoist", {
 		//to display "Loading..." at start-up
 		this.title = "Loading...";
 		this.loaded = false;
+		this.errorMessage = null;
 
 		// Modal state tracking for deferred DOM updates
 		this.isModalOpen = false;
@@ -277,6 +278,10 @@ Module.register("MMM-Todoist", {
 			this.sendSocketNotification("FETCH_TODOIST", this.config);
 		} else if (notification === "FETCH_ERROR") {
 			Log.error("Todoist Error. Could not fetch todos: " + payload.error);
+			if (!this.loaded) {
+				this.errorMessage = "Todoist Error: " + payload.error;
+				this.updateDom();
+			}
 		} else if (notification === "TASK_COMPLETED") {
 			// Task was successfully completed
 			// Clear the completion timeout since we received a response
@@ -1244,7 +1249,7 @@ Module.register("MMM-Todoist", {
 
 		//display "loading..." if not loaded
 		if (!this.loaded) {
-			wrapper.innerHTML = "Loading...";
+			wrapper.innerHTML = this.errorMessage || "Loading...";
 			wrapper.className = "dimmed light small";
 			return wrapper;
 		}

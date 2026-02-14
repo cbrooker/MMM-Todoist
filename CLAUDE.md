@@ -111,8 +111,8 @@ Module configuration is passed through MagicMirror's `config/config.js`. Key con
 
 ## Todoist API
 
-Uses Todoist Sync API v9:
-- Endpoint: `https://todoist.com/API/v9/sync/`
+Uses Todoist Sync API v1:
+- Endpoint: `https://api.todoist.com/api/v1/sync/`
 - Authentication: Bearer token in Authorization header
 - Resource types: items, projects, collaborators, user, labels, sections
 - Returns comprehensive task data including project colors, collaborators, labels, and sections

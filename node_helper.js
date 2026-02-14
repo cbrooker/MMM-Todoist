@@ -63,21 +63,31 @@ module.exports = NodeHelper.create({
 				console.log(body);
 			}
 			if (response.statusCode === 200) {
-				var taskJson = JSON.parse(body);
-				taskJson.items.forEach((item)=>{
-					item.contentHtml = markdown.makeHtml(item.content);
-				});
+				try {
+					var taskJson = JSON.parse(body);
+					taskJson.items.forEach((item)=>{
+						item.contentHtml = markdown.makeHtml(item.content);
+					});
 
-				taskJson.accessToken = accessCode;
+					taskJson.accessToken = accessCode;
 
-				if (callback) {
-					callback(self, taskJson);
-				} else {
-					self.sendSocketNotification("TASKS", taskJson);
+					if (callback) {
+						callback(self, taskJson);
+					} else {
+						self.sendSocketNotification("TASKS", taskJson);
+					}
+				} catch (e) {
+					console.error("MMM-Todoist: Error parsing API response: " + e.message);
+					self.sendSocketNotification("FETCH_ERROR", {
+						error: "Failed to parse Todoist response: " + e.message
+					});
 				}
 			}
 			else{
 				console.log("Todoist api request status="+response.statusCode);
+				self.sendSocketNotification("FETCH_ERROR", {
+					error: "Todoist API returned HTTP " + response.statusCode
+				});
 			}
 
 		});
@@ -154,10 +164,22 @@ module.exports = NodeHelper.create({
 				console.log(body);
 			}
 			if (response.statusCode === 200) {
-				var taskJson = JSON.parse(body);
-				itemid = taskJson["temp_id_mapping"][JSON.stringify(tmpid)];
-				// Send ADDITEM only after API confirms subtask was created
-				self.sendSocketNotification("ADDITEM", itemid);
+				try {
+					var taskJson = JSON.parse(body);
+					itemid = taskJson["temp_id_mapping"][JSON.stringify(tmpid)];
+					// Send ADDITEM only after API confirms subtask was created
+					self.sendSocketNotification("ADDITEM", itemid);
+				} catch (e) {
+					console.error("MMM-Todoist: Error parsing sub-item response: " + e.message);
+					self.sendSocketNotification("ADDNEWSUBITEM_ERROR", {
+						error: "Failed to parse response: " + e.message
+					});
+				}
+			} else {
+				console.error("MMM-Todoist: Add sub-item failed with status " + response.statusCode);
+				self.sendSocketNotification("ADDNEWSUBITEM_ERROR", {
+					error: "Todoist API returned HTTP " + response.statusCode
+				});
 			}
 		});
 	},
@@ -215,14 +237,26 @@ module.exports = NodeHelper.create({
 				console.log(body);
 			}
 			if (response.statusCode === 200) {
-				var taskJson = JSON.parse(body);
-				itemid = taskJson["temp_id_mapping"][tmpid];
-				if (callback) {
-					callback(self, proj, self.addData.message, itemid, section);
-				} else {
-					// Send ADDITEM only after API confirms task was created
-					self.sendSocketNotification("ADDITEM", itemid);
+				try {
+					var taskJson = JSON.parse(body);
+					itemid = taskJson["temp_id_mapping"][tmpid];
+					if (callback) {
+						callback(self, proj, self.addData.message, itemid, section);
+					} else {
+						// Send ADDITEM only after API confirms task was created
+						self.sendSocketNotification("ADDITEM", itemid);
+					}
+				} catch (e) {
+					console.error("MMM-Todoist: Error parsing add-item response: " + e.message);
+					self.sendSocketNotification("ADDNEWITEM_ERROR", {
+						error: "Failed to parse response: " + e.message
+					});
 				}
+			} else {
+				console.error("MMM-Todoist: Add item failed with status " + response.statusCode);
+				self.sendSocketNotification("ADDNEWITEM_ERROR", {
+					error: "Todoist API returned HTTP " + response.statusCode
+				});
 			}
 		});
 	},
@@ -306,7 +340,7 @@ module.exports = NodeHelper.create({
 		function(error, response, body) {
 			if (error) {
 				console.error("ERROR - MMM-Todoist: Task completion failed (attempt " + attempt + "): " + error);
-				
+
 				// Retry on network errors
 				if (attempt < maxRetries) {
 					var delay = Math.pow(2, attempt) * 1000; // Exponential backoff: 2s, 4s, 8s
@@ -337,7 +371,7 @@ module.exports = NodeHelper.create({
 					});
 					return;
 				}
-				
+
 				// Check sync_status for command result
 				if (responseJson.sync_status && responseJson.sync_status[uuid] === "ok") {
 					self.sendSocketNotification("TASK_COMPLETED", {

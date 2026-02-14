@@ -39,8 +39,8 @@ const config = {
 	displayTasksWithoutDue: process.env.DISPLAY_TASKS_WITHOUT_DUE !== 'false', // default true
 	debug: process.env.DEBUG === 'true',
 	testCompleteTaskId: process.env.TEST_COMPLETE_TASK_ID || null,
-	apiVersion: 'v9',
-	apiBase: 'https://todoist.com/API',
+	apiVersion: 'v1',
+	apiBase: 'https://api.todoist.com/api',
 	todoistEndpoint: 'sync',
 	todoistResourceType: '["items", "projects", "collaborators", "user", "labels", "sections"]'
 };
