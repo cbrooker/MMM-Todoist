@@ -57,10 +57,10 @@ module.exports = NodeHelper.create({
 			return;
 		}
 
-		var url = self.config.apiBase + "/" + self.config.apiVersion + "/" + self.config.todoistEndpoint;
-		var params = new URLSearchParams();
+		const url = "https://api.todoist.com/api/v1/sync";
+		const params = new URLSearchParams();
 		params.append("sync_token", "*");
-		params.append("resource_types", self.config.todoistResourceType);
+		params.append("resource_types", '["*"]');
 
 		axios.post(url, params.toString(), {
 			headers: {
@@ -75,7 +75,8 @@ module.exports = NodeHelper.create({
 			}
 
 			if (response.status === 200 && response.data) {
-				var taskJson = response.data;
+				const taskJson = response.data;
+				console.log(taskJson)
 				
 				if (!taskJson.items || !Array.isArray(taskJson.items)) {
 					console.error("MMM-Todoist: Invalid response format - items array missing");
