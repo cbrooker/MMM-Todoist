@@ -23,15 +23,15 @@
     width: 3px;
 }
 
-.overdue {
+.todoDueOverdue {
     text-decoration: underline #ac0000;
 }
 
-.today {
+.todoDueToday {
     text-decoration: underline #03a05c;
 }
 
-.tomorrow {
+.todoDueTomorrow {
     text-decoration: underline #166cec;
 }
 
