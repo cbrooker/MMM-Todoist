@@ -30,7 +30,7 @@
 //UserPresence Management (PIR sensor)
 var UserPresence = true; //true by default, so no impact for user without a PIR sensor
 
-Module.register("MMM-Todoist", {
+Module.register("MMM-TodoistDC", {
 
 		defaults: {
 		maximumEntries: 10,
@@ -83,9 +83,11 @@ Module.register("MMM-Todoist", {
 			49:'#ccac93'
 		},
 
-		//This has been designed to use the Todoist Sync API v1.
-		apiVersion: "v1",
-		apiBase: "https://api.todoist.com/api",
+		//This has been designed to use the Todoist Sync API.
+		//Updated to use the current Sync API v9 endpoints:
+		//https://api.todoist.com/sync/v9/sync
+		apiVersion: "v9",
+		apiBase: "https://api.todoist.com/sync",
 		todoistEndpoint: "sync",
 
 		todoistResourceType: "[\"items\", \"projects\", \"collaborators\", \"user\", \"labels\"]",
@@ -606,7 +608,7 @@ Module.register("MMM-Todoist", {
 		    this.tasks.collaborators[colIndex].image_id != null) {
 			avatarImg.src = "https://dcff1xvirvpfp.cloudfront.net/" + this.tasks.collaborators[colIndex].image_id + "_big.jpg";
 		} else { 
-			avatarImg.src = "/modules/MMM-Todoist/1x1px.png"; 
+			avatarImg.src = "/modules/MMM-TodoistDC/1x1px.png"; 
 		}
 
 		var cell = this.createCell("", "");

@@ -44,7 +44,7 @@ module.exports = NodeHelper.create({
 		var accessCode = self.config.accessToken;
 
 		if (!axios) {
-			console.error("MMM-Todoist: axios is not available. Please run 'npm install' in modules/MMM-Todoist");
+			console.error("MMM-TodoistDC: axios is not available. Please run 'npm install' in modules/MMM-TodoistDC");
 			self.sendSocketNotification("FETCH_ERROR", { error: "Missing dependency: axios" });
 			return;
 		}
