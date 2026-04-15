@@ -83,13 +83,6 @@ Module.register("MMM-Todoist", {
 			49:'#ccac93'
 		},
 
-		//This has been designed to use the Todoist Sync API v1.
-		apiVersion: "v1",
-		apiBase: "https://api.todoist.com/api",
-		todoistEndpoint: "sync",
-
-		todoistResourceType: "[\"items\", \"projects\", \"collaborators\", \"user\", \"labels\"]",
-
 		debug: false
 	},
 
@@ -230,7 +223,7 @@ Module.register("MMM-Todoist", {
 	// ******** Data sent from the Backend helper. This is the data from the Todoist API ************
 	socketNotificationReceived: function (notification, payload) {
 		if (notification === "TASKS") {
-			this.filterTodoistData(payload);
+			this.filterTodoistData(this,payload);
 
 			if (this.config.displayLastUpdate) {
 				this.lastUpdate = Date.now() / 1000; //save the timestamp of the last update to be able to display it
@@ -244,41 +237,36 @@ Module.register("MMM-Todoist", {
 		}
 	},
 
-	filterTodoistData: function (tasks) {
-		var self = this;
-		var items = [];
-		var labelIds = [];
+	filterTodoistData: function (this_transfer,tasks) {
+		let items = [];
+		const labelIds = [];
 
-		if (tasks == undefined) {
-			return;
-		}
-		if (tasks.accessToken != self.config.accessToken) {
-			return;
-		}
-		if (tasks.items == undefined) {
+		if (!tasks || !tasks.items || tasks.accessToken != this_transfer.config.accessToken) {
 			return;
 		}
 
-		if (this.config.blacklistProjects) {
+
+		if (this_transfer.config.blacklistProjects) {
 			// take all projects in payload, and remove the ones specified by user
 			// i.e., convert user's "whitelist" into a "blacklist"
-			this.config.projects = [];
+			this_transfer.config.projects = [];
 			tasks.projects.forEach(project => {
-				if(this.userList.includes(project.id)) {
+				if(this_transfer.userList.includes(project.id)) {
 					return; // blacklisted
 				}
-				this.config.projects.push(project.id);
+				this_transfer.config.projects.push(project.id);
 			});
-			if(self.config.debug) {
+			if(this_transfer.config.debug) {
 				console.log("MMM-Todoist: original list of projects was blacklisted.\n" +
 					"Only considering the following projects:");
-				console.log(this.config.projects);
+				console.log(this_transfer.config.projects);
 			}
 		}
+
 		// Map configured label names (or IDs) to label IDs returned by the API so filtering works
-		if (self.config.labels.length > 0 && tasks.labels != undefined) {
+		if (this_transfer.config.labels.length > 0 && tasks.labels != undefined) {
 			for (let apiLabel of tasks.labels) {
-				for (let configLabelName of self.config.labels) {
+				for (let configLabelName of this_transfer.config.labels) {
 					if ((apiLabel.name && configLabelName && apiLabel.name.toLowerCase() === String(configLabelName).toLowerCase()) || String(apiLabel.id) === String(configLabelName)) {
 						labelIds.push(apiLabel.id);
 						break;
@@ -286,38 +274,39 @@ Module.register("MMM-Todoist", {
 				}
 			}
 		}
-		if (self.config.displayTasksWithinDays > -1 || !self.config.displayTasksWithoutDue) {
+
+		if (this_transfer.config.displayTasksWithinDays > -1 || !this_transfer.config.displayTasksWithoutDue) {
 			tasks.items = tasks.items.filter(function (item) {
 				if (item.due === null) {
-					return self.config.displayTasksWithoutDue;
+					return this_transfer.config.displayTasksWithoutDue;
 				}
 
 				var oneDay = 24 * 60 * 60 * 1000;
-				var dueDateTime = self.parseDueDate(item.due.date);
+				var dueDateTime = this_transfer.parseDueDate(item.due.date);
 				var dueDate = new Date(dueDateTime.getFullYear(), dueDateTime.getMonth(), dueDateTime.getDate());
 				var now = new Date();
 				var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 				var diffDays = Math.floor((dueDate - today) / (oneDay));
-				return diffDays <= self.config.displayTasksWithinDays;
+				return diffDays <= this_transfer.config.displayTasksWithinDays;
 			});
 		}
 
 		//Filter the Todos by the criteria specified in the Config
-	tasks.items.forEach(function (item) {
+		tasks.items.forEach(function (item) {
 			// Ignore sub-tasks
-			if (item.parent_id!=null && !self.config.displaySubtasks) { return; }
+			if (item.parent_id!=null && !this_transfer.config.displaySubtasks) { return; }
 
 			// If no projects or labels are configured, include all tasks
-			if (self.config.labels.length === 0 && self.config.projects.length === 0) {
+			if (this_transfer.config.labels.length === 0 && this_transfer.config.projects.length === 0) {
 				items.push(item);
 				return;
 			}
 
 			// Filter using label if a label is configured
-			if (self.config.labels.length > 0 && item.labels.length > 0) {
+			if (this_transfer.config.labels.length > 0 && item.labels.length > 0) {
 					// item.labels contains label IDs. Use mapped labelIds (from tasks.labels) or allow numeric IDs in config.
 					for (let itemLabelId of item.labels) {
-						if (labelIds.includes(itemLabelId) || self.config.labels.includes(itemLabelId) || self.config.labels.includes(String(itemLabelId))) {
+						if (labelIds.includes(itemLabelId) || this_transfer.config.labels.includes(itemLabelId) || this_transfer.config.labels.includes(String(itemLabelId))) {
 							items.push(item);
 							return;
 						}
@@ -325,8 +314,8 @@ Module.register("MMM-Todoist", {
 			}
 
 			// Filter using projets if projects are configured
-			if (self.config.projects.length>0){
-			  self.config.projects.forEach(function (project) {
+			if (this_transfer.config.projects.length>0){
+			  this_transfer.config.projects.forEach(function (project) {
 			  		if (item.project_id == project) {
 						items.push(item);
 						return;
@@ -336,7 +325,7 @@ Module.register("MMM-Todoist", {
 		});
 
 		//**** FOR DEBUGGING TO HELP PEOPLE GET THEIR PROJECT IDs */
-		if (self.config.debug) {
+		if (this_transfer.config.debug) {
 			console.log("%c *** PROJECT -- ID ***", "background: #222; color: #bada55");
 			tasks.projects.forEach(project => {
 				console.log("%c" + project.name + " -- " + project.id, "background: #222; color: #bada55");
@@ -352,7 +341,7 @@ Module.register("MMM-Todoist", {
 				item.all_day = true;
 			}
 			// Used to sort by date.
-			item.date = self.parseDueDate(item.due.date);
+			item.date = this_transfer.parseDueDate(item.due.date);
 
 			// The Sync API does not include an 'all_day' field, so we check due.date for presence of time
 			// if due.date has a time then set item.all_day to false else all_day is true
@@ -365,31 +354,31 @@ Module.register("MMM-Todoist", {
 
 		//***** Sorting code if you want to add new methods. */
 		var sorteditems;
-		switch (self.config.sortType) {
+		switch (this_transfer.config.sortType) {
 		case "todoist":
-			sorteditems = self.sortByTodoist(items);
+			sorteditems = this_transfer.sortByTodoist(items);
 			break;
 		case 'priority':
-			sorteditems = self.sortByPriority(items);
+			sorteditems = this_transfer.sortByPriority(items);
 			break;
 		case "dueDateAsc":
-			sorteditems = self.sortByDueDateAsc(items);
+			sorteditems = this_transfer.sortByDueDateAsc(items);
 			break;
 		case "dueDateDesc":
-			sorteditems = self.sortByDueDateDesc(items);
+			sorteditems = this_transfer.sortByDueDateDesc(items);
 			break;
 		case "dueDateDescPriority":
-			sorteditems = self.sortByDueDateDescPriority(items);
+			sorteditems = this_transfer.sortByDueDateDescPriority(items);
 			break;
 		default:
-			sorteditems = self.sortByTodoist(items);
+			sorteditems = this_transfer.sortByTodoist(items);
 			break;
 		}
 
 		//Slice by max Entries
-		items = sorteditems.slice(0, this.config.maximumEntries);
+		items = sorteditems.slice(0, this_transfer.config.maximumEntries);
 
-		this.tasks = {
+		this_transfer.tasks = {
 			"items": items,
 			"projects": tasks.projects || [],
 			"collaborators": tasks.collaborators || []
@@ -519,6 +508,7 @@ Module.register("MMM-Todoist", {
 		return this.createCell("title bright alignLeft", 
 			this.shorten(taskText, this.config.maxTitleLength, this.config.wrapEvents));
 	},
+	
 	addDueDateCell: function(item) {
 		var className = "bright align-right dueDate ";
 		var innerHTML = "";
